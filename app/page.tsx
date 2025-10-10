@@ -11,13 +11,28 @@ export default function Home() {
 
   const isPassport = country === 'OTHER' || noCIN;
 
-  const clearSig = () => sigRef.current?.clear();
-  const trimSig  = () => setSigData(sigRef.current?.getTrimmedCanvas().toDataURL('image/png') || '');
+  const clearSig = () => {
+    sigRef.current?.clear();
+    setSigData('');
+  };
+  
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const signatureData = sigRef.current?.getTrimmedCanvas().toDataURL('image/png') || '';
+    setSigData(signatureData);
+    
+    // Create a new form data with the signature
+    const formData = new FormData(e.currentTarget);
+    formData.set('signature', signatureData);
+    
+    // Submit the form
+    saveBooking(formData);
+  };
 
   return (
     <main className="p-8 max-w-xl mx-auto space-y-4">
       <h1 className="text-2xl font-bold">Pre-check-in</h1>
-      <form action={saveBooking} onSubmit={trimSig} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4">
         <input name="guestName" placeholder="Full name" required className="input" />
         <input name="guestEmail" type="email" placeholder="Email" required className="input" />
         <input name="checkin" type="date" required className="input" />
@@ -31,7 +46,7 @@ export default function Home() {
         {country === 'MA' && (
           <>
             <div className="flex items-center gap-2">
-              <input id="noCIN" type="checkbox" checked={noCIN} onChange={(e) => setNoCIN(e.target.checked)} />
+              <input name="noCIN" id="noCIN" type="checkbox" checked={noCIN} onChange={(e) => setNoCIN(e.target.checked)} />
               <label htmlFor="noCIN" className="text-sm">Je n’ai pas de CIN / I don’t have a CIN</label>
             </div>
             <div className={`space-y-2 ${noCIN ? 'opacity-50 pointer-events-none' : ''}`}>
