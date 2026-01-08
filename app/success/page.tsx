@@ -1,10 +1,11 @@
 // app/success/page.tsx
-export default function Success({
+export default async function Success({
   searchParams,
 }: {
-  searchParams: { pdf?: string };
+  searchParams: Promise<{ pdf?: string }>;
 }) {
-  const pdfUrl = searchParams.pdf ? `/pdfs/${searchParams.pdf}` : '#';
+  const params = await searchParams;
+  const pdfUrl = params.pdf ? `/pdfs/${params.pdf}` : '#';
 
   return (
     <main className="p-8 max-w-xl mx-auto text-center space-y-6">
