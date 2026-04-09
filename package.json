@@ -15,7 +15,7 @@
     "@types/jspdf": "^2.0.0",
     "jspdf": "^3.0.3",
     "lucide-react": "^1.7.0",
-    "next": "15.5.4",
+    "next": "15.5.9",
     "next-auth": "^5.0.0-beta.30",
     "nodemailer": "^7.0.13",
     "prisma": "^6.19.2",
