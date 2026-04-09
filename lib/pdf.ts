@@ -241,11 +241,15 @@ export async function buildPDF(data: {
   let logoBottomY = y;
   if (data.logoUrl) {
     try {
-      const logoData = data.logoUrl.startsWith('data:') ? data.logoUrl : `/public${data.logoUrl}`;
+      let logoData = data.logoUrl;
+      // If it's a relative path starting with /uploads, it's an old local file
+      if (logoData.startsWith('/uploads')) {
+         logoData = `https://${process.env.VERCEL_URL || 'localhost:3000'}/public${logoData}`;
+      }
+      
       const logoSize = 60;
       doc.addImage(logoData, 'PNG', margin, y, logoSize, logoSize, undefined, 'MEDIUM');
       logoBottomY = y + logoSize + 10;
-      // We don't increment y yet so text can sit next to logo
     } catch (e) {
       console.error("PDF Logo Error:", e);
     }

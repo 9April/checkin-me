@@ -45,12 +45,11 @@ export async function generatePdfPreview(propertyName: string, template: string,
     try {
       if (logoUrl.startsWith('data:')) {
         logoB64 = logoUrl;
-      } else {
-        const filePath = path.join(process.cwd(), 'public', logoUrl);
-        const buffer = await readFile(filePath);
-        const ext = logoUrl.split('.').pop() || 'png';
-        const mime = ext === 'png' ? 'image/png' : 'image/jpeg';
-        logoB64 = `data:${mime};base64,${buffer.toString('base64')}`;
+      } else if (logoUrl.startsWith('http')) {
+        const res = await fetch(logoUrl);
+        const buf = await res.arrayBuffer();
+        const contentType = res.headers.get('content-type') || 'image/png';
+        logoB64 = `data:${contentType};base64,${Buffer.from(buf).toString('base64')}`;
       }
     } catch (e) {
       console.error('Preview logo load error:', e);

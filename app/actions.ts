@@ -1,10 +1,8 @@
-'use server';
-import { writeFile, mkdir, readFile } from 'fs/promises';
-import path from 'path';
 import { buildPDF } from '@/lib/pdf';
 import { prisma } from '@/lib/prisma';
 import { encrypt, decrypt } from '@/lib/crypto';
 import { sendEmail } from '@/lib/mail';
+import { supabase } from '@/lib/supabase';
 
 export async function saveBooking(formData: FormData) {
   let pdfName: string | undefined;
@@ -46,12 +44,6 @@ export async function saveBooking(formData: FormData) {
 
     const totalTravelers = adults + kids;
 
-    /* ---------- 3. setup directories ---------- */
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-    const pdfDir = path.join(process.cwd(), 'public', 'pdfs');
-    await mkdir(uploadDir, { recursive: true });
-    await mkdir(pdfDir, { recursive: true });
-
     const getFileExtension = (filename: string): string => {
       const parts = filename.split('.');
       return parts.length > 1 ? parts[parts.length - 1].toLowerCase() : 'jpg';
@@ -61,7 +53,12 @@ export async function saveBooking(formData: FormData) {
     const saveEncrypted = async (f: File, name: string) => {
       const bytes = await f.arrayBuffer();
       const encrypted = encrypt(Buffer.from(bytes));
-      await writeFile(path.join(uploadDir, name), encrypted);
+      
+      const { error } = await supabase.storage
+        .from('checkin-me')
+        .upload(name, encrypted, { contentType: 'application/octet-stream' });
+      
+      if (error) throw new Error(`Supabase Upload Error: ${error.message}`);
       return name;
     };
 
@@ -125,12 +122,17 @@ export async function saveBooking(formData: FormData) {
       });
     }
 
-    // Save signature (also encrypted for privacy)
+    // Save signature (encrypted) to cloud
     const sigBase64 = signature.replace(/^data:image\/png;base64,/, '');
     const sigBuffer = Buffer.from(sigBase64, 'base64');
     const encryptedSig = encrypt(sigBuffer);
     const sigName = `${timestamp}_signature.png`;
-    await writeFile(path.join(uploadDir, sigName), encryptedSig);
+    
+    const { error: sigError } = await supabase.storage
+      .from('checkin-me')
+      .upload(sigName, encryptedSig, { contentType: 'image/png' });
+    
+    if (sigError) throw new Error(`Signature Upload Error: ${sigError.message}`);
 
     /* ---------- 5. Database Persistence ---------- */
     const booking = await (prisma.booking as any).create({
@@ -177,7 +179,10 @@ export async function saveBooking(formData: FormData) {
 
     const imagesB64 = await Promise.all(
       idFiles.map(async (f) => {
-        const buf = await readFile(path.join(uploadDir, f));
+        const { data, error } = await supabase.storage.from('checkin-me').download(f);
+        if (error || !data) throw new Error(`Failed to download ID image: ${f}`);
+        
+        const buf = Buffer.from(await data.arrayBuffer());
         const decrypted = decrypt(buf);
         const ext = getFileExtension(f);
         const mime = ext === 'png' ? 'image/png' : 'image/jpeg';
@@ -205,7 +210,11 @@ export async function saveBooking(formData: FormData) {
     });
 
     pdfName = `Booking-${booking.id}.pdf`;
-    await writeFile(path.join(pdfDir, pdfName), Buffer.from(pdfBytes));
+    const { error: pdfError } = await supabase.storage
+      .from('checkin-me')
+      .upload(pdfName, Buffer.from(pdfBytes), { contentType: 'application/pdf' });
+    
+    if (pdfError) throw new Error(`PDF Cloud Upload Error: ${pdfError.message}`);
     
     await prisma.booking.update({
       where: { id: booking.id },
