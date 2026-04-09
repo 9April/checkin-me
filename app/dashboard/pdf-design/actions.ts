@@ -3,8 +3,7 @@
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
 import { revalidatePath } from 'next/cache';
-import { readFile } from 'fs/promises';
-import path from 'path';
+
 
 export async function updatePdfTemplate(propertyId: string, template: string, footer: string) {
   const session = await auth();

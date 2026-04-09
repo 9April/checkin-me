@@ -610,4 +610,4 @@ export const DEFAULT_PRIVACY_POLICY = `<!DOCTYPE html>
     </main>
 
 </body>
-</html>\`;
+</html>`;
