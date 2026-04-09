@@ -5,7 +5,7 @@ export default async function Success({
   searchParams: Promise<{ pdf?: string }>;
 }) {
   const params = await searchParams;
-  const pdfUrl = params.pdf ? `/pdfs/${params.pdf}` : '#';
+  const pdfUrl = params.pdf ? `/api/pdf/${params.pdf}` : '#';
 
   return (
     <main className="p-8 max-w-xl mx-auto text-center space-y-6">
