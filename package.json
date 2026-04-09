@@ -10,6 +10,7 @@
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
     "@prisma/client": "^6.19.2",
+    "@supabase/ssr": "^0.10.2",
     "@supabase/supabase-js": "^2.78.0",
     "@types/jspdf": "^2.0.0",
     "jspdf": "^3.0.3",

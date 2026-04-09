@@ -2,8 +2,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import PrivacyEditor from "./PrivacyEditor";
-import fs from 'fs';
-import path from 'path';
+import { DEFAULT_PRIVACY_POLICY } from "@/lib/constants";
 
 export default async function DashboardPrivacyPage() {
   const session = await auth();
@@ -19,20 +18,8 @@ export default async function DashboardPrivacyPage() {
     redirect("/dashboard/settings");
   }
 
-  let initialContent = property.privacyPolicy || "";
-
-  // If DB is empty, load the default template
-  if (!initialContent) {
-    try {
-      const filePath = path.join(process.cwd(), 'app', 'privacy', 'privacy-policy.html');
-      initialContent = fs.readFileSync(filePath, 'utf8');
-      
-      // Cleanup the default HTML if it includes the head/body tags for the editor
-      // We want the inner content primarily, but the editor can handle the full thing.
-    } catch (e) {
-      initialContent = "<!-- Privacy Policy Template -->\n<h1>Privacy Policy</h1>\n<p>Enter your legal terms here...</p>";
-    }
-  }
+  // Use customized policy if available, otherwise load the default constant
+  const initialContent = property.privacyPolicy || DEFAULT_PRIVACY_POLICY;
 
   return (
     <div className="space-y-6">

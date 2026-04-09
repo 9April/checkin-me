@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
-import fs from 'fs';
-import path from 'path';
+import { DEFAULT_PRIVACY_POLICY } from '@/lib/constants';
 
 export default async function PrivacyPolicy({
   searchParams,
@@ -18,22 +17,8 @@ export default async function PrivacyPolicy({
     });
   }
 
-  // Read the custom privacy-policy.html file
-  // Read the custom privacy-policy.html file or database content
-  let htmlContent = "";
-  
-  if (property?.privacyPolicy) {
-    // If the host has customized the HTML in the dashboard, use that
-    htmlContent = property.privacyPolicy;
-  } else {
-    // Otherwise fallback to the default template file
-    try {
-      const filePath = path.join(process.cwd(), 'app', 'privacy', 'privacy-policy.html');
-      htmlContent = fs.readFileSync(filePath, 'utf8');
-    } catch (error) {
-      console.error("Failed to read privacy-policy.html:", error);
-    }
-  }
+  // Use customized policy if available, otherwise fallback to default constant
+  let htmlContent = property?.privacyPolicy || DEFAULT_PRIVACY_POLICY;
 
   if (htmlContent) {
     // Always apply the Luxury Gold theme adjustments to any HTML for consistent branding

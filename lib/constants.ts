@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+export const DEFAULT_PRIVACY_POLICY = `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -610,4 +610,4 @@
     </main>
 
 </body>
-</html>
+</html>\`;
