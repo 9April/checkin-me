@@ -40,5 +40,17 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-./public/uploads
-./public/pdfs
+public/uploads/
+public/pdfs/
+tmp/
+*.pdf
+*.b64
+/lib/generated/prisma
+
+# SQLite database files
+*.db
+*.db-journal
+dev.db
+.env
+.env.local
+.env.production

@@ -1,0 +1,106 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String     @id @default(cuid())
+  name          String?
+  email         String?    @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  accounts      Account[]
+  properties    Property[]
+  sessions      Session[]
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Property {
+  id              String    @id @default(cuid())
+  name            String
+  hostId          String
+  logoUrl         String?
+  houseRules      String?
+  checkinTime     String    @default("15:00")
+  checkoutTime    String    @default("11:00")
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  adminEmail      String?
+  privacyPolicy   String?
+  formTitle       String?
+  formSubtitle    String?
+  primaryColor    String?   @default("#EF4444")
+  showWhatsApp    Boolean   @default(true)
+  requireSelfie   Boolean   @default(true)
+  requireIdPhotos Boolean   @default(true)
+  pdfTemplate     String?
+  pdfFooter       String?
+  bookings        Booking[]
+  host            User      @relation(fields: [hostId], references: [id], onDelete: Cascade)
+}
+
+model Booking {
+  id          String     @id @default(cuid())
+  propertyId  String
+  guestName   String
+  guestEmail  String
+  checkin     String
+  checkout    String
+  checkinHour String?
+  whatsapp    String?
+  pdfUrl      String?
+  status      String     @default("PENDING")
+  createdAt   DateTime   @default(now())
+  deletedAt   DateTime?
+  property    Property   @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  travelers   Traveler[]
+}
+
+model Traveler {
+  id        String  @id @default(cuid())
+  bookingId String
+  name      String
+  country   String
+  idNumber  String?
+  type      String
+  idImages  String?
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+}
