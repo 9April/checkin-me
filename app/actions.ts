@@ -53,12 +53,15 @@ export async function saveBooking(formData: FormData) {
 
     const timestamp = Date.now();
     const saveToCloud = async (f: File, name: string) => {
+      console.log('--- Uploading PLAIN image:', name, 'Size:', f.size);
       const bytes = await f.arrayBuffer();
-      // No encryption as requested (Simple readable path)
       
       const { error } = await supabase.storage
         .from('checkin-me')
-        .upload(name, Buffer.from(bytes), { contentType: f.type || 'image/jpeg' });
+        .upload(name, Buffer.from(bytes), { 
+          contentType: f.type || 'image/jpeg',
+          upsert: true 
+        });
       
       if (error) throw new Error(`Supabase Upload Error: ${error.message}`);
       return name;
@@ -128,10 +131,11 @@ export async function saveBooking(formData: FormData) {
     const sigBase64 = signature.replace(/^data:image\/png;base64,/, '');
     const sigBuffer = Buffer.from(sigBase64, 'base64');
     const sigName = `${timestamp}_signature.png`;
+    console.log('--- Uploading PLAIN signature:', sigName, 'Size:', sigBuffer.length);
     
     const { error: sigError } = await supabase.storage
       .from('checkin-me')
-      .upload(sigName, sigBuffer, { contentType: 'image/png' });
+      .upload(sigName, sigBuffer, { contentType: 'image/png', upsert: true });
     
     if (sigError) throw new Error(`Signature Upload Error: ${sigError.message}`);
 
