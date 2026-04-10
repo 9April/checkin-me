@@ -9,4 +9,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default nextConfig;// Force redeploy Fri Apr 10 16:50:43 +01 2026
