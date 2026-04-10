@@ -87,7 +87,7 @@ export default async function BookingsPage() {
                       {booking.pdfUrl ? (
                          <>
                           <Link
-                            href={`/pdfs/${booking.pdfUrl}`}
+                            href={`/api/pdf/${booking.pdfUrl}`}
                             target="_blank"
                             className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                             title='View PDF'
@@ -95,7 +95,7 @@ export default async function BookingsPage() {
                             <ExternalLink size={18} />
                           </Link>
                           <a
-                            href={`/pdfs/${booking.pdfUrl}`}
+                            href={`/api/pdf/${booking.pdfUrl}`}
                             download
                             className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors border-r pr-2 py-2"
                             title="Download PDF"

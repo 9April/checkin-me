@@ -158,7 +158,7 @@ export default async function DashboardPage() {
                       {booking.pdfUrl ? (
                         <>
                           <Link
-                            href={`/pdfs/${booking.pdfUrl}`}
+                            href={`/api/pdf/${booking.pdfUrl}`}
                             target="_blank"
                             className="text-[#EF4444] hover:underline text-sm font-bold"
                           >
@@ -166,7 +166,7 @@ export default async function DashboardPage() {
                           </Link>
                           <span className="text-gray-300">|</span>
                           <a
-                            href={`/pdfs/${booking.pdfUrl}`}
+                            href={`/api/pdf/${booking.pdfUrl}`}
                             download
                             className="text-gray-500 hover:text-gray-700 text-sm font-medium"
                           >
