@@ -30,7 +30,7 @@ export async function saveBooking(formData: FormData) {
     const property = await prisma.property.findUnique({ 
       where: { id: propertyId },
       include: { host: true }
-    });
+    }) as any;
     if (!property) throw new Error('Property not found');
     console.log('--- Property found:', property.name, 'Admin:', property.host?.email);
 
@@ -52,13 +52,13 @@ export async function saveBooking(formData: FormData) {
     };
 
     const timestamp = Date.now();
-    const saveEncrypted = async (f: File, name: string) => {
+    const saveToCloud = async (f: File, name: string) => {
       const bytes = await f.arrayBuffer();
-      const encrypted = encrypt(Buffer.from(bytes));
+      // No encryption as requested (Simple readable path)
       
       const { error } = await supabase.storage
         .from('checkin-me')
-        .upload(name, encrypted, { contentType: 'application/octet-stream' });
+        .upload(name, Buffer.from(bytes), { contentType: f.type || 'image/jpeg' });
       
       if (error) throw new Error(`Supabase Upload Error: ${error.message}`);
       return name;
@@ -68,7 +68,7 @@ export async function saveBooking(formData: FormData) {
     let idFiles: string[] = [];
     let selfieName: string | undefined;
     if (selfieFile && selfieFile.size > 0) {
-      selfieName = await saveEncrypted(selfieFile, `${timestamp}_selfie.${getFileExtension(selfieFile.name)}`);
+      selfieName = await saveToCloud(selfieFile, `${timestamp}_selfie.${getFileExtension(selfieFile.name)}`);
       idFiles.push(selfieName);
     }
 
@@ -93,7 +93,7 @@ export async function saveBooking(formData: FormData) {
           const pInput = formData.get(`traveler_${i}_passport`);
           const p = isFile(pInput) ? pInput : null;
           if (p && p.size > 0) {
-            const name = await saveEncrypted(p, `${timestamp}_traveler_${i}_passport.${getFileExtension(p.name)}`);
+            const name = await saveToCloud(p, `${timestamp}_traveler_${i}_passport.${getFileExtension(p.name)}`);
             travelerIdFiles.push(name);
             idFiles.push(name);
           }
@@ -103,12 +103,12 @@ export async function saveBooking(formData: FormData) {
           const front = isFile(fInput) ? fInput : null;
           const back = isFile(bInput) ? bInput : null;
           if (front && front.size > 0) {
-            const fName = await saveEncrypted(front, `${timestamp}_traveler_${i}_cin_front.${getFileExtension(front.name)}`);
+            const fName = await saveToCloud(front, `${timestamp}_traveler_${i}_cin_front.${getFileExtension(front.name)}`);
             travelerIdFiles.push(fName);
             idFiles.push(fName);
           }
           if (back && back.size > 0) {
-            const bName = await saveEncrypted(back, `${timestamp}_traveler_${i}_cin_back.${getFileExtension(back.name)}`);
+            const bName = await saveToCloud(back, `${timestamp}_traveler_${i}_cin_back.${getFileExtension(back.name)}`);
             travelerIdFiles.push(bName);
             idFiles.push(bName);
           }
@@ -124,15 +124,14 @@ export async function saveBooking(formData: FormData) {
       });
     }
 
-    // Save signature (encrypted) to cloud
+    // Save signature (plain) to cloud
     const sigBase64 = signature.replace(/^data:image\/png;base64,/, '');
     const sigBuffer = Buffer.from(sigBase64, 'base64');
-    const encryptedSig = encrypt(sigBuffer);
     const sigName = `${timestamp}_signature.png`;
     
     const { error: sigError } = await supabase.storage
       .from('checkin-me')
-      .upload(sigName, encryptedSig, { contentType: 'image/png' });
+      .upload(sigName, sigBuffer, { contentType: 'image/png' });
     
     if (sigError) throw new Error(`Signature Upload Error: ${sigError.message}`);
 
@@ -185,10 +184,10 @@ export async function saveBooking(formData: FormData) {
         if (error || !data) throw new Error(`Failed to download ID image: ${f}`);
         
         const buf = Buffer.from(await data.arrayBuffer());
-        const decrypted = decrypt(buf);
+        // No decryption needed for new files
         const ext = getFileExtension(f);
         const mime = ext === 'png' ? 'image/png' : 'image/jpeg';
-        return `data:${mime};base64,${decrypted.toString('base64')}`;
+        return `data:${mime};base64,${buf.toString('base64')}`;
       })
     );
 

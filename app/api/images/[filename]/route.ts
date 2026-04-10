@@ -33,14 +33,13 @@ export async function GET(
       return new NextResponse('File not found', { status: 404 });
     }
 
-    // 3. Convert to buffer and decrypt
-    const encryptedBuffer = Buffer.from(await data.arrayBuffer());
-    const decryptedBuffer = decrypt(encryptedBuffer);
+    // 3. Convert to buffer (No decryption needed for new files)
+    const fileBuffer = Buffer.from(await data.arrayBuffer());
 
     const ext = filename.split('.').pop()?.toLowerCase();
     const contentType = ext === 'png' ? 'image/png' : 'image/jpeg';
 
-    return new NextResponse(new Uint8Array(decryptedBuffer), {
+    return new NextResponse(new Uint8Array(fileBuffer), {
       headers: {
         'Content-Type': contentType,
         'Cache-Control': 'private, max-age=3600',
