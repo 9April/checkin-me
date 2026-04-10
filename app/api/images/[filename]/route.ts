@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { readFile } from 'fs/promises';
-import path from 'path';
+import { supabase } from '@/lib/supabase';
 import { decrypt } from '@/lib/crypto';
 import { auth } from '@/auth';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET(
   req: NextRequest,
@@ -17,15 +18,23 @@ export async function GET(
   try {
     const { filename } = await params;
     
-    // Security check: prevent directory traversal
+    // Security check: prevent directory traversal (redundant for Supabase but good practice)
     if (filename.includes('..') || filename.includes('/')) {
       return new NextResponse('Invalid filename', { status: 400 });
     }
 
-    const filePath = path.join(process.cwd(), 'public', 'uploads', filename);
-    const encryptedBuffer = await readFile(filePath);
-    
-    // Decrypt on the fly
+    // 2. Fetch the encrypted file from Supabase Storage
+    const { data, error } = await supabase.storage
+      .from('checkin-me')
+      .download(filename);
+
+    if (error || !data) {
+      console.error('Supabase image download error:', error);
+      return new NextResponse('File not found', { status: 404 });
+    }
+
+    // 3. Convert to buffer and decrypt
+    const encryptedBuffer = Buffer.from(await data.arrayBuffer());
     const decryptedBuffer = decrypt(encryptedBuffer);
 
     const ext = filename.split('.').pop()?.toLowerCase();
@@ -38,7 +47,7 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error('Error serving encrypted image:', error);
-    return new NextResponse('File not found', { status: 404 });
+    console.error('Error serving encrypted image from cloud:', error);
+    return new NextResponse('Internal Server Error', { status: 500 });
   }
 }
