@@ -78,20 +78,22 @@ model Property {
 }
 
 model Booking {
-  id          String     @id @default(cuid())
-  propertyId  String
-  guestName   String
-  guestEmail  String
-  checkin     String
-  checkout    String
-  checkinHour String?
-  whatsapp    String?
-  pdfUrl      String?
-  status      String     @default("PENDING")
-  createdAt   DateTime   @default(now())
-  deletedAt   DateTime?
-  property    Property   @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  travelers   Traveler[]
+  id              String     @id @default(cuid())
+  propertyId      String
+  guestName       String
+  guestEmail      String
+  checkin         String
+  checkout        String
+  checkinHour     String?
+  whatsapp        String?
+  selfieUrl       String?
+  totalTravelers  Int?
+  pdfUrl          String?
+  status          String     @default("PENDING")
+  createdAt       DateTime   @default(now())
+  deletedAt       DateTime?
+  property        Property   @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  travelers       Traveler[]
 }
 
 model Traveler {
