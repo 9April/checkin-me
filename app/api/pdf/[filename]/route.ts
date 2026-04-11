@@ -1,5 +1,6 @@
-import { supabase } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase';
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -7,17 +8,23 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ filename: string }> }
 ) {
+  // 1. Check authentication (only hosts can view these PDFs)
+  const session = await auth();
+  if (!session) {
+    return new NextResponse('Unauthorized', { status: 401 });
+  }
+
   try {
     const { filename } = await params;
 
-    // Fetch the PDF from Supabase Storage
-    const { data, error } = await supabase.storage
+    // Fetch the PDF from Supabase Storage using the ADMIN client (bypasses RLS)
+    const { data, error } = await supabaseAdmin.storage
       .from('checkin-me')
       .download(filename);
 
     if (error || !data) {
       console.error('Supabase PDF download error:', error);
-      return new NextResponse('PDF not found', { status: 404 });
+      return new NextResponse('PDF not found in cloud storage', { status: 404 });
     }
 
     // Capture the bytes
@@ -28,7 +35,7 @@ export async function GET(
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `inline; filename="${filename}"`,
-        'Cache-Control': 'public, max-age=3600',
+        'Cache-Control': 'private, max-age=3600',
       },
     });
   } catch (error) {
