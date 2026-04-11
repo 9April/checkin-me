@@ -3,7 +3,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabase";
 
 export async function updateProperty(formData: FormData) {
   const session = await auth();
@@ -35,7 +35,7 @@ export async function updateProperty(formData: FormData) {
       const filename = `logo_${propertyId}_${Date.now()}.${ext}`;
       const buffer = Buffer.from(await logoFile.arrayBuffer());
       
-      const { error } = await supabase.storage
+      const { error } = await supabaseAdmin.storage
         .from('checkin-me')
         .upload(filename, buffer, { 
           contentType: logoFile.type || 'image/png',
@@ -44,8 +44,8 @@ export async function updateProperty(formData: FormData) {
       
       if (error) throw new Error(`Logo Upload Error: ${error.message}`);
       
-      const { data } = supabase.storage.from('checkin-me').getPublicUrl(filename);
-      logoUrl = data.publicUrl;
+      // Use the API bridge so it's accessible to guests
+      logoUrl = `/api/images/${filename}`;
     } catch (e) {
       console.error("Logo upload failed:", e);
     }
