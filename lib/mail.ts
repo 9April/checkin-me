@@ -38,10 +38,11 @@ export async function sendEmail({ to, subject, text, html, attachments }: SendEm
     console.log('Email successfully sent to:', to, ' - MessageId:', info.messageId);
     return { success: true, messageId: info.messageId };
   } catch (error: any) {
-    console.error('SMTP Error details:');
-    console.error('- Code:', error.code);
-    console.error('- Command:', error.command);
-    console.error('- Message:', error.message);
+    console.error('CRITICAL SMTP ERROR:');
+    console.error('- To:', to);
+    console.error('- Subject:', subject);
+    console.error('- Error Message:', error.message);
+    console.error('- Full Error Object:', JSON.stringify(error, null, 2));
     return { success: false, error: error.message };
   }
 }

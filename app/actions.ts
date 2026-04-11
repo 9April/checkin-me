@@ -244,7 +244,8 @@ export async function saveBooking(formData: FormData) {
       }).catch(err => console.error('Guest email failed:', err));
 
       // 2. Send to Host (New Submission Alert)
-      if (adminEmail && adminEmail !== guestEmail) {
+      if (adminEmail) {
+        console.log('--- Sending Host Notification to:', adminEmail);
         sendEmail({
           to: adminEmail,
           subject: `New Guest Registration: ${guestName}`,
