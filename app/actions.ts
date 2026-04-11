@@ -175,17 +175,44 @@ export async function saveBooking(formData: FormData) {
     /* ---------- 7. emails ---------- */
     try {
       const adminEmail = property.adminEmail || property.host?.email;
-      const pdfAttachment = { filename: pdfName, content: Buffer.from(pdfBytes), contentType: 'application/pdf' };
-      const emailPromises = [
-        sendEmail({ to: guestEmail, subject: `Signed Agreement - ${property.name}`, text: `Dear ${guestName},\nAttached is your agreement.`, attachments: [pdfAttachment] })
-      ];
-      if (adminEmail) {
+      const pdfAttachment = { 
+        filename: pdfName, 
+        content: Buffer.from(pdfBytes), 
+        contentType: 'application/pdf' 
+      };
+
+      const emailPromises = [];
+      
+      // 1. Send confirmation to the Guest
+      if (guestEmail) {
         emailPromises.push(
-          sendEmail({ to: adminEmail, subject: `New Registration: ${guestName}`, text: `New guest: ${guestName} for ${property.name}`, attachments: [pdfAttachment] })
+          sendEmail({ 
+            to: guestEmail, 
+            subject: `Your Check-in Confirmation - ${property.name}`, 
+            text: `Dear ${guestName},\n\nThank you for completing your pre-check-in for ${property.name}. Please find attached a copy of your signed agreement for your records.\n\nWe look forward to welcoming you soon!\n\nBest regards,\n${property.name} Management`,
+            attachments: [pdfAttachment] 
+          })
         );
       }
-      await Promise.allSettled(emailPromises);
-    } catch (e) { console.error('Emails failed', e); }
+
+      // 2. Send notification to the Admin
+      if (adminEmail) {
+        emailPromises.push(
+          sendEmail({ 
+            to: adminEmail, 
+            subject: `New Registration: ${guestName} - ${property.name}`, 
+            text: `A new guest registration has been completed.\n\nProperty: ${property.name}\nGuest: ${guestName}\nDates: ${checkin} to ${checkout}\n\nThe signed agreement is attached below.`,
+            attachments: [pdfAttachment] 
+          })
+        );
+      }
+
+      if (emailPromises.length > 0) {
+        await Promise.allSettled(emailPromises);
+      }
+    } catch (e) { 
+      console.error('Dual email notification failed:', e); 
+    }
 
     return { success: true, pdfName };
   } catch (error) {
