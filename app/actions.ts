@@ -55,9 +55,10 @@ export async function saveBooking(formData: FormData) {
 
     const travelersData = [];
     for (let i = 0; i < totalTravelers; i++) {
-        const tName = formData.get(`traveler_${i}_name`) as string;
-        const country = formData.get(`traveler_${i}_country`) as string;
-        const idNumber = formData.get(`traveler_${i}_idNumber`) as string;
+        const tNameInput = formData.get(`traveler_${i}_name`) as string;
+        const tName = (i === 0 && !tNameInput) ? (guestName || "Guest") : (tNameInput || "Guest");
+        const country = formData.get(`traveler_${i}_country`) as string || 'OTHER';
+        const idNumber = formData.get(`traveler_${i}_idNumber`) as string || 'N/A';
         const idType = formData.get(`traveler_${i}_idType`) as string || 'adult';
         const travelerIdFiles: string[] = [];
 

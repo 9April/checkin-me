@@ -504,6 +504,18 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
                 </div>
 
                 <div className="space-y-6">
+                  {/* Traveler Name Field */}
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black uppercase tracking-[0.25em] text-gray-400 ml-1">{t.fullName}</label>
+                    <input 
+                      name={`traveler_${index}_name`}
+                      defaultValue={index === 0 ? '' : ''} 
+                      placeholder={t.fullNamePlaceholder}
+                      required 
+                      className={`w-full px-6 py-5 bg-gray-50 border-2 border-gray-100 rounded-2xl outline-none focus:bg-white focus:border-[var(--primary-color)] transition-all font-medium text-gray-900 placeholder:text-gray-300 ${validationErrors[`traveler_${index}_name`] ? 'border-amber-200 bg-amber-50' : ''}`} 
+                    />
+                  </div>
+
                   <div className="space-y-3">
                     <label className="text-[10px] font-black uppercase tracking-[0.25em] text-gray-400 ml-1">{t.countryOfIssue}</label>
                     <div className="relative">

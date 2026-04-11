@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabase, getSupabaseAdmin } from '@/lib/supabase';
 import { auth } from '@/auth';
 
 export const dynamic = 'force-dynamic';
@@ -28,7 +28,8 @@ export async function GET(
     }
 
     // 2. Fetch the file from Supabase Storage
-    const { data, error } = await supabase.storage
+    const activeClient = isLogo ? getSupabaseAdmin() : supabase;
+    const { data, error } = await activeClient.storage
       .from('checkin-me')
       .download(filename);
 
