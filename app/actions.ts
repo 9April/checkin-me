@@ -1,3 +1,5 @@
+'use server';
+
 import { buildPDF } from '@/lib/pdf';
 import { prisma } from '@/lib/prisma';
 import { encrypt, decrypt } from '@/lib/crypto';

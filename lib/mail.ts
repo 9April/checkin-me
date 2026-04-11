@@ -1,3 +1,4 @@
+import 'server-only';
 import nodemailer from 'nodemailer';
 
 export interface SendEmailParams {
@@ -12,21 +13,34 @@ export interface SendEmailParams {
   }>;
 }
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || '',
-  port: parseInt(process.env.SMTP_PORT || '587'),
-  secure: process.env.SMTP_PORT === '465', // Port 465 uses SSL (secure: true)
-  auth: {
-    user: process.env.SMTP_USER || '',
-    pass: process.env.SMTP_PASS || '',
-  },
-});
+/**
+ * Lazy-initialized transporter to avoid top-level execution of Node.js logic
+ * which can cause client-side crashes if the module is traced into a bundle.
+ */
+let transporter: any = null;
+
+function getTransporter() {
+  if (transporter) return transporter;
+  
+  console.log('--- Initializing SMTP Transporter ---');
+  transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST || '',
+    port: parseInt(process.env.SMTP_PORT || '587'),
+    secure: process.env.SMTP_PORT === '465', // Port 465 uses SSL (secure: true)
+    auth: {
+      user: process.env.SMTP_USER || '',
+      pass: process.env.SMTP_PASS || '',
+    },
+  });
+  return transporter;
+}
 
 export async function sendEmail({ to, subject, text, html, attachments }: SendEmailParams) {
   const from = process.env.SMTP_FROM || process.env.SMTP_USER || '"Checkin Me" <noreply@checkin-me.com>';
   
   try {
-    const info = await transporter.sendMail({
+    const activeTransporter = getTransporter();
+    const info = await activeTransporter.sendMail({
       from,
       to,
       subject,
