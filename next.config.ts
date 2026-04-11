@@ -7,6 +7,19 @@ const nextConfig: NextConfig = {
       bodySizeLimit: '20mb',
     },
   },
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        dns: false,
+        child_process: false,
+        tls: false,
+      };
+    }
+    return config;
+  },
 };
 
-export default nextConfig;// Force redeploy Fri Apr 10 16:50:43 +01 2026
+export default nextConfig;
