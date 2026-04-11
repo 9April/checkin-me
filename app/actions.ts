@@ -305,7 +305,9 @@ export async function saveBooking(formData: FormData) {
           'The PDF could not be generated. Your registration was saved.',
       });
       const queryString = new URLSearchParams({
-        ...(mailError && { mailError }),
+        ...(mailError
+          ? { mailError }
+          : { emailSent: '1' }),
       }).toString();
       return {
         success: true,
@@ -340,7 +342,9 @@ export async function saveBooking(formData: FormData) {
 
       const queryString = new URLSearchParams({
         pdf: pdfName,
-        ...(mailError && { mailError }),
+        ...(mailError
+          ? { mailError }
+          : { emailSent: '1' }),
       }).toString();
 
       return { success: true, pdfName, redirectUrl: `/success?${queryString}` };

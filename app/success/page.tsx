@@ -1,12 +1,24 @@
 // app/success/page.tsx
+
+function decodeParam(s: string | undefined): string | undefined {
+  if (!s) return undefined;
+  try {
+    return decodeURIComponent(s);
+  } catch {
+    return s;
+  }
+}
+
 export default async function Success({
   searchParams,
 }: {
-  searchParams: Promise<{ pdf?: string; mailError?: string }>;
+  searchParams: Promise<{ pdf?: string; mailError?: string; emailSent?: string }>;
 }) {
   const params = await searchParams;
   const pdfUrl = params.pdf ? `/api/pdf/${params.pdf}` : '#';
-  const mailError = params.mailError;
+  const mailError = decodeParam(params.mailError);
+  const emailSent = params.emailSent === '1';
+  const emailStatusUnknown = !emailSent && !mailError && !!params.pdf;
 
   return (
     <main className="p-8 max-w-xl mx-auto text-center space-y-6">
@@ -15,28 +27,87 @@ export default async function Success({
         Your signed agreement has been generated. Tap the button below to download it.
       </p>
 
-      {mailError && (
-        <div className="bg-amber-50 border border-amber-200 p-4 rounded-xl text-left">
-          <h3 className="text-amber-800 font-bold text-sm mb-1 flex items-center gap-2">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-            Email Status
+      {emailSent && (
+        <div
+          role="status"
+          className="bg-emerald-50 border-2 border-emerald-300 p-5 rounded-2xl text-left shadow-sm"
+        >
+          <h3 className="text-emerald-900 font-bold text-base mb-2 flex items-center gap-2">
+            <svg
+              className="w-6 h-6 shrink-0 text-emerald-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+              />
+            </svg>
+            Email sent
           </h3>
-          <p className="text-amber-700 text-xs">
-            The booking was saved, but the confirmation email could not be sent:
+          <p className="text-emerald-900 text-sm leading-relaxed">
+            Confirmation emails were delivered: one to the address you entered on the form, and one
+            to the property admin (or the host account email if no admin email is set in the
+            dashboard).
           </p>
-          <code className="block mt-2 font-mono text-[10px] bg-white p-2 border border-amber-100 rounded text-amber-900 overflow-auto whitespace-pre-wrap">
-            {mailError}
-          </code>
-          <p className="text-[10px] text-amber-600 mt-2 italic">
-            Please check your SMTP settings in Vercel to fix this.
+          <p className="text-emerald-800/80 text-xs mt-2">
+            Check your inbox and spam folder. If nothing appears, the host should verify SMTP
+            settings in Vercel.
           </p>
         </div>
+      )}
+
+      {mailError && (
+        <div
+          role="alert"
+          className="bg-amber-50 border-2 border-amber-400 p-5 rounded-2xl text-left shadow-sm"
+        >
+          <h3 className="text-amber-900 font-bold text-base mb-2 flex items-center gap-2">
+            <svg
+              className="w-6 h-6 shrink-0 text-amber-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
+            </svg>
+            Email could not be sent
+          </h3>
+          <p className="text-amber-900 text-sm font-medium">
+            Your check-in was saved, but sending email failed:
+          </p>
+          <code className="block mt-3 font-mono text-xs bg-white p-3 border border-amber-200 rounded-lg text-amber-950 overflow-auto whitespace-pre-wrap break-words">
+            {mailError}
+          </code>
+          <p className="text-amber-800 text-xs mt-3 leading-relaxed">
+            Add <strong>SMTP_HOST</strong>, <strong>SMTP_USER</strong>, and <strong>SMTP_PASS</strong>{' '}
+            in Vercel → Project → Settings → Environment Variables, then redeploy.
+          </p>
+        </div>
+      )}
+
+      {emailStatusUnknown && (
+        <p className="text-gray-500 text-sm text-left bg-gray-50 border border-gray-200 rounded-xl p-4">
+          Email delivery status isn&apos;t shown for this link. New submissions show a green
+          &quot;Email sent&quot; notice when the server confirms delivery.
+        </p>
       )}
 
       <div className="flex flex-col sm:flex-row gap-3 justify-center">
         <a
           href={pdfUrl}
           target="_blank"
+          rel="noopener noreferrer"
           className="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-4 rounded-2xl font-bold shadow-lg shadow-blue-100 transition-all active:scale-[0.98]"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
