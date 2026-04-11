@@ -248,10 +248,12 @@ export async function buildPDF(data: {
       }
       
       const logoSize = 60;
+      // Wrap addImage in a more descriptive error check
       doc.addImage(logoData, 'PNG', margin, y, logoSize, logoSize, undefined, 'MEDIUM');
       logoBottomY = y + logoSize + 10;
-    } catch (e) {
-      console.error("PDF Logo Error:", e);
+    } catch (e: any) {
+      console.warn("⚠️ PDF Logo could not be loaded (likely 404 or invalid format). Proceeding without logo.");
+      console.error("  Detail:", e.message);
     }
   }
 
