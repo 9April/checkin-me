@@ -51,6 +51,17 @@ function getTransporter() {
 }
 
 export async function sendEmail({ to, subject, text, html, attachments }: SendEmailParams) {
+  const host = (process.env.SMTP_HOST || '').trim();
+  const user = (process.env.SMTP_USER || '').trim();
+  const pass = (process.env.SMTP_PASS || '').trim();
+
+  if (!host || !user || !pass) {
+    const msg =
+      'SMTP is not configured: set SMTP_HOST, SMTP_USER, and SMTP_PASS in your server environment (e.g. Vercel → Settings → Environment Variables), then redeploy.';
+    console.error(msg);
+    return { success: false, error: msg };
+  }
+
   const from = process.env.SMTP_FROM || process.env.SMTP_USER || '"Checkin Me" <noreply@checkin-me.com>';
   
   try {

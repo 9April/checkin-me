@@ -370,7 +370,12 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
 
       const result = await saveBooking(formData);
       if (result.success) {
-        router.push(result.redirectUrl || `/success?pdf=${result.pdfName}`);
+        router.push(
+          result.redirectUrl ||
+            (result.pdfName
+              ? `/success?pdf=${encodeURIComponent(result.pdfName)}`
+              : '/success')
+        );
       } else {
         throw new Error(result.error || 'Unknown error');
       }

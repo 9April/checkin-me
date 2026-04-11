@@ -2,9 +2,113 @@
 
 import { buildPDF } from '@/lib/pdf';
 import { prisma } from '@/lib/prisma';
-import { encrypt, decrypt } from '@/lib/crypto';
 import { sendEmail } from '@/lib/mail';
-import { supabase, supabaseAdmin } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase';
+
+type PdfAttachment = {
+  filename: string;
+  content: Buffer;
+  contentType: string;
+};
+
+/** Sends check-in PDF (or text-only if PDF missing) to guest and property admin. */
+async function sendCheckInEmails(opts: {
+  guestEmail: string;
+  guestName: string;
+  adminEmail: string | null | undefined;
+  propertyName: string;
+  checkin: string;
+  checkout: string;
+  pdfAttachment?: PdfAttachment;
+  pdfFailedNote?: string;
+}): Promise<{ mailError: string }> {
+  const guest = opts.guestEmail.trim();
+  const admin =
+    (opts.adminEmail && String(opts.adminEmail).trim()) ||
+    '';
+
+  const pdfNote = opts.pdfFailedNote
+    ? `\n\nNote: ${opts.pdfFailedNote}\n`
+    : '';
+  const attachmentLine = opts.pdfAttachment
+    ? '\n\nPlease find attached a copy of your signed agreement for your records.'
+    : '';
+  const guestBody = `Dear ${opts.guestName},\n\nThank you for completing your pre-check-in for ${opts.propertyName}.${attachmentLine}${pdfNote}\n\nWe look forward to welcoming you soon!\n\nBest regards,\n${opts.propertyName} Management`;
+  const adminAttachmentLine = opts.pdfAttachment
+    ? '\n\nThe signed agreement is attached.'
+    : '';
+  const adminBody = `A new guest registration has been completed.${adminAttachmentLine}${pdfNote}\n\nProperty: ${opts.propertyName}\nGuest: ${opts.guestName}\nEmail: ${guest || '(not provided)'}\nDates: ${opts.checkin} to ${opts.checkout}\n`;
+
+  const guestSubject = `Your Check-in Confirmation - ${opts.propertyName}`;
+  const adminSubject = `New Registration: ${opts.guestName} - ${opts.propertyName}`;
+
+  const attach = opts.pdfAttachment ? [opts.pdfAttachment] : undefined;
+
+  const tasks: Promise<{ success: boolean; error?: string }>[] = [];
+
+  const same =
+    guest &&
+    admin &&
+    guest.toLowerCase() === admin.toLowerCase();
+
+  if (same) {
+    tasks.push(
+      sendEmail({
+        to: guest,
+        subject: `Check-in: ${opts.guestName} — ${opts.propertyName}`,
+        text: `${guestBody}\n\n--- Admin copy ---\n${adminBody}`,
+        attachments: attach,
+      })
+    );
+  } else {
+    if (guest) {
+      tasks.push(
+        sendEmail({
+          to: guest,
+          subject: guestSubject,
+          text: guestBody,
+          attachments: attach,
+        })
+      );
+    }
+    if (admin) {
+      tasks.push(
+        sendEmail({
+          to: admin,
+          subject: adminSubject,
+          text: adminBody,
+          attachments: attach,
+        })
+      );
+    }
+  }
+
+  if (tasks.length === 0) {
+    console.warn(
+      'sendCheckInEmails: no recipients (missing guest email and admin email).'
+    );
+    return { mailError: 'No email recipients.' };
+  }
+
+  const results = await Promise.allSettled(tasks);
+  const failures = results.filter(
+    (r) =>
+      r.status === 'rejected' ||
+      (r.status === 'fulfilled' && !r.value.success)
+  );
+  let mailError = '';
+  if (failures.length > 0) {
+    mailError = failures
+      .map((f) =>
+        f.status === 'rejected'
+          ? String((f as PromiseRejectedResult).reason?.message ?? f.reason)
+          : (f as PromiseFulfilledResult<{ error?: string }>).value.error ?? ''
+      )
+      .filter(Boolean)
+      .join('; ');
+  }
+  return { mailError };
+}
 
 export async function saveBooking(formData: FormData) {
   let pdfName: string | undefined;
@@ -31,7 +135,7 @@ export async function saveBooking(formData: FormData) {
     }) as any;
     if (!property) throw new Error('Property not found');
 
-    /* ---------- 2. handle files ---------- */
+    /* ---------- 2. handle files (parallel uploads) ---------- */
     const timestamp = Date.now();
     const saveToCloud = async (f: File, name: string) => {
       console.log('--- Uploading PLAIN image:', name, 'Size:', f.size);
@@ -46,13 +150,23 @@ export async function saveBooking(formData: FormData) {
       return name;
     };
 
-    let idFiles: string[] = [];
+    // We'll collect all upload promises here to run them in parallel
+    const uploadTasks: Promise<{ key: string; name: string }>[] = [];
+    
+    const queueUpload = (file: File, prefix: string) => {
+      const fileName = `${timestamp}_${prefix}.${file.name.split('.').pop()}`;
+      const task = saveToCloud(file, fileName).then(name => ({ key: prefix, name }));
+      uploadTasks.push(task);
+      return fileName; // Return the anticipated name immediately
+    };
+
+    // 1. Queue Selfie
     let selfieName: string | undefined;
     if (selfieFile && selfieFile.size > 0) {
-      selfieName = await saveToCloud(selfieFile, `${timestamp}_selfie.${selfieFile.name.split('.').pop()}`);
-      idFiles.push(selfieName);
+      selfieName = queueUpload(selfieFile, 'selfie');
     }
 
+    // 2. Queue Traveler Files
     const travelersData = [];
     for (let i = 0; i < totalTravelers; i++) {
         const tNameInput = formData.get(`traveler_${i}_name`) as string;
@@ -66,24 +180,22 @@ export async function saveBooking(formData: FormData) {
         if (isPassport) {
           const pInput = formData.get(`traveler_${i}_passport`);
           if (isFile(pInput) && pInput.size > 0) {
-            const name = await saveToCloud(pInput, `${timestamp}_traveler_${i}_passport.${pInput.name.split('.').pop()}`);
+            const name = queueUpload(pInput, `traveler_${i}_passport`);
             travelerIdFiles.push(name);
-            idFiles.push(name);
           }
         } else {
           const fInput = formData.get(`traveler_${i}_cin_front`);
           const bInput = formData.get(`traveler_${i}_cin_back`);
           if (isFile(fInput) && fInput.size > 0) {
-            const fName = await saveToCloud(fInput, `${timestamp}_traveler_${i}_cin_front.${fInput.name.split('.').pop()}`);
+            const fName = queueUpload(fInput, `traveler_${i}_cin_front`);
             travelerIdFiles.push(fName);
-            idFiles.push(fName);
           }
           if (isFile(bInput) && bInput.size > 0) {
-            const bName = await saveToCloud(bInput, `${timestamp}_traveler_${i}_cin_back.${bInput.name.split('.').pop()}`);
+            const bName = queueUpload(bInput, `traveler_${i}_cin_back`);
             travelerIdFiles.push(bName);
-            idFiles.push(bName);
           }
         }
+        
         travelersData.push({ 
           name: tName, 
           country, 
@@ -92,6 +204,26 @@ export async function saveBooking(formData: FormData) {
           type: idType 
         });
     }
+
+    // 3. Queue Signature
+    const signatureData = formData.get('signature') as string;
+    let signatureName: string | undefined;
+    if (signatureData) {
+      const sigBuffer = Buffer.from(signatureData.split(',')[1], 'base64');
+      const sigFileName = `${timestamp}_signature.png`;
+      const task = (async () => {
+        const { error } = await supabaseAdmin.storage.from('checkin-me').upload(sigFileName, sigBuffer, { contentType: 'image/png', upsert: true });
+        if (error) throw new Error(`Signature Upload Error: ${error.message}`);
+        return { key: 'signature', name: sigFileName };
+      })();
+      uploadTasks.push(task);
+      signatureName = sigFileName;
+    }
+
+    // WAIT FOR ALL UPLOADS IN PARALLEL
+    console.log(`--- Starting parallel upload of ${uploadTasks.length} files ---`);
+    await Promise.all(uploadTasks);
+    console.log(`--- All uploads completed successfully ---`);
 
     /* ---------- 3. save booking ---------- */
     const booking = await prisma.booking.create({
@@ -121,15 +253,9 @@ export async function saveBooking(formData: FormData) {
       rules = JSON.parse(property.houseRules || '[]');
     } catch (e) { console.error('Rules parse failed', e); }
 
-    /* ---------- 5. signature ---------- */
-    const sigBase64 = signature.replace(/^data:image\/png;base64,/, '');
-    const sigBuffer = Buffer.from(sigBase64, 'base64');
-    const sigName = `${timestamp}_signature.png`;
-    const { error: sigError } = await supabaseAdmin.storage
-      .from('checkin-me')
-      .upload(sigName, sigBuffer, { contentType: 'image/png', upsert: true });
+    const idFiles = travelersData.flatMap((t) => t.idFiles);
 
-    /* ---------- 6. generate PDF ---------- */
+    /* ---------- 5. generate PDF ---------- */
     let pdfBytes: any;
     try {
       const imagesB64 = await Promise.all(
@@ -165,67 +291,66 @@ export async function saveBooking(formData: FormData) {
       });
     } catch (pdfErr) {
       console.error('PDF Crash Protection:', pdfErr);
-      return { success: true, message: 'Saved, but PDF failed.' };
+      const adminEmail =
+        property.adminEmail?.trim() || property.host?.email?.trim() || null;
+      const { mailError } = await sendCheckInEmails({
+        guestEmail,
+        guestName,
+        adminEmail,
+        propertyName: property.name,
+        checkin,
+        checkout,
+        pdfFailedNote:
+          'The PDF could not be generated. Your registration was saved.',
+      });
+      const queryString = new URLSearchParams({
+        ...(mailError && { mailError }),
+      }).toString();
+      return {
+        success: true,
+        message: 'Saved, but PDF failed.',
+        redirectUrl: queryString ? `/success?${queryString}` : '/success',
+      };
     }
 
     pdfName = `Booking-${booking.id}.pdf`;
     await supabaseAdmin.storage.from('checkin-me').upload(pdfName, Buffer.from(pdfBytes), { contentType: 'application/pdf', upsert: true });
     await prisma.booking.update({ where: { id: booking.id }, data: { pdfUrl: pdfName } });
 
-    /* ---------- 7. emails ---------- */
+    /* ---------- 6. emails (guest + dashboard admin) ---------- */
     try {
-      const adminEmail = property.adminEmail || property.host?.email;
-      const pdfAttachment = { 
-        filename: pdfName, 
-        content: Buffer.from(pdfBytes), 
-        contentType: 'application/pdf' 
+      const adminEmail =
+        property.adminEmail?.trim() || property.host?.email?.trim() || null;
+      const pdfAttachment: PdfAttachment = {
+        filename: pdfName,
+        content: Buffer.from(pdfBytes),
+        contentType: 'application/pdf',
       };
 
-      const emailPromises = [];
-      
-      // 1. Send confirmation to the Guest
-      if (guestEmail) {
-        emailPromises.push(
-          sendEmail({ 
-            to: guestEmail, 
-            subject: `Your Check-in Confirmation - ${property.name}`, 
-            text: `Dear ${guestName},\n\nThank you for completing your pre-check-in for ${property.name}. Please find attached a copy of your signed agreement for your records.\n\nWe look forward to welcoming you soon!\n\nBest regards,\n${property.name} Management`,
-            attachments: [pdfAttachment] 
-          })
-        );
-      }
+      const { mailError } = await sendCheckInEmails({
+        guestEmail,
+        guestName,
+        adminEmail,
+        propertyName: property.name,
+        checkin,
+        checkout,
+        pdfAttachment,
+      });
 
-      // 2. Send notification to the Admin
-      if (adminEmail) {
-        emailPromises.push(
-          sendEmail({ 
-            to: adminEmail, 
-            subject: `New Registration: ${guestName} - ${property.name}`, 
-            text: `A new guest registration has been completed.\n\nProperty: ${property.name}\nGuest: ${guestName}\nDates: ${checkin} to ${checkout}\n\nThe signed agreement is attached below.`,
-            attachments: [pdfAttachment] 
-          })
-        );
-      }
-
-      let mailError = '';
-      if (emailPromises.length > 0) {
-        const results = await Promise.allSettled(emailPromises);
-        const failures = results.filter(r => r.status === 'rejected' || (r.status === 'fulfilled' && !r.value.success));
-        if (failures.length > 0) {
-          // @ts-ignore
-          mailError = failures.map(f => (f.status === 'rejected' ? f.reason.message : f.value.error)).join('; ');
-        }
-      }
-
-      const queryString = new URLSearchParams({ 
-        pdf: pdfName, 
-        ...(mailError && { mailError }) 
+      const queryString = new URLSearchParams({
+        pdf: pdfName,
+        ...(mailError && { mailError }),
       }).toString();
-      
+
       return { success: true, pdfName, redirectUrl: `/success?${queryString}` };
-    } catch (e: any) { 
-      console.error('Dual email notification failed:', e); 
-      return { success: true, pdfName, redirectUrl: `/success?pdf=${pdfName}&mailError=${encodeURIComponent(e.message)}` };
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Email failed';
+      console.error('Check-in email notification failed:', e);
+      return {
+        success: true,
+        pdfName,
+        redirectUrl: `/success?pdf=${encodeURIComponent(pdfName)}&mailError=${encodeURIComponent(message)}`,
+      };
     }
   } catch (error) {
     console.error('saveBooking error:', error);
