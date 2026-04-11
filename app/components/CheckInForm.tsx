@@ -369,8 +369,8 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
       if (selfieFile) formData.set('selfie', selfieFile);
 
       const result = await saveBooking(formData);
-      if (result.success && result.pdfName) {
-        router.push(`/success?pdf=${result.pdfName}`);
+      if (result.success) {
+        router.push(result.redirectUrl || `/success?pdf=${result.pdfName}`);
       } else {
         throw new Error(result.error || 'Unknown error');
       }

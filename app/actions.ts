@@ -207,14 +207,26 @@ export async function saveBooking(formData: FormData) {
         );
       }
 
+      let mailError = '';
       if (emailPromises.length > 0) {
-        await Promise.allSettled(emailPromises);
+        const results = await Promise.allSettled(emailPromises);
+        const failures = results.filter(r => r.status === 'rejected' || (r.status === 'fulfilled' && !r.value.success));
+        if (failures.length > 0) {
+          // @ts-ignore
+          mailError = failures.map(f => (f.status === 'rejected' ? f.reason.message : f.value.error)).join('; ');
+        }
       }
-    } catch (e) { 
-      console.error('Dual email notification failed:', e); 
-    }
 
-    return { success: true, pdfName };
+      const queryString = new URLSearchParams({ 
+        pdf: pdfName, 
+        ...(mailError && { mailError }) 
+      }).toString();
+      
+      return { success: true, pdfName, redirectUrl: `/success?${queryString}` };
+    } catch (e: any) { 
+      console.error('Dual email notification failed:', e); 
+      return { success: true, pdfName, redirectUrl: `/success?pdf=${pdfName}&mailError=${encodeURIComponent(e.message)}` };
+    }
   } catch (error) {
     console.error('saveBooking error:', error);
     return { success: false, error: 'Submission failed' };

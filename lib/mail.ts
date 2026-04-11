@@ -24,21 +24,28 @@ function getTransporter() {
   
   const host = process.env.SMTP_HOST || '';
   const user = process.env.SMTP_USER || '';
+  const port = parseInt(process.env.SMTP_PORT || '587');
   
+  // Explicitly check for security preference, otherwise fallback to port-based detection
+  const secure = process.env.SMTP_SECURE === 'true' || port === 465;
+
   if (!host || host.includes('example.com') || !user || user.includes('example.com')) {
     console.warn('\x1b[33m%s\x1b[0m', '⚠️  WARNING: SMTP is using placeholders (example.com). Emails will NOT be delivered.');
     console.warn('\x1b[33m%s\x1b[0m', '   Please update SMTP_HOST, SMTP_USER, and SMTP_PASS in your Vercel Dashboard.');
   }
 
-  console.log('--- Initializing SMTP Transporter ---');
+  console.log('--- Initializing SMTP Transporter (Port:', port, 'Secure:', secure, ') ---');
   transporter = nodemailer.createTransport({
     host,
-    port: parseInt(process.env.SMTP_PORT || '587'),
-    secure: process.env.SMTP_PORT === '465', // Port 465 uses SSL (secure: true)
+    port,
+    secure,
     auth: {
-      user: user,
+      user,
       pass: process.env.SMTP_PASS || '',
     },
+    // Add connection timeout
+    connectionTimeout: 10000, 
+    greetingTimeout: 10000,
   });
   return transporter;
 }
