@@ -235,24 +235,35 @@ export async function saveBooking(formData: FormData) {
         contentType: 'application/pdf',
       };
 
+      const emailPromises = [];
+
       // 1. Send to Guest
-      sendEmail({
-        to: guestEmail,
-        subject: `Your Signed Agreement - ${property.name}`,
-        text: `Dear ${guestName},\n\nPlease find attached a copy of your signed agreement for ${property.name}.\n\nThank you for choosing us.`,
-        attachments: [pdfAttachment]
-      }).catch(err => console.error('Guest email failed:', err));
+      console.log('--- Queuing Guest Email:', guestEmail);
+      emailPromises.push(
+        sendEmail({
+          to: guestEmail,
+          subject: `Your Signed Agreement - ${property.name}`,
+          text: `Dear ${guestName},\n\nPlease find attached a copy of your signed agreement for ${property.name}.\n\nThank you for choosing us.`,
+          attachments: [pdfAttachment]
+        })
+      );
 
       // 2. Send to Host (New Submission Alert)
       if (adminEmail) {
-        console.log('--- Sending Host Notification to:', adminEmail);
-        sendEmail({
-          to: adminEmail,
-          subject: `New Guest Registration: ${guestName}`,
-          text: `Hello,\n\nA new guest has completed the check-in form for ${property.name}.\n\nGuest: ${guestName}\nDates: ${checkin} to ${checkout}\nTravelers: ${totalTravelers}\n\nThe signed PDF is attached for your records.`,
-          attachments: [pdfAttachment]
-        }).catch(err => console.error('Host notification failed:', err));
+        console.log('--- Queuing Host Notification:', adminEmail);
+        emailPromises.push(
+          sendEmail({
+            to: adminEmail,
+            subject: `New Guest Registration: ${guestName}`,
+            text: `Hello,\n\nA new guest has completed the check-in form for ${property.name}.\n\nGuest: ${guestName}\nDates: ${checkin} to ${checkout}\nTravelers: ${totalTravelers}\n\nThe signed PDF is attached for your records.`,
+            attachments: [pdfAttachment]
+          })
+        );
       }
+
+      // WAIT for all emails to finish before the function dies
+      const results = await Promise.allSettled(emailPromises);
+      console.log('--- Email Delivery Results:', JSON.stringify(results));
 
     } catch (mailError) {
       console.error('Failed to prepare emails:', mailError);
