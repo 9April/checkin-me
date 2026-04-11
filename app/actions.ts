@@ -6,7 +6,7 @@ import { supabase, supabaseAdmin } from '@/lib/supabase';
 
 export async function saveBooking(formData: FormData) {
   let pdfName: string | undefined;
-  console.log('--- saveBooking (Cloud-Ready) called ---');
+  console.log('--- saveBooking (Stability Fix) called ---');
   try {
     /* ---------- 1. read fields ---------- */
     const propertyId = formData.get('propertyId') as string;
@@ -56,9 +56,10 @@ export async function saveBooking(formData: FormData) {
         const tName = formData.get(`traveler_${i}_name`) as string;
         const country = formData.get(`traveler_${i}_country`) as string;
         const idNumber = formData.get(`traveler_${i}_idNumber`) as string;
+        const idType = formData.get(`traveler_${i}_idType`) as string || 'adult';
         const travelerIdFiles: string[] = [];
 
-        const isPassport = formData.get(`traveler_${i}_idType`) === 'passport';
+        const isPassport = idType === 'passport';
         if (isPassport) {
           const pInput = formData.get(`traveler_${i}_passport`);
           if (isFile(pInput) && pInput.size > 0) {
@@ -80,7 +81,13 @@ export async function saveBooking(formData: FormData) {
             idFiles.push(bName);
           }
         }
-        travelersData.push({ name: tName, country, idNumber, idFiles: travelerIdFiles });
+        travelersData.push({ 
+          name: tName, 
+          country, 
+          idNumber, 
+          idFiles: travelerIdFiles,
+          type: idType 
+        });
     }
 
     /* ---------- 3. save booking ---------- */
@@ -98,7 +105,8 @@ export async function saveBooking(formData: FormData) {
             name: t.name,
             country: t.country,
             idNumber: t.idNumber,
-            idFiles: t.idFiles
+            idImages: t.idFiles.join(','),
+            type: t.type
           }))
         }
       }
@@ -114,7 +122,6 @@ export async function saveBooking(formData: FormData) {
     const sigBase64 = signature.replace(/^data:image\/png;base64,/, '');
     const sigBuffer = Buffer.from(sigBase64, 'base64');
     const sigName = `${timestamp}_signature.png`;
-    console.log('--- Uploading PLAIN signature:', sigName);
     const { error: sigError } = await supabaseAdmin.storage
       .from('checkin-me')
       .upload(sigName, sigBuffer, { contentType: 'image/png', upsert: true });
