@@ -5,7 +5,8 @@ import {
   ClipboardCheck,
   History,
   ArrowUpRight,
-  UserPlus
+  UserPlus,
+  Printer
 } from 'lucide-react';
 import Link from 'next/link';
 import { redirect } from "next/navigation";
@@ -163,6 +164,15 @@ export default async function DashboardPage() {
                             className="text-[#EF4444] hover:underline text-sm font-bold"
                           >
                             View
+                          </Link>
+                          <span className="text-gray-300">|</span>
+                          <Link
+                            href={`/api/pdf/${booking.pdfUrl}`}
+                            target="_blank"
+                            className="text-gray-600 hover:text-gray-900"
+                            title="Print PDF"
+                          >
+                            <Printer size={16} />
                           </Link>
                           <span className="text-gray-300">|</span>
                           <a

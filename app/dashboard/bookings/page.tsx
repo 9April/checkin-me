@@ -7,7 +7,8 @@ import {
   Download, 
   ExternalLink,
   ChevronLeft,
-  Trash2
+  Trash2,
+  Printer
 } from 'lucide-react';
 import TrashAction from "../components/TrashAction";
 
@@ -93,6 +94,14 @@ export default async function BookingsPage() {
                             title='View PDF'
                           >
                             <ExternalLink size={18} />
+                          </Link>
+                          <Link
+                            href={`/api/pdf/${booking.pdfUrl}`}
+                            target="_blank"
+                            className="p-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
+                            title='Print PDF'
+                          >
+                            <Printer size={18} />
                           </Link>
                           <a
                             href={`/api/pdf/${booking.pdfUrl}`}
