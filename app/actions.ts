@@ -227,42 +227,34 @@ export async function saveBooking(formData: FormData) {
     });
 
     /* ---------- 7. Send Emails ---------- */
-    console.log('--- Starting email delivery to:', guestEmail);
     try {
       const adminEmail = property.adminEmail || property.host?.email;
-      const recipients = [guestEmail];
+      const pdfAttachment = {
+        filename: pdfName,
+        content: Buffer.from(pdfBytes),
+        contentType: 'application/pdf',
+      };
+
+      // 1. Send to Guest
+      sendEmail({
+        to: guestEmail,
+        subject: `Your Signed Agreement - ${property.name}`,
+        text: `Dear ${guestName},\n\nPlease find attached a copy of your signed agreement for ${property.name}.\n\nThank you for choosing us.`,
+        attachments: [pdfAttachment]
+      }).catch(err => console.error('Guest email failed:', err));
+
+      // 2. Send to Host (New Submission Alert)
       if (adminEmail && adminEmail !== guestEmail) {
-        recipients.push(adminEmail);
+        sendEmail({
+          to: adminEmail,
+          subject: `New Guest Registration: ${guestName}`,
+          text: `Hello,\n\nA new guest has completed the check-in form for ${property.name}.\n\nGuest: ${guestName}\nDates: ${checkin} to ${checkout}\nTravelers: ${totalTravelers}\n\nThe signed PDF is attached for your records.`,
+          attachments: [pdfAttachment]
+        }).catch(err => console.error('Host notification failed:', err));
       }
 
-      const emailSubject = `Signed Document - ${property.name}`;
-      const emailBody = `
-        Dear ${guestName},
-        
-        Please find attached a copy of your signed agreement for ${property.name}.
-        
-        Property: ${property.name}
-        Check-in: ${checkin}
-        Check-out: ${checkout}
-        
-        Thank you for choosing us.
-      `;
-
-      sendEmail({
-        to: recipients,
-        subject: emailSubject,
-        text: emailBody,
-        attachments: [
-          {
-            filename: pdfName,
-            content: Buffer.from(pdfBytes),
-            contentType: 'application/pdf',
-          }
-        ]
-      }).catch(err => console.error('Background email failed:', err));
     } catch (mailError) {
-      console.error('Failed to send automated emails:', mailError);
-      // Non-blocking: we still returned success for the form submission
+      console.error('Failed to prepare emails:', mailError);
     }
 
     return { success: true, pdfName };
