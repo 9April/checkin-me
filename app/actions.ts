@@ -125,7 +125,10 @@ export async function saveBooking(formData: FormData) {
     const guestEmail = (formData.get('guestEmail') as string || '').trim();
     const checkin = formData.get('checkin') as string;
     const checkout = formData.get('checkout') as string;
-    const totalTravelers = parseInt(formData.get('totalTravelers') as string || '1');
+    const totalTravelers = Math.max(
+      1,
+      parseInt(String(formData.get('totalTravelers') ?? '1'), 10) || 1
+    );
     const whatsapp = formData.get('whatsapp') as string;
     const checkinHour = formData.get('checkinHour') as string;
 
@@ -166,42 +169,40 @@ export async function saveBooking(formData: FormData) {
       selfieName = queueUpload(selfieFile, 'selfie');
     }
 
-    // 2. Queue Traveler Files
+    // 2. Queue Traveler Files (field names must match CheckInForm / CameraCapture: cinFront, cinBack, passport)
     const travelersData = [];
     for (let i = 0; i < totalTravelers; i++) {
         const tNameInput = formData.get(`traveler_${i}_name`) as string;
         const tName = (i === 0 && !tNameInput) ? (guestName || "Guest") : (tNameInput || "Guest");
         const country = formData.get(`traveler_${i}_country`) as string || 'OTHER';
         const idNumber = formData.get(`traveler_${i}_idNumber`) as string || 'N/A';
-        const idType = formData.get(`traveler_${i}_idType`) as string || 'adult';
         const travelerIdFiles: string[] = [];
 
-        const isPassport = idType === 'passport';
-        if (isPassport) {
-          const pInput = formData.get(`traveler_${i}_passport`);
-          if (isFile(pInput) && pInput.size > 0) {
-            const name = queueUpload(pInput, `traveler_${i}_passport`);
-            travelerIdFiles.push(name);
-          }
+        const passportInput = formData.get(`traveler_${i}_passport`);
+        const cinFrontInput =
+          formData.get(`traveler_${i}_cinFront`) ?? formData.get(`traveler_${i}_cin_front`);
+        const cinBackInput =
+          formData.get(`traveler_${i}_cinBack`) ?? formData.get(`traveler_${i}_cin_back`);
+
+        let docType: string = 'adult';
+        if (isFile(passportInput) && passportInput.size > 0) {
+          docType = 'passport';
+          travelerIdFiles.push(queueUpload(passportInput, `traveler_${i}_passport`));
         } else {
-          const fInput = formData.get(`traveler_${i}_cin_front`);
-          const bInput = formData.get(`traveler_${i}_cin_back`);
-          if (isFile(fInput) && fInput.size > 0) {
-            const fName = queueUpload(fInput, `traveler_${i}_cin_front`);
-            travelerIdFiles.push(fName);
+          if (isFile(cinFrontInput) && cinFrontInput.size > 0) {
+            travelerIdFiles.push(queueUpload(cinFrontInput as File, `traveler_${i}_cin_front`));
           }
-          if (isFile(bInput) && bInput.size > 0) {
-            const bName = queueUpload(bInput, `traveler_${i}_cin_back`);
-            travelerIdFiles.push(bName);
+          if (isFile(cinBackInput) && cinBackInput.size > 0) {
+            travelerIdFiles.push(queueUpload(cinBackInput as File, `traveler_${i}_cin_back`));
           }
         }
-        
-        travelersData.push({ 
-          name: tName, 
-          country, 
-          idNumber, 
+
+        travelersData.push({
+          name: tName,
+          country,
+          idNumber,
           idFiles: travelerIdFiles,
-          type: idType 
+          type: docType,
         });
     }
 

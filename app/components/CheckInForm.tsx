@@ -1,6 +1,5 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import SignaturePad from 'react-signature-canvas';
 import { saveBooking } from '../actions';
@@ -269,7 +268,6 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
   const luxuryCream = '#FDFCF9';
   
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
   const [adults, setAdults] = useState(1);
   const [kids, setKids] = useState(0);
   const sigRef = useRef<SignaturePad>(null);
@@ -370,12 +368,12 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
 
       const result = await saveBooking(formData);
       if (result.success) {
-        router.push(
+        const next =
           result.redirectUrl ||
-            (result.pdfName
-              ? `/success?pdf=${encodeURIComponent(result.pdfName)}`
-              : '/success')
-        );
+          (result.pdfName
+            ? `/success?pdf=${encodeURIComponent(result.pdfName)}`
+            : '/success');
+        window.location.assign(next);
       } else {
         throw new Error(result.error || 'Unknown error');
       }
@@ -438,6 +436,7 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
           )}
 
           <form onSubmit={handleSubmit} className="px-6 sm:px-12 pb-12 space-y-12">
+            <input type="hidden" name="totalTravelers" value={adults + kids} readOnly />
             <section className="space-y-10">
               <div className="flex items-center gap-4 mb-2">
                 <div className="w-12 h-0.5 bg-gradient-to-r from-transparent via-[#C5A059] to-transparent flex-1" />
