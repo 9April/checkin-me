@@ -185,13 +185,22 @@ export async function executeSaveBooking(
     const saveToCloud = async (f: File, name: string) => {
       console.log('--- Uploading PLAIN image:', name, 'Size:', f.size);
       const bytes = await f.arrayBuffer();
+
+      // Check if service key is missing — this is a common cause of failure
+      if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+        throw new Error('SUPABASE_SERVICE_ROLE_KEY is missing in environment variables. File upload cannot proceed.');
+      }
+
       const { error } = await supabaseAdmin.storage
         .from('checkin-me')
         .upload(name, Buffer.from(bytes), {
           contentType: f.type || 'image/jpeg',
           upsert: true,
         });
-      if (error) throw new Error(`Supabase Upload Error: ${error.message}`);
+      if (error) {
+        console.error(`Supabase Upload Error for ${name}:`, error);
+        throw new Error(`Supabase Upload Error: ${error.message}${error.message.includes('bucket not found') ? ' (Bucket "checkin-me" might satisfy the error)' : ''}`);
+      }
       return name;
     };
 
@@ -291,6 +300,8 @@ export async function executeSaveBooking(
         propertyId,
         totalTravelers,
         selfieUrl: selfieName,
+        checkinHour,
+        whatsapp,
         travelers: {
           create: travelersData.map((t) => ({
             name: t.name,
@@ -436,8 +447,11 @@ export async function executeSaveBooking(
         redirectUrl: `/success?${q.toString()}`,
       });
     }
-  } catch (error) {
-    console.error('executeSaveBooking error:', error);
-    return jsonSafeResult({ success: false, error: 'Submission failed' });
+  } catch (e: any) {
+    console.error('executeSaveBooking error:', e);
+    return jsonSafeResult({
+      success: false,
+      error: e.message || 'Submission failed',
+    });
   }
 }

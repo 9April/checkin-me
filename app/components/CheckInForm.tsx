@@ -734,6 +734,7 @@ export default function CheckInForm({
         throw new Error(result.error || "Unknown error");
       }
     } catch (error) {
+      console.error('Submission Error:', error);
       const raw = error instanceof Error ? error.message : String(error);
       const lower = raw.toLowerCase();
       const looksFlakyTransport =
@@ -750,7 +751,7 @@ export default function CheckInForm({
           : raw && !looksFlakyTransport
             ? raw
             : t.errorOccurred;
-      alert(message);
+      alert(`Submission failed: ${message}`);
       setIsLoading(false);
     }
   };
