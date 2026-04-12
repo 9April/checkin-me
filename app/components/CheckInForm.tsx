@@ -564,16 +564,9 @@ export default function CheckInForm({
     otherIso?: string;
   }>>([{ country: '', noCIN: true }]);
 
-  /** Per traveler: user picked MA/OTHER explicitly — do not overwrite from WhatsApp. Cleared when they choose "Select country". */
-  const countryLockedRef = useRef<boolean[]>([]);
-  /** Bumps when a traveler clears country so WhatsApp inference can re-apply (parsed object may be referentially stable). */
-  const [countryUnlockNonce, setCountryUnlockNonce] = useState(0);
-
+  /** When WhatsApp is enabled and we parse a dial code, it drives MA vs OTHER and the "Other" region label (e.g. +33 → France). */
   useEffect(() => {
     const total = adults + kids;
-    const locks = countryLockedRef.current;
-    while (locks.length < total) locks.push(false);
-    if (locks.length > total) locks.length = total;
 
     const doc = property.showWhatsApp ? whatsappParsed?.document : undefined;
     const inferredIso =
@@ -583,9 +576,8 @@ export default function CheckInForm({
     setTravelers((prev) => {
       let next = [...prev];
       while (next.length < total) {
-        const i = next.length;
         const seeded =
-          doc && !locks[i]
+          doc
             ? {
                 country: doc,
                 noCIN: doc === 'MA' ? false : true,
@@ -597,9 +589,13 @@ export default function CheckInForm({
       next = next.slice(0, total);
 
       if (doc) {
-        next = next.map((t, i) => {
-          if (locks[i]) return t;
-          const noCIN = doc === 'MA' ? false : true;
+        next = next.map((t) => {
+          const noCIN =
+            doc === 'OTHER'
+              ? true
+              : t.country === 'MA'
+                ? t.noCIN
+                : false;
           const otherIso = inferredOtherIso;
           if (
             t.country === doc &&
@@ -622,7 +618,7 @@ export default function CheckInForm({
         );
       return same ? prev : next;
     });
-  }, [adults, kids, property.showWhatsApp, whatsappParsed, countryUnlockNonce]);
+  }, [adults, kids, property.showWhatsApp, whatsappParsed]);
 
   const computeValidationErrors = useCallback(
     (formDataObj: FormData): Record<string, string> => {
@@ -1108,10 +1104,6 @@ export default function CheckInForm({
                         value={traveler.country}
                         onChange={(e) => {
                           const v = e.target.value as 'MA' | 'OTHER' | '';
-                          const locks = countryLockedRef.current;
-                          while (locks.length <= index) locks.push(false);
-                          locks[index] = v !== '';
-                          if (v === '') setCountryUnlockNonce((n) => n + 1);
                           const newTravelers = [...travelers];
                           newTravelers[index] = {
                             ...newTravelers[index],
