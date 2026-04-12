@@ -1,5 +1,6 @@
-import { supabaseAdmin } from '@/lib/supabase';
+import { getSupabaseAdmin } from '@/lib/supabase';
 import { prisma } from '@/lib/prisma';
+import { getHostUserId } from '@/lib/session-host-id';
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 
@@ -35,6 +36,7 @@ export async function GET(
       }
     } else {
       // Logged-in host: only PDFs for bookings on their property
+      const hostId = await getHostUserId();
       const booking = await prisma.booking.findFirst({
         where: { pdfUrl: filename, deletedAt: null },
         select: { id: true, property: { select: { hostId: true } } },
@@ -42,17 +44,25 @@ export async function GET(
       if (!booking) {
         return new NextResponse('Not Found', { status: 404 });
       }
-      if (booking.property.hostId !== session.user.id) {
+      if (!hostId || booking.property.hostId !== hostId) {
         return new NextResponse('Forbidden', { status: 403 });
       }
     }
 
-    const { data, error } = await supabaseAdmin.storage
+    const supabase = getSupabaseAdmin();
+    const { data, error } = await supabase.storage
       .from('checkin-me')
       .download(filename);
 
     if (error || !data) {
-      console.error('Supabase PDF download error:', error);
+      const msg =
+        error &&
+        typeof error === 'object' &&
+        'message' in error &&
+        typeof (error as { message?: string }).message === 'string'
+          ? (error as { message: string }).message
+          : JSON.stringify(error ?? 'unknown');
+      console.error('Supabase PDF download error:', msg, error);
       return new NextResponse('PDF not found in cloud storage', { status: 404 });
     }
 

@@ -374,16 +374,26 @@ export async function executeSaveBooking(
     }
 
     pdfName = `Booking-${booking.id}.pdf`;
-    await supabaseAdmin.storage
+    const { error: pdfUploadError } = await supabaseAdmin.storage
       .from('checkin-me')
       .upload(pdfName, Buffer.from(pdfBytes), {
         contentType: 'application/pdf',
         upsert: true,
       });
-    await prisma.booking.update({
-      where: { id: booking.id },
-      data: { pdfUrl: pdfName },
-    });
+
+    /** Only persist pdfUrl when the object exists — otherwise /api/pdf returns Storage 400 and guests see errors. */
+    const pdfStoredInCloud = !pdfUploadError;
+    if (pdfUploadError) {
+      console.error(
+        'Supabase PDF upload error:',
+        pdfUploadError.message || String(pdfUploadError)
+      );
+    } else {
+      await prisma.booking.update({
+        where: { id: booking.id },
+        data: { pdfUrl: pdfName },
+      });
+    }
 
     try {
       const adminEmail =
@@ -405,22 +415,25 @@ export async function executeSaveBooking(
         lang,
       });
 
-      const queryString = new URLSearchParams({
-        pdf: pdfName,
-        ...(mailError ? { mailError: '1' } : { emailSent: '1' }),
-      }).toString();
+      const q = new URLSearchParams();
+      if (pdfStoredInCloud) q.set('pdf', pdfName);
+      if (mailError) q.set('mailError', '1');
+      else q.set('emailSent', '1');
 
       return jsonSafeResult({
         success: true,
-        pdfName,
-        redirectUrl: `/success?${queryString}`,
+        pdfName: pdfStoredInCloud ? pdfName : undefined,
+        redirectUrl: `/success?${q.toString()}`,
       });
     } catch (e: unknown) {
       console.error('Check-in email notification failed:', e);
+      const q = new URLSearchParams();
+      if (pdfStoredInCloud) q.set('pdf', pdfName);
+      q.set('mailError', '1');
       return jsonSafeResult({
         success: true,
-        pdfName,
-        redirectUrl: `/success?pdf=${encodeURIComponent(pdfName)}&mailError=1`,
+        pdfName: pdfStoredInCloud ? pdfName : undefined,
+        redirectUrl: `/success?${q.toString()}`,
       });
     }
   } catch (error) {
