@@ -737,10 +737,12 @@ export default function CheckInForm({
       console.error('Submission Error:', error);
       const raw = error instanceof Error ? error.message : String(error);
       const lower = raw.toLowerCase();
+      // Specifically match transport errors without accidentally matching 'upload'
       const looksFlakyTransport =
         lower.includes("unexpected response") ||
         lower.includes("failed to fetch") ||
-        lower.includes("load failed");
+        // Match 'load failed' only if it's not part of 'upload'
+        (/(?<!up)load failed/i).test(lower);
       const ua =
         typeof navigator !== "undefined" ? navigator.userAgent : "";
       const likelyInAppBrowser =
