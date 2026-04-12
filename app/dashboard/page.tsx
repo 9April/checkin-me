@@ -1,6 +1,10 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import {
+  attachSlugToNewProperty,
+  publicCheckInPath,
+} from "@/lib/property-slug";
+import {
   Users,
   ClipboardCheck,
   History,
@@ -34,7 +38,7 @@ export default async function DashboardPage() {
 
   // Auto-initialize a property if none exists
   if (!property) {
-    property = await prisma.property.create({
+    const created = await prisma.property.create({
       data: {
         name: "My Property",
         hostId: session.user.id,
@@ -47,6 +51,9 @@ export default async function DashboardPage() {
         ])
       }
     });
+    property = await attachSlugToNewProperty(prisma, created.id, created.name);
+  } else if (!property.slug) {
+    property = await attachSlugToNewProperty(prisma, property.id, property.name);
   }
 
   const bookings = await prisma.booking.findMany({
@@ -73,7 +80,7 @@ export default async function DashboardPage() {
   ];
 
   // We'll use a relative path for the frontend link to ensure it works on any host (localhost, ngrok, local IP)
-  const checkInPath = `/check-in/${property?.id}`;
+  const checkInPath = property ? publicCheckInPath(property) : "/check-in";
 
   return (
     <div className="space-y-8">

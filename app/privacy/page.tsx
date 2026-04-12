@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { DEFAULT_PRIVACY_POLICY } from '@/lib/constants';
+import { publicCheckInPath } from '@/lib/property-slug';
 
 export default async function PrivacyPolicy({
   searchParams,
@@ -32,7 +33,7 @@ export default async function PrivacyPolicy({
         {!isModal && (
           <div className="absolute top-4 left-4 z-[110]">
             <Link 
-              href={propertyId ? `/check-in/${propertyId}` : '/'} 
+              href={property ? publicCheckInPath(property) : '/'} 
               className="flex items-center gap-2 px-6 py-3 bg-white/80 backdrop-blur-md border border-[#F4EBD0] rounded-full text-[#B08D43] font-bold text-sm shadow-xl hover:bg-white transition-all duration-300"
             >
               ← Back to Check-in
@@ -55,7 +56,7 @@ export default async function PrivacyPolicy({
         <div className="max-w-3xl mx-auto bg-white rounded-3xl shadow-2xl p-8 sm:p-12 border border-[#F4EBD0]/30 shadow-[#C5A059]/5">
           {!isModal && (
             <Link 
-              href={propertyId ? `/check-in/${propertyId}` : '/'} 
+              href={property ? publicCheckInPath(property) : '/'} 
               className="text-[#C5A059] hover:text-[#B08D43] font-bold flex items-center gap-2 mb-8 transition-colors"
             >
               ← Back to Check-in

@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { attachSlugToNewProperty } from "@/lib/property-slug";
 import { redirect } from "next/navigation";
 import { updateProperty } from "./actions";
 import PropertySettingsForm from "./PropertySettingsForm";
@@ -25,7 +26,7 @@ export default async function SettingsPage() {
   });
   
   if (!property) {
-    property = await prisma.property.create({
+    const created = await prisma.property.create({
       data: {
         name: "My Property",
         hostId: session.user.id,
@@ -38,6 +39,9 @@ export default async function SettingsPage() {
         ])
       }
     });
+    property = await attachSlugToNewProperty(prisma, created.id, created.name);
+  } else if (!property.slug) {
+    property = await attachSlugToNewProperty(prisma, property.id, property.name);
   }
 
   // Parse house rules

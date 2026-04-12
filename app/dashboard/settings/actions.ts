@@ -2,6 +2,7 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { publicCheckInPath, reserveUniquePropertySlug } from "@/lib/property-slug";
 import { revalidatePath } from "next/cache";
 import { supabaseAdmin } from "@/lib/supabase";
 
@@ -63,6 +64,8 @@ export async function updateProperty(formData: FormData) {
   }
 
   try {
+    const newSlug = await reserveUniquePropertySlug(prisma, name, propertyId);
+
     await prisma.property.update({
       where: { 
         id: propertyId,
@@ -70,6 +73,7 @@ export async function updateProperty(formData: FormData) {
       },
       data: {
         name,
+        slug: newSlug,
         adminEmail,
         privacyPolicy,
         houseRules,
@@ -88,7 +92,7 @@ export async function updateProperty(formData: FormData) {
     revalidatePath("/dashboard/settings");
     revalidatePath("/dashboard");
     revalidatePath("/privacy");
-    revalidatePath(`/check-in/${propertyId}`);
+    revalidatePath(publicCheckInPath({ id: propertyId, slug: newSlug }));
     
     return { success: true };
   } catch (error) {

@@ -1,24 +1,36 @@
 import { prisma } from "@/lib/prisma";
+import { reserveUniquePropertySlug } from "@/lib/property-slug";
 import { notFound } from "next/navigation";
 import CheckInForm from "../../components/CheckInForm";
 
 export default async function PropertyCheckInPage({
   params,
 }: {
-  params: Promise<{ propertyId: string }>;
+  params: Promise<{ slug: string }>;
 }) {
-  const { propertyId } = await params;
+  const { slug: segment } = await params;
+  const decoded = decodeURIComponent(segment);
 
-  const property = await prisma.property.findUnique({
-    where: { id: propertyId },
+  let property = await prisma.property.findFirst({
+    where: {
+      OR: [{ slug: decoded }, { id: decoded }],
+    },
   });
 
   if (!property) {
     notFound();
   }
 
+  if (!property.slug) {
+    const newSlug = await reserveUniquePropertySlug(prisma, property.name, property.id);
+    property = await prisma.property.update({
+      where: { id: property.id },
+      data: { slug: newSlug },
+    });
+  }
+
   return (
-    <CheckInForm 
+    <CheckInForm
       property={{
         id: property.id,
         name: property.name,
@@ -29,7 +41,7 @@ export default async function PropertyCheckInPage({
         showWhatsApp: property.showWhatsApp,
         requireSelfie: property.requireSelfie,
         requireIdPhotos: property.requireIdPhotos,
-      }} 
+      }}
     />
   );
 }

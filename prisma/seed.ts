@@ -15,10 +15,11 @@ async function main() {
 
   const property = await prisma.property.upsert({
     where: { id: 'test-property-1' },
-    update: {},
+    update: { slug: 'luxury-villa-test' },
     create: {
       id: 'test-property-1',
       name: 'Luxury Villa Test',
+      slug: 'luxury-villa-test',
       hostId: host.id,
       houseRules: JSON.stringify([
         "1. No loud music after 10PM",

@@ -56,6 +56,7 @@ model VerificationToken {
 model Property {
   id              String    @id @default(cuid())
   name            String
+  slug            String?   @unique
   hostId          String
   logoUrl         String?
   houseRules      String?

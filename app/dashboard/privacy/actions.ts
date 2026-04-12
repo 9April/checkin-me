@@ -2,6 +2,7 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { publicCheckInPath } from "@/lib/property-slug";
 import { revalidatePath } from "next/cache";
 
 export async function updatePrivacyPolicy(propertyId: string, htmlContent: string) {
@@ -11,19 +12,20 @@ export async function updatePrivacyPolicy(propertyId: string, htmlContent: strin
   }
 
   try {
-    await prisma.property.update({
+    const updated = await prisma.property.update({
       where: { 
         id: propertyId,
         hostId: session.user.id
       },
       data: {
         privacyPolicy: htmlContent
-      }
+      },
+      select: { id: true, slug: true },
     });
 
     revalidatePath("/dashboard/privacy");
     revalidatePath("/privacy");
-    revalidatePath(`/check-in/${propertyId}`);
+    revalidatePath(publicCheckInPath(updated));
     
     return { success: true };
   } catch (error) {
