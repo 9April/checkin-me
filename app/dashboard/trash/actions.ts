@@ -10,13 +10,25 @@ export async function softDeleteBooking(bookingId: string) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
 
-  // Idempotent: repeated clicks / races after first soft-delete affect 0 rows — still OK
-  await prisma.booking.updateMany({
+  // findFirst + update by id: avoids updateMany quirks with relation + nullable filters in some Prisma/DB setups
+  const row = await prisma.booking.findFirst({
     where: {
       id: bookingId,
-      property: { hostId: session.user.id },
       deletedAt: null,
+      property: { hostId: session.user.id },
     },
+    select: { id: true },
+  });
+
+  if (!row) {
+    revalidatePath("/dashboard");
+    revalidatePath("/dashboard/bookings");
+    revalidatePath("/dashboard/trash");
+    return { success: true };
+  }
+
+  await prisma.booking.update({
+    where: { id: bookingId },
     data: { deletedAt: new Date() },
   });
 
@@ -30,12 +42,24 @@ export async function restoreBooking(bookingId: string) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
 
-  await prisma.booking.updateMany({
+  const row = await prisma.booking.findFirst({
     where: {
       id: bookingId,
-      property: { hostId: session.user.id },
       deletedAt: { not: null },
+      property: { hostId: session.user.id },
     },
+    select: { id: true },
+  });
+
+  if (!row) {
+    revalidatePath("/dashboard");
+    revalidatePath("/dashboard/bookings");
+    revalidatePath("/dashboard/trash");
+    return { success: true };
+  }
+
+  await prisma.booking.update({
+    where: { id: bookingId },
     data: { deletedAt: null },
   });
 

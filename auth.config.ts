@@ -17,6 +17,13 @@ export const authConfig = {
       }
       return true;
     },
+    /** Credentials sign-in: ensure JWT `sub` is the DB user id (used as Property.hostId). */
+    async jwt({ token, user }) {
+      if (user && "id" in user && typeof (user as { id: unknown }).id === "string") {
+        return { ...token, sub: (user as { id: string }).id };
+      }
+      return token;
+    },
     async session({ session, token }) {
       if (token.sub && session.user) {
         session.user.id = token.sub;
