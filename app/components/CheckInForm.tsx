@@ -3,6 +3,7 @@ import { useState, useRef, useEffect, useMemo, useCallback, type CSSProperties }
 import Link from 'next/link';
 import SignaturePad from 'react-signature-canvas';
 import { saveBooking } from '../actions';
+import type { SaveBookingResult } from '@/lib/save-booking-core';
 import { parseWhatsAppForCheckin, regionDisplayName } from '@/lib/infer-document-country-from-phone';
 import { resolveHouseRulesForLang } from '@/lib/house-rules';
 import type { Lang } from '@/lib/lang';
@@ -668,7 +669,23 @@ export default function CheckInForm({
       formData.set("signature", signatureData as string);
       formData.set("lang", lang);
       formData.set("propertyId", property.id);
-      const result = await saveBooking(formData);
+
+      let result: SaveBookingResult;
+      try {
+        result = await saveBooking(formData);
+      } catch (actionErr) {
+        console.warn("saveBooking server action failed, retrying via /api/check-in", actionErr);
+        const res = await fetch("/api/check-in", {
+          method: "POST",
+          body: formData,
+        });
+        const j = (await res.json()) as SaveBookingResult;
+        if (!res.ok || !j || typeof j !== "object" || !("success" in j)) {
+          throw new Error("Request failed");
+        }
+        result = j;
+      }
+
       if (result.success) {
         const next =
           result.redirectUrl ||
@@ -682,12 +699,21 @@ export default function CheckInForm({
     } catch (error) {
       const raw = error instanceof Error ? error.message : String(error);
       const lower = raw.toLowerCase();
-      const looksNetwork =
+      const looksFlakyTransport =
         lower.includes("unexpected response") ||
         lower.includes("failed to fetch") ||
-        lower.includes("network") ||
         lower.includes("load failed");
-      alert(looksNetwork ? t.submissionNetworkError : raw || t.errorOccurred);
+      const ua =
+        typeof navigator !== "undefined" ? navigator.userAgent : "";
+      const likelyInAppBrowser =
+        /FBAN|FBAV|Instagram|Line\/|WKWebView|wv\)|; wv\)/i.test(ua);
+      const message =
+        looksFlakyTransport && likelyInAppBrowser
+          ? t.submissionNetworkError
+          : raw && !looksFlakyTransport
+            ? raw
+            : t.errorOccurred;
+      alert(message);
       setIsLoading(false);
     }
   };
@@ -1347,9 +1373,17 @@ export default function CheckInForm({
       {isRulesOpen && (
         <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-gray-900/80 backdrop-blur-md animate-in fade-in duration-300">
           <div className="bg-white w-full max-w-4xl rounded-t-[2rem] sm:rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 border border-gray-100 flex flex-col max-h-[92dvh] sm:max-h-[90vh]">
-            <div className="p-5 sm:p-10 border-b border-gray-50 flex items-center justify-between bg-white text-black shrink-0">
-              <h2 className="text-lg sm:text-3xl font-black text-gray-900 tracking-tighter uppercase pr-2">{t.houseRulesTitle}</h2>
-              <button onClick={() => setIsRulesOpen(false)} className="w-12 h-12 flex items-center justify-center bg-gray-100 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all font-black">✕</button>
+            <div className="flex shrink-0 items-center justify-end border-b border-[#EEEEEE] bg-white px-4 py-3 sm:px-6 sm:py-4">
+              <button
+                type="button"
+                aria-label={t.close}
+                onClick={() => setIsRulesOpen(false)}
+                className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border-2 border-[#DDDDDD] bg-white text-[#222222] shadow-sm transition-all hover:border-[#FF385C] hover:bg-[#FFF5F6] hover:text-[#FF385C] focus:outline-none focus:ring-2 focus:ring-[#FF385C]/30"
+              >
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
             </div>
             <div className="p-4 sm:p-10 flex-1 overflow-y-auto checkin-app-scroll space-y-4 sm:space-y-6">
                {rulesList.length === 0 ? (
@@ -1376,9 +1410,17 @@ export default function CheckInForm({
       {isPrivacyOpen && (
         <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-gray-900/80 backdrop-blur-md animate-in fade-in duration-300">
           <div className="bg-white w-full max-w-6xl rounded-t-[2rem] sm:rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 border border-gray-100 flex flex-col h-[92dvh] sm:h-[90vh]">
-            <div className="p-5 sm:p-10 border-b border-gray-50 flex items-center justify-between bg-white text-black shrink-0">
-              <h2 className="text-lg sm:text-3xl font-black text-gray-900 tracking-tighter uppercase pr-2">{t.privacyReadMore}</h2>
-              <button onClick={() => setIsPrivacyOpen(false)} className="w-12 h-12 flex items-center justify-center bg-gray-100 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all font-black">✕</button>
+            <div className="flex shrink-0 items-center justify-end border-b border-[#EEEEEE] bg-white px-4 py-3 sm:px-6 sm:py-4">
+              <button
+                type="button"
+                aria-label={t.close}
+                onClick={() => setIsPrivacyOpen(false)}
+                className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border-2 border-[#DDDDDD] bg-white text-[#222222] shadow-sm transition-all hover:border-[#FF385C] hover:bg-[#FFF5F6] hover:text-[#FF385C] focus:outline-none focus:ring-2 focus:ring-[#FF385C]/30"
+              >
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
             </div>
             <div className="flex-1 min-h-0 overflow-y-auto checkin-app-scroll bg-[#FDFCF9] relative">
               <div

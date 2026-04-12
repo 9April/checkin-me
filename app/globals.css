@@ -296,3 +296,9 @@ select.input option {
     background-color: #ffffff;
   }
 }
+
+/* Check-in privacy modal: hide embedded policy site header (logo + last updated) */
+.luxury-privacy-container > header,
+.luxury-privacy-container header {
+  display: none !important;
+}

@@ -219,8 +219,19 @@ export default function CameraCapture({
     );
   };
 
+  /** getUserMedia is often blocked in in-app browsers; native file+capture works on phones. */
+  const preferNativeDocumentCapture =
+    typeof window !== 'undefined' &&
+    (window.matchMedia('(max-width: 1024px)').matches ||
+      ('ontouchstart' in window &&
+        window.matchMedia('(pointer: coarse)').matches));
+
   const openCamera = (e: React.MouseEvent) => {
     if (guide === 'document' && documentVariant) {
+      if (preferNativeDocumentCapture) {
+        openNativePicker(e);
+        return;
+      }
       void openLiveDocumentCamera(e);
       return;
     }
