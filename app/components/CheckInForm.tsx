@@ -1,5 +1,5 @@
-'use client';
-import { useState, useRef, useEffect } from 'react';
+"use client";
+import { useState, useRef, useEffect, type CSSProperties } from "react";
 import Link from 'next/link';
 import SignaturePad from 'react-signature-canvas';
 import { saveBooking } from '../actions';
@@ -85,7 +85,9 @@ const TRANSLATIONS = {
     errAgreementRequired: "You must agree to the house rules",
     errSignatureRequired: "Signature is required",
     errPleaseCheck: "Please check the required fields",
-    errMoreFields: "And {n} more fields..."
+    errMoreFields: "And {n} more fields...",
+    continue: "Continue",
+    back: "Back",
   },
   FR: {
     title: "Pré-enregistrement",
@@ -163,7 +165,9 @@ const TRANSLATIONS = {
     errAgreementRequired: "Vous devez accepter le règlement intérieur",
     errSignatureRequired: "La signature est requise",
     errPleaseCheck: "Veuillez vérifier les champs obligatoires",
-    errMoreFields: "Et {n} autres champs..."
+    errMoreFields: "Et {n} autres champs...",
+    continue: "Continuer",
+    back: "Retour",
   },
   SP: {
     title: "Pre-registro",
@@ -241,9 +245,46 @@ const TRANSLATIONS = {
     errAgreementRequired: "Debe aceptar las reglas de la casa",
     errSignatureRequired: "La firma es obligatoria",
     errPleaseCheck: "Por favor verifique los campos obligatorios",
-    errMoreFields: "Y {n} campos más..."
+    errMoreFields: "Y {n} campos más...",
+    continue: "Continuar",
+    back: "Atrás",
   }
 };
+
+function usePhoneFormLayout() {
+  const [phone, setPhone] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 767px)");
+    const apply = () => setPhone(mq.matches);
+    apply();
+    mq.addEventListener("change", apply);
+    return () => mq.removeEventListener("change", apply);
+  }, []);
+  return phone;
+}
+
+function firstWizardStepForErrors(
+  errors: Record<string, string>,
+  requireSelfie: boolean
+): number {
+  const keys = Object.keys(errors);
+  const finish = requireSelfie ? 3 : 2;
+  for (const k of keys) {
+    if (
+      k === "guestName" ||
+      k === "guestEmail" ||
+      k === "checkin" ||
+      k === "checkinHour"
+    ) {
+      return 0;
+    }
+  }
+  for (const k of keys) {
+    if (k.startsWith("traveler_")) return 1;
+  }
+  if (requireSelfie && keys.includes("selfie")) return 2;
+  return finish;
+}
 
 interface PropertyData {
   id: string;
@@ -278,6 +319,20 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
   const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const [isSigningActive, setIsSigningActive] = useState(false);
+  const phoneLayout = usePhoneFormLayout();
+  const finishStep = property.requireSelfie ? 3 : 2;
+  const [wizardStep, setWizardStep] = useState(0);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    scrollAreaRef.current?.scrollTo(0, 0);
+  }, [wizardStep, phoneLayout]);
+
+  useEffect(() => {
+    if (!phoneLayout || wizardStep !== finishStep) return;
+    const id = requestAnimationFrame(() => window.dispatchEvent(new Event("resize")));
+    return () => cancelAnimationFrame(id);
+  }, [phoneLayout, wizardStep, finishStep]);
 
   useEffect(() => {
     const resizeCanvas = () => {
@@ -350,7 +405,11 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
 
     if (Object.keys(errors).length > 0) {
       setValidationErrors(errors);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (phoneLayout) {
+        setWizardStep(firstWizardStepForErrors(errors, property.requireSelfie));
+        scrollAreaRef.current?.scrollTo(0, 0);
+      }
+      window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
 
@@ -383,110 +442,224 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
     }
   };
 
+  const showPersonal = !phoneLayout || wizardStep === 0;
+  const showTravelers = !phoneLayout || wizardStep === 1;
+  const showSelfie = property.requireSelfie && (!phoneLayout || wizardStep === 2);
+  const showFinish = !phoneLayout || wizardStep === finishStep;
+
   return (
-    <main className="min-h-screen bg-[#FDFCF9] py-8 px-4 sm:px-6 lg:px-8 pb-24 font-sans" style={{ '--primary-color': goldPrimary } as any}>
-      <div className={`max-w-2xl mx-auto transition-all duration-300 ${isRulesOpen || isPrivacyOpen ? 'blur-md grayscale-[0.2]' : ''}`}>
-        <div className="bg-white rounded-[2.5rem] shadow-2xl shadow-gray-200/50 overflow-hidden border border-gray-100">
+    <main
+      className={`bg-[#FDFCF9] font-sans ${
+        phoneLayout
+          ? "h-[100dvh] max-h-[100dvh] flex flex-col overflow-hidden overscroll-none"
+          : "min-h-screen py-8 px-4 sm:px-6 lg:px-8 pb-24"
+      }`}
+      style={{ "--primary-color": goldPrimary } as CSSProperties}
+    >
+      <div
+        className={`transition-all duration-300 ${
+          isRulesOpen || isPrivacyOpen ? "blur-md grayscale-[0.2]" : ""
+        } ${phoneLayout ? "flex flex-1 min-h-0 min-w-0 flex-col w-full" : "max-w-2xl mx-auto"}`}
+      >
+        <div
+          className={`bg-white shadow-2xl shadow-gray-200/50 overflow-hidden border border-gray-100 ${
+            phoneLayout
+              ? "flex flex-1 min-h-0 min-w-0 flex-col rounded-none border-x-0"
+              : "rounded-[2.5rem]"
+          }`}
+        >
           {/* Header */}
-          <div className="p-6 sm:p-8 flex flex-col sm:flex-row justify-between items-center gap-6 border-b border-[#F4EBD0]/50 bg-white/60 backdrop-blur-xl sticky top-0 z-20">
-            <div className="flex items-center gap-2 p-1.5 bg-[#F9F7F2] rounded-2xl w-full sm:w-auto overflow-x-auto no-scrollbar">
-              {(['EN', 'FR', 'SP'] as Lang[]).map((l) => (
+          <div
+            className={`flex justify-between items-center gap-3 border-b border-[#F4EBD0]/50 bg-white/60 backdrop-blur-xl shrink-0 z-20 ${
+              phoneLayout ? "p-3 pt-safe flex-row" : "p-6 sm:p-8 flex-col sm:flex-row gap-6 sticky top-0"
+            }`}
+          >
+            <div
+              className={`flex items-center gap-1 p-1 bg-[#F9F7F2] rounded-2xl overflow-x-auto no-scrollbar shrink-0 ${
+                phoneLayout ? "max-w-[55%]" : "w-full sm:w-auto gap-2 p-1.5"
+              }`}
+            >
+              {(["EN", "FR", "SP"] as Lang[]).map((l) => (
                 <button
                   key={l}
                   type="button"
                   onClick={() => setLang(l)}
-                  className={`flex-1 sm:flex-none px-6 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all duration-500
-                    ${lang === l ? 'bg-white text-[#C5A059] shadow-sm' : 'text-gray-400 hover:text-[#C5A059] hover:bg-white/50'}`}
+                  className={`flex-1 sm:flex-none rounded-xl font-bold uppercase tracking-widest transition-all duration-500 text-[9px] px-3 py-2 sm:text-[10px] sm:px-6 sm:py-2.5
+                    ${lang === l ? "bg-white text-[#C5A059] shadow-sm" : "text-gray-400 hover:text-[#C5A059] hover:bg-white/50"}`}
                 >
                   {l}
                 </button>
               ))}
             </div>
             {property.logoUrl && (
-              <div className="bg-white px-8 py-6 rounded-3xl border border-[#F4EBD0]/50 shadow-sm flex items-center justify-center">
-                <img src={property.logoUrl} alt={property.name} className="h-20 sm:h-24 object-contain max-w-[280px]" />
+              <div
+                className={`bg-white rounded-2xl border border-[#F4EBD0]/50 shadow-sm flex items-center justify-center shrink-0 ${
+                  phoneLayout ? "px-3 py-2" : "px-8 py-6 rounded-3xl"
+                }`}
+              >
+                <img
+                  src={property.logoUrl}
+                  alt={property.name}
+                  className={`object-contain ${phoneLayout ? "h-10 max-w-[120px]" : "h-20 sm:h-24 max-w-[280px]"}`}
+                />
               </div>
             )}
           </div>
 
-          <div className="px-6 py-20 sm:px-12 text-center bg-gradient-to-b from-[#FDFCF9] to-white">
-            <span className="inline-block px-5 py-2 bg-[#F4EBD0] rounded-full text-[10px] font-bold uppercase tracking-[0.4em] text-[#B08D43] mb-8 animate-pulse">
-              {t.title}
-            </span>
-            <h1 className="text-5xl font-bold text-[#1A1A1A] tracking-tighter mb-6 leading-[1.1] font-serif italic">
-              {property.formTitle || `${property.name}`}
-            </h1>
-            {property.formSubtitle && (
-              <p className="text-[#6B635C] font-medium text-lg max-w-md mx-auto leading-relaxed tracking-tight opacity-80">{property.formSubtitle}</p>
-            )}
-          </div>
-
-          {Object.keys(validationErrors).length > 0 && (
-            <div className="mx-6 sm:mx-12 p-5 bg-amber-50 border border-amber-200 rounded-3xl flex items-center gap-4 animate-in slide-in-from-top-4 duration-500 mb-12">
-              <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-amber-600 shadow-sm shrink-0">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.718-3L12 3 3.424 16c-.784 1.334.177 3 1.718 3z" />
-                </svg>
+          {phoneLayout && (
+            <div className="shrink-0 px-4 py-2.5 border-b border-[#F4EBD0]/40 bg-[#FDFCF9]/90">
+              <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#B08D43] truncate text-center">
+                {property.formTitle || property.name}
+              </p>
+              <div className="flex justify-center gap-1.5 mt-2" role="tablist" aria-label="Form steps">
+                {Array.from({ length: finishStep + 1 }).map((_, i) => (
+                  <span
+                    key={i}
+                    className={`h-1.5 rounded-full transition-all duration-300 ${
+                      i === wizardStep ? "w-7 bg-[#C5A059]" : "w-1.5 bg-[#F4EBD0]"
+                    }`}
+                  />
+                ))}
               </div>
-              <div>
-                <h3 className="text-[#B08D43] font-bold text-sm tracking-tight">{t.errPleaseCheck}</h3>
-                <p className="text-[#C5A059] text-xs font-medium opacity-80">{Object.values(validationErrors)[0]}</p>
+              <div className="flex justify-center gap-4 mt-2.5">
+                <button
+                  type="button"
+                  onClick={() => setIsPrivacyOpen(true)}
+                  className="text-[9px] font-bold text-[#C5A059] uppercase tracking-widest"
+                >
+                  Privacy
+                </button>
+                <span className="text-[#F4EBD0]">·</span>
+                <button
+                  type="button"
+                  onClick={() => setIsRulesOpen(true)}
+                  className="text-[9px] font-bold text-[#C5A059] uppercase tracking-widest"
+                >
+                  House rules
+                </button>
               </div>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="px-6 sm:px-12 pb-12 space-y-12">
+          <div
+            className={`text-center bg-gradient-to-b from-[#FDFCF9] to-white ${
+              phoneLayout ? "px-4 py-4" : "px-6 py-20 sm:px-12"
+            } ${phoneLayout && wizardStep !== 0 ? "hidden" : ""}`}
+          >
+            <span
+              className={`inline-block bg-[#F4EBD0] rounded-full font-bold uppercase text-[#B08D43] ${
+                phoneLayout
+                  ? "px-3 py-1 text-[8px] tracking-[0.35em] mb-3"
+                  : "px-5 py-2 text-[10px] tracking-[0.4em] mb-8 animate-pulse"
+              }`}
+            >
+              {t.title}
+            </span>
+            <h1
+              className={`font-bold text-[#1A1A1A] tracking-tighter mb-3 sm:mb-6 leading-[1.1] font-serif italic ${
+                phoneLayout ? "text-2xl sm:text-3xl" : "text-5xl"
+              }`}
+            >
+              {property.formTitle || `${property.name}`}
+            </h1>
+            {property.formSubtitle && (
+              <p
+                className={`text-[#6B635C] font-medium max-w-md mx-auto leading-relaxed tracking-tight opacity-80 ${
+                  phoneLayout ? "text-sm" : "text-lg"
+                }`}
+              >
+                {property.formSubtitle}
+              </p>
+            )}
+          </div>
+
+          <form
+            onSubmit={handleSubmit}
+            className={
+              phoneLayout
+                ? "flex flex-1 min-h-0 min-w-0 flex-col"
+                : "px-6 sm:px-12 pb-12 space-y-12"
+            }
+          >
+            <div
+              ref={scrollAreaRef}
+              className={
+                phoneLayout
+                  ? "flex-1 min-h-0 min-w-0 overflow-y-auto checkin-app-scroll px-4 pb-3 space-y-6"
+                  : "contents"
+              }
+            >
+              {Object.keys(validationErrors).length > 0 && (
+                <div
+                  className={`p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-center gap-3 animate-in slide-in-from-top-4 duration-500 ${
+                    phoneLayout ? "" : "mx-6 sm:mx-12 mb-12 p-5 rounded-3xl"
+                  }`}
+                >
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white rounded-2xl flex items-center justify-center text-amber-600 shadow-sm shrink-0">
+                    <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.718-3L12 3 3.424 16c-.784 1.334.177 3 1.718 3z" />
+                    </svg>
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="text-[#B08D43] font-bold text-xs sm:text-sm tracking-tight">{t.errPleaseCheck}</h3>
+                    <p className="text-[#C5A059] text-[11px] sm:text-xs font-medium opacity-80 break-words">{Object.values(validationErrors)[0]}</p>
+                  </div>
+                </div>
+              )}
+
             <input type="hidden" name="totalTravelers" value={adults + kids} readOnly />
-            <section className="space-y-10">
+            <section
+              className={`space-y-6 md:space-y-10 ${showPersonal ? "" : "hidden md:block"}`}
+            >
               <div className="flex items-center gap-4 mb-2">
                 <div className="w-12 h-0.5 bg-gradient-to-r from-transparent via-[#C5A059] to-transparent flex-1" />
                 <h2 className="text-sm font-bold text-[#B08D43] tracking-[0.3em] uppercase">{t.personalInfo}</h2>
                 <div className="w-12 h-0.5 bg-gradient-to-r from-[#C5A059] via-[#C5A059] to-transparent flex-1 opacity-20" />
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                <div className="space-y-2 md:space-y-3">
                   <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#B08D43] ml-1">{t.fullName}</label>
-                  <input name="guestName" placeholder={t.fullNamePlaceholder} required className={`w-full px-6 py-5 bg-[#FDFCF9] border border-[#F4EBD0] rounded-2xl outline-none focus:bg-white transition-all duration-500 font-medium text-[#1A1A1A] placeholder:text-[#B08D43]/30 ${validationErrors['guestName'] ? 'border-amber-200 bg-amber-50' : 'focus:border-[#C5A059] focus:shadow-lg focus:shadow-[#C5A059]/5'}`} />
+                  <input name="guestName" placeholder={t.fullNamePlaceholder} required className={`w-full px-4 py-3.5 md:px-6 md:py-5 bg-[#FDFCF9] border border-[#F4EBD0] rounded-2xl outline-none focus:bg-white transition-all duration-500 font-medium text-[#1A1A1A] placeholder:text-[#B08D43]/30 text-base ${validationErrors['guestName'] ? 'border-amber-200 bg-amber-50' : 'focus:border-[#C5A059] focus:shadow-lg focus:shadow-[#C5A059]/5'}`} />
                 </div>
-                <div className="space-y-3">
+                <div className="space-y-2 md:space-y-3">
                   <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#B08D43] ml-1">{t.email}</label>
-                  <input name="guestEmail" type="email" placeholder={t.emailPlaceholder} required className={`w-full px-6 py-5 bg-[#FDFCF9] border border-[#F4EBD0] rounded-2xl outline-none focus:bg-white transition-all duration-500 font-medium text-[#1A1A1A] placeholder:text-[#B08D43]/30 ${validationErrors['guestEmail'] ? 'border-amber-200 bg-amber-50' : 'focus:border-[#C5A059] focus:shadow-lg focus:shadow-[#C5A059]/5'}`} />
+                  <input name="guestEmail" type="email" placeholder={t.emailPlaceholder} required className={`w-full px-4 py-3.5 md:px-6 md:py-5 bg-[#FDFCF9] border border-[#F4EBD0] rounded-2xl outline-none focus:bg-white transition-all duration-500 font-medium text-[#1A1A1A] placeholder:text-[#B08D43]/30 text-base ${validationErrors['guestEmail'] ? 'border-amber-200 bg-amber-50' : 'focus:border-[#C5A059] focus:shadow-lg focus:shadow-[#C5A059]/5'}`} />
                 </div>
                 
                 {property.showWhatsApp && (
-                  <div className="space-y-3 md:col-span-2">
+                  <div className="space-y-2 md:space-y-3 md:col-span-2">
                     <label className="text-[10px] font-black uppercase tracking-[0.25em] text-gray-400 ml-1">{t.whatsapp}</label>
-                    <input name="whatsapp" type="tel" placeholder={t.whatsappPlaceholder} className="w-full px-6 py-5 bg-gray-50 border-2 border-gray-100 rounded-2xl outline-none focus:bg-white focus:border-[var(--primary-color)] transition-all font-semibold text-gray-900 placeholder:text-gray-300 placeholder:font-medium" />
+                    <input name="whatsapp" type="tel" placeholder={t.whatsappPlaceholder} className="w-full px-4 py-3.5 md:px-6 md:py-5 bg-gray-50 border-2 border-gray-100 rounded-2xl outline-none focus:bg-white focus:border-[var(--primary-color)] transition-all font-semibold text-gray-900 placeholder:text-gray-300 placeholder:font-medium text-base" />
                   </div>
                 )}
 
-                <div className="space-y-3">
+                <div className="space-y-2 md:space-y-3">
                   <label className="text-[10px] font-black uppercase tracking-[0.25em] text-gray-400 ml-1">{t.checkinDates}</label>
                   <DatePicker name="checkin" endDateName="checkout" required lang={lang} />
                 </div>
                 
-                <div className="space-y-3">
+                <div className="space-y-2 md:space-y-3">
                   <label className="text-[10px] font-black uppercase tracking-[0.25em] text-gray-400 ml-1">{t.estimatedArrival}</label>
-                  <input name="checkinHour" type="time" required className="w-full px-6 py-5 bg-gray-50 border-2 border-gray-100 rounded-2xl outline-none focus:bg-white focus:border-[var(--primary-color)] transition-all font-black text-gray-900" />
+                  <input name="checkinHour" type="time" required className="w-full px-4 py-3.5 md:px-6 md:py-5 bg-gray-50 border-2 border-gray-100 rounded-2xl outline-none focus:bg-white focus:border-[var(--primary-color)] transition-all font-black text-gray-900 text-base" />
                 </div>
               </div>
             </section>
 
-            <section className="space-y-8">
+            <section className={`space-y-5 md:space-y-8 ${showTravelers ? "" : "hidden md:block"}`}>
               <div className="flex items-center gap-4 mb-2">
                 <div className="w-1.5 h-10 rounded-full" style={{ backgroundColor: goldPrimary }} />
-                <h2 className="text-2xl font-black text-gray-900 tracking-tighter uppercase">{t.numTravelers}</h2>
+                <h2 className="text-lg md:text-2xl font-black text-gray-900 tracking-tighter uppercase">{t.numTravelers}</h2>
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3 md:gap-4">
                 {[ {id: 'adults', label: t.adults, value: adults, set: setAdults, min: 1}, {id: 'kids', label: t.kids, value: kids, set: setKids, min: 0} ].map((group) => (
-                  <div key={group.id} className="p-6 bg-[#FDFCF9] rounded-3xl border border-[#F4EBD0] flex flex-col items-center gap-4 shadow-sm hover:shadow-md transition-shadow duration-500">
-                    <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#B08D43]">{group.label}</label>
-                    <div className="flex items-center gap-6">
-                      <button type="button" onClick={() => group.set(Math.max(group.min, group.value - 1))} className="w-10 h-10 rounded-xl bg-white border border-[#F4EBD0] flex items-center justify-center text-xl font-medium text-[#B08D43] hover:bg-[#F4EBD0] active:scale-90 transition-all">−</button>
-                      <span className="text-3xl font-bold text-[#1A1A1A] min-w-[1.5rem] text-center font-serif italic">{group.value}</span>
-                      <button type="button" onClick={() => group.set(group.value + 1)} className="w-10 h-10 rounded-xl bg-white border border-[#F4EBD0] flex items-center justify-center text-xl font-medium text-[#B08D43] hover:bg-[#F4EBD0] active:scale-90 transition-all">+</button>
+                  <div key={group.id} className="p-4 md:p-6 bg-[#FDFCF9] rounded-2xl md:rounded-3xl border border-[#F4EBD0] flex flex-col items-center gap-3 md:gap-4 shadow-sm hover:shadow-md transition-shadow duration-500">
+                    <label className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.3em] text-[#B08D43] text-center">{group.label}</label>
+                    <div className="flex items-center gap-4 md:gap-6">
+                      <button type="button" onClick={() => group.set(Math.max(group.min, group.value - 1))} className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-white border border-[#F4EBD0] flex items-center justify-center text-lg md:text-xl font-medium text-[#B08D43] hover:bg-[#F4EBD0] active:scale-90 transition-all">−</button>
+                      <span className="text-2xl md:text-3xl font-bold text-[#1A1A1A] min-w-[1.5rem] text-center font-serif italic">{group.value}</span>
+                      <button type="button" onClick={() => group.set(group.value + 1)} className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-white border border-[#F4EBD0] flex items-center justify-center text-lg md:text-xl font-medium text-[#B08D43] hover:bg-[#F4EBD0] active:scale-90 transition-all">+</button>
                     </div>
                   </div>
                 ))}
@@ -494,7 +667,7 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
             </section>
 
             {travelers.map((traveler, index) => (
-              <section key={index} className="space-y-6 pt-8 border-t border-gray-50">
+              <section key={index} className={`space-y-4 md:space-y-6 pt-6 md:pt-8 border-t border-gray-50 ${showTravelers ? "" : "hidden md:block"}`}>
                 <div className="flex items-center justify-between mb-4">
                    <div className="flex items-center gap-4">
                     <div className="w-12 h-0.5 bg-[#F4EBD0]/50" />
@@ -581,8 +754,8 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
               </section>
             ))}
 
-            {property.requireSelfie && (
-              <section className="space-y-8 pt-8 border-t border-[#F4EBD0]/30">
+            {showSelfie && (
+              <section className="space-y-5 md:space-y-8 pt-6 md:pt-8 border-t border-[#F4EBD0]/30">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-0.5 bg-[#F4EBD0]/50" />
                   <h2 className="text-sm font-bold text-[#B08D43] tracking-[0.3em] uppercase">{t.verification}</h2>
@@ -591,15 +764,15 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
               </section>
             )}
 
-            <section className="space-y-8 pt-8 border-t border-gray-50">
-               <div className="p-8 bg-gray-900 rounded-[2.5rem] text-white space-y-6 shadow-2xl shadow-gray-200">
+            <section className={`space-y-5 md:space-y-8 pt-6 md:pt-8 border-t border-gray-50 ${showFinish ? "" : "hidden md:block"}`}>
+               <div className="p-5 md:p-8 bg-gray-900 rounded-2xl md:rounded-[2.5rem] text-white space-y-4 md:space-y-6 shadow-2xl shadow-gray-200">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-white/10 rounded-2xl flex items-center justify-center text-blue-400">
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
                     </div>
                     <h3 className="text-xs font-black uppercase tracking-[0.3em]">{t.privacyTitle}</h3>
                   </div>
-                  <ul className="text-xs space-y-4 font-semibold opacity-80 leading-relaxed tracking-tight">
+                  <ul className="text-[11px] md:text-xs space-y-2 md:space-y-4 font-semibold opacity-80 leading-relaxed tracking-tight">
                     <li className="flex gap-2"><span>•</span> {t.privacyEmail}</li>
                     <li className="flex gap-2"><span>•</span> {t.privacyID}</li>
                     <li className="flex gap-2"><span>•</span> {t.privacySelfie}</li>
@@ -607,8 +780,8 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
                   </ul>
                </div>
 
-               <div className="space-y-4">
-                 <button type="button" onClick={() => setHasAgreed(!hasAgreed)} className={`w-full p-6 rounded-3xl border transition-all duration-500 flex items-start gap-4 text-left ${hasAgreed ? 'bg-[#FDFCF9] border-[#C5A059]/30 shadow-lg shadow-[#C5A059]/5' : 'bg-[#FDFCF9] border-[#F4EBD0] hover:border-[#C5A059]/30'}`}>
+               <div className="space-y-3 md:space-y-4">
+                 <button type="button" onClick={() => setHasAgreed(!hasAgreed)} className={`w-full p-4 md:p-6 rounded-2xl md:rounded-3xl border transition-all duration-500 flex items-start gap-3 md:gap-4 text-left ${hasAgreed ? 'bg-[#FDFCF9] border-[#C5A059]/30 shadow-lg shadow-[#C5A059]/5' : 'bg-[#FDFCF9] border-[#F4EBD0] hover:border-[#C5A059]/30'}`}>
                     <div className={`w-6 h-6 rounded-lg border mt-0.5 shrink-0 flex items-center justify-center transition-all duration-500 ${hasAgreed ? 'bg-[#C5A059] border-[#C5A059]' : 'bg-white border-[#F4EBD0]'}`}>
                       {hasAgreed && <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>}
                     </div>
@@ -618,7 +791,7 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
                     </div>
                  </button>
 
-                 <button type="button" onClick={() => setHasAgreedPrivacy(!hasAgreedPrivacy)} className={`w-full p-6 rounded-3xl border transition-all duration-500 flex items-start gap-4 text-left ${hasAgreedPrivacy ? 'bg-[#FDFCF9] border-[#C5A059]/30 shadow-lg shadow-[#C5A059]/5' : 'bg-[#FDFCF9] border-[#F4EBD0] hover:border-[#C5A059]/30'}`}>
+                 <button type="button" onClick={() => setHasAgreedPrivacy(!hasAgreedPrivacy)} className={`w-full p-4 md:p-6 rounded-2xl md:rounded-3xl border transition-all duration-500 flex items-start gap-3 md:gap-4 text-left ${hasAgreedPrivacy ? 'bg-[#FDFCF9] border-[#C5A059]/30 shadow-lg shadow-[#C5A059]/5' : 'bg-[#FDFCF9] border-[#F4EBD0] hover:border-[#C5A059]/30'}`}>
                     <div className={`w-6 h-6 rounded-lg border mt-0.5 shrink-0 flex items-center justify-center transition-all duration-500 ${hasAgreedPrivacy ? 'bg-[#C5A059] border-[#C5A059]' : 'bg-white border-[#F4EBD0]'}`}>
                       {hasAgreedPrivacy && <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>}
                     </div>
@@ -630,13 +803,13 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
                </div>
             </section>
 
-            <section className="space-y-8 pt-8 border-t border-[#F4EBD0]/30">
+            <section className={`space-y-5 md:space-y-8 pt-6 md:pt-8 border-t border-[#F4EBD0]/30 ${showFinish ? "" : "hidden md:block"}`}>
               <div className="flex items-center gap-4">
                 <div className="w-12 h-0.5 bg-[#F4EBD0]/50" />
                 <h2 className="text-sm font-bold text-[#B08D43] tracking-[0.3em] uppercase">{t.signatureTitle}</h2>
               </div>
               
-              <div className={`relative border-4 rounded-[2.5rem] bg-gray-50 overflow-hidden transition-all ${isSigningActive ? 'border-[var(--primary-color)]' : 'border-gray-100'}`}>
+              <div className={`relative border-2 md:border-4 rounded-2xl md:rounded-[2.5rem] bg-gray-50 overflow-hidden transition-all ${isSigningActive ? 'border-[var(--primary-color)]' : 'border-gray-100'}`}>
                 {!isSigningActive && (
                   <div className="absolute inset-0 z-10 bg-white/40 backdrop-blur-[2px] flex flex-col items-center justify-center cursor-pointer gap-4 group" onClick={() => setIsSigningActive(true)}>
                     <div className="w-16 h-16 bg-white rounded-full shadow-xl flex items-center justify-center group-hover:scale-110 transition-transform" style={{ color: goldPrimary }}>
@@ -645,7 +818,7 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
                     <span className="text-xs font-black uppercase tracking-[0.2em] text-gray-900">{t.clickToSign}</span>
                   </div>
                 )}
-                <SignaturePad ref={sigRef} canvasProps={{ className: "sigCanvas w-full h-64 cursor-crosshair" }} onBegin={() => setIsSigningActive(true)} />
+                <SignaturePad ref={sigRef} canvasProps={{ className: "sigCanvas w-full cursor-crosshair" }} onBegin={() => setIsSigningActive(true)} />
                 <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3 z-20">
                    <button type="button" onClick={(e) => { e.stopPropagation(); sigRef.current?.clear(); }} className="px-6 py-2 bg-white/90 backdrop-blur shadow-sm rounded-full text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-[var(--primary-color)] transition-colors">
                      {t.clearSignature}
@@ -659,20 +832,59 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
               </div>
             </section>
 
+            {showFinish && phoneLayout && (
+              <p className="text-center text-[9px] font-bold text-[#B08D43]/50 uppercase tracking-widest pt-2">
+                Mamounia Check-In · Casablanca
+              </p>
+            )}
+
             <button 
               type="submit" 
               disabled={isLoading} 
-              className="w-full py-8 text-white font-bold text-xl rounded-3xl shadow-2xl transition-all duration-700 hover:scale-[1.01] active:scale-95 disabled:grayscale flex items-center justify-center gap-4 uppercase tracking-[0.3em] bg-gradient-to-r from-[#C5A059] via-[#D4AF37] to-[#B08D43] relative overflow-hidden group shadow-[#C5A059]/20"
+              className={`w-full text-white font-bold rounded-2xl md:rounded-3xl shadow-2xl transition-all duration-700 hover:scale-[1.01] active:scale-95 disabled:grayscale flex items-center justify-center gap-3 md:gap-4 uppercase tracking-[0.2em] md:tracking-[0.3em] bg-gradient-to-r from-[#C5A059] via-[#D4AF37] to-[#B08D43] relative overflow-hidden group shadow-[#C5A059]/20 py-5 text-base md:py-8 md:text-xl ${phoneLayout ? "hidden" : ""}`}
             >
               <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 skew-x-12" />
               {isLoading && <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin" />}
               {isLoading ? t.processingBtn : t.submit}
             </button>
+            </div>
+
+            {phoneLayout && (
+              <div className="shrink-0 flex gap-2 px-3 pt-2 pb-safe border-t border-[#F4EBD0]/70 bg-[#FDFCF9]/95 backdrop-blur-md">
+                {wizardStep > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setWizardStep((s) => Math.max(0, s - 1))}
+                    className="shrink-0 px-4 py-3.5 rounded-2xl border-2 border-[#F4EBD0] text-[11px] font-bold uppercase tracking-widest text-[#B08D43] bg-white active:scale-[0.98] transition-transform"
+                  >
+                    {t.back}
+                  </button>
+                )}
+                {wizardStep < finishStep ? (
+                  <button
+                    type="button"
+                    onClick={() => setWizardStep((s) => Math.min(finishStep, s + 1))}
+                    className="flex-1 min-w-0 py-3.5 rounded-2xl bg-gradient-to-r from-[#C5A059] to-[#B08D43] text-white text-[11px] font-bold uppercase tracking-[0.2em] shadow-lg shadow-[#C5A059]/25 active:scale-[0.99] transition-transform"
+                  >
+                    {t.continue}
+                  </button>
+                ) : (
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="flex-1 min-w-0 py-3.5 rounded-2xl bg-gradient-to-r from-[#C5A059] to-[#B08D43] text-white text-[11px] font-bold uppercase tracking-[0.2em] shadow-lg shadow-[#C5A059]/25 disabled:opacity-60 flex items-center justify-center gap-2"
+                  >
+                    {isLoading && <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />}
+                    {isLoading ? t.processingBtn : t.submit}
+                  </button>
+                )}
+              </div>
+            )}
           </form>
         </div>
 
         {/* Branded Footer */}
-        <footer className="mt-16 pb-8 text-center px-4 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+        <footer className={`mt-16 pb-8 text-center px-4 animate-in fade-in slide-in-from-bottom-4 duration-1000 ${phoneLayout ? "hidden" : ""}`}>
           <div className="flex flex-col items-center gap-6">
             <div className="h-0.5 w-12 bg-gradient-to-r from-transparent via-[#C5A059] to-transparent opacity-40" />
             
@@ -696,22 +908,22 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
 
       {/* House Rules Modal */}
       {isRulesOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/80 backdrop-blur-md animate-in fade-in duration-300">
-          <div className="bg-white w-full max-w-4xl rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 border border-gray-100 flex flex-col max-h-[90vh]">
-            <div className="p-8 sm:p-10 border-b border-gray-50 flex items-center justify-between bg-white text-black">
-              <h2 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tighter uppercase">{t.houseRulesTitle}</h2>
+        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-gray-900/80 backdrop-blur-md animate-in fade-in duration-300">
+          <div className="bg-white w-full max-w-4xl rounded-t-[2rem] sm:rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 border border-gray-100 flex flex-col max-h-[92dvh] sm:max-h-[90vh]">
+            <div className="p-5 sm:p-10 border-b border-gray-50 flex items-center justify-between bg-white text-black shrink-0">
+              <h2 className="text-lg sm:text-3xl font-black text-gray-900 tracking-tighter uppercase pr-2">{t.houseRulesTitle}</h2>
               <button onClick={() => setIsRulesOpen(false)} className="w-12 h-12 flex items-center justify-center bg-gray-100 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all font-black">✕</button>
             </div>
-            <div className="p-8 sm:p-10 flex-1 overflow-y-auto space-y-6">
+            <div className="p-4 sm:p-10 flex-1 overflow-y-auto checkin-app-scroll space-y-4 sm:space-y-6">
                {rulesList.map((rule: string, i: number) => (
-                 <div key={i} className="flex gap-4 p-6 bg-gray-50 rounded-[2rem] border border-gray-100 items-start">
+                 <div key={i} className="flex gap-3 sm:gap-4 p-4 sm:p-6 bg-gray-50 rounded-2xl sm:rounded-[2rem] border border-gray-100 items-start">
                    <span className="w-10 h-10 bg-white rounded-2xl flex items-center justify-center text-red-500 font-black shrink-0 shadow-lg text-xs leading-none">{(i+1).toString().padStart(2, '0')}</span>
                    <p className="text-gray-700 font-black text-sm leading-relaxed tracking-tight">{rule}</p>
                  </div>
                ))}
             </div>
-            <div className="p-8 sm:p-10 bg-gray-50/50">
-              <button onClick={() => setIsRulesOpen(false)} className="w-full py-6 bg-gray-900 text-white font-black rounded-[2rem] shadow-2xl hover:bg-black transition-all text-sm uppercase tracking-widest">
+            <div className="p-4 sm:p-10 pb-safe sm:pb-10 bg-gray-50/50 shrink-0">
+              <button onClick={() => setIsRulesOpen(false)} className="w-full py-4 sm:py-6 bg-gray-900 text-white font-black rounded-2xl sm:rounded-[2rem] shadow-2xl hover:bg-black transition-all text-xs sm:text-sm uppercase tracking-widest">
                 {t.close}
               </button>
             </div>
@@ -721,10 +933,10 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
 
       {/* Privacy Policy Modal */}
       {isPrivacyOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/80 backdrop-blur-md animate-in fade-in duration-300">
-          <div className="bg-white w-full max-w-6xl rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 border border-gray-100 flex flex-col h-[90vh]">
-            <div className="p-8 sm:p-10 border-b border-gray-50 flex items-center justify-between bg-white text-black">
-              <h2 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tighter uppercase">{t.privacyReadMore}</h2>
+        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-gray-900/80 backdrop-blur-md animate-in fade-in duration-300">
+          <div className="bg-white w-full max-w-6xl rounded-t-[2rem] sm:rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 border border-gray-100 flex flex-col h-[92dvh] sm:h-[90vh]">
+            <div className="p-5 sm:p-10 border-b border-gray-50 flex items-center justify-between bg-white text-black shrink-0">
+              <h2 className="text-lg sm:text-3xl font-black text-gray-900 tracking-tighter uppercase pr-2">{t.privacyReadMore}</h2>
               <button onClick={() => setIsPrivacyOpen(false)} className="w-12 h-12 flex items-center justify-center bg-gray-100 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all font-black">✕</button>
             </div>
             <div className="flex-1 overflow-hidden relative bg-[#FDFCF9]">
@@ -734,12 +946,20 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
                 title="Privacy Policy"
                />
             </div>
-            <div className="p-8 sm:p-10 bg-gray-50/50">
-              <button onClick={() => setIsPrivacyOpen(false)} className="w-full py-6 bg-gray-900 text-white font-black rounded-[2rem] shadow-2xl hover:bg-black transition-all text-sm uppercase tracking-widest">
+            <div className="p-4 sm:p-10 pb-safe sm:pb-10 bg-gray-50/50 shrink-0">
+              <button onClick={() => setIsPrivacyOpen(false)} className="w-full py-4 sm:py-6 bg-gray-900 text-white font-black rounded-2xl sm:rounded-[2rem] shadow-2xl hover:bg-black transition-all text-xs sm:text-sm uppercase tracking-widest">
                 {t.close}
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {isLoading && phoneLayout && (
+        <div className="fixed inset-0 z-[150] bg-[#FDFCF9]/93 backdrop-blur-[3px] flex flex-col items-center justify-center gap-3 px-8 pb-safe pt-safe">
+          <div className="w-10 h-10 border-[3px] border-[#C5A059]/25 border-t-[#C5A059] rounded-full animate-spin" />
+          <p className="text-sm font-bold text-[#B08D43] text-center">{t.processing}</p>
+          <p className="text-xs text-[#6B635C] text-center max-w-[280px] leading-relaxed">{t.pleaseWait}</p>
         </div>
       )}
     </main>

@@ -34,6 +34,20 @@ body {
   font-family: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
 }
 
+/* Check-in mobile: reduce rubber-band scroll, respect safe areas */
+.checkin-app-scroll {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+}
+
+.pb-safe {
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
+}
+
+.pt-safe {
+  padding-top: max(0.5rem, env(safe-area-inset-top, 0px));
+}
+
 .sigCanvas {
   width: 100% !important;
   max-width: 100%;
@@ -44,6 +58,12 @@ body {
   display: block !important;
   background: white !important;
   touch-action: none !important;
+}
+
+@media (max-width: 767px) {
+  .sigCanvas {
+    height: 150px !important;
+  }
 }
 
 .input {
