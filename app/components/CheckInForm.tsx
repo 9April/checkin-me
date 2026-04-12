@@ -365,32 +365,46 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
     noCIN: boolean;
   }>>([{ country: '', noCIN: true }]);
 
-  useEffect(() => {
-    const totalTravelers = adults + kids;
-    setTravelers(prev => {
-      const newTravelers = [...prev];
-      while (newTravelers.length < totalTravelers) {
-        newTravelers.push({ country: '', noCIN: true });
-      }
-      return newTravelers.slice(0, totalTravelers);
-    });
-  }, [adults, kids]);
+  /** Per traveler: user picked MA/OTHER explicitly — do not overwrite from WhatsApp. Cleared when they choose "Select country". */
+  const countryLockedRef = useRef<boolean[]>([]);
 
   useEffect(() => {
-    if (!property.showWhatsApp) return;
-    const doc = whatsappParsed?.document;
-    if (!doc) return;
+    const total = adults + kids;
+    const locks = countryLockedRef.current;
+    while (locks.length < total) locks.push(false);
+    if (locks.length > total) locks.length = total;
+
+    const doc = property.showWhatsApp ? whatsappParsed?.document : undefined;
+
     setTravelers((prev) => {
-      let changed = false;
-      const next = prev.map((t) => {
-        const noCIN = doc === 'MA' ? false : true;
-        if (t.country === doc && t.noCIN === noCIN) return t;
-        changed = true;
-        return { ...t, country: doc, noCIN };
-      });
-      return changed ? next : prev;
+      let next = [...prev];
+      while (next.length < total) {
+        const i = next.length;
+        const seeded =
+          doc && !locks[i]
+            ? { country: doc, noCIN: doc === 'MA' ? false : true }
+            : { country: '' as const, noCIN: true };
+        next.push(seeded);
+      }
+      next = next.slice(0, total);
+
+      if (doc) {
+        next = next.map((t, i) => {
+          if (locks[i]) return t;
+          const noCIN = doc === 'MA' ? false : true;
+          if (t.country === doc && t.noCIN === noCIN) return t;
+          return { ...t, country: doc, noCIN };
+        });
+      }
+
+      const same =
+        next.length === prev.length &&
+        next.every(
+          (t, i) => t.country === prev[i]?.country && t.noCIN === prev[i]?.noCIN
+        );
+      return same ? prev : next;
     });
-  }, [whatsappParsed?.document, property.showWhatsApp, adults, kids]);
+  }, [adults, kids, property.showWhatsApp, whatsappParsed?.document]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -724,9 +738,16 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
                         name={`traveler_${index}_country`}
                         value={traveler.country}
                         onChange={(e) => {
+                          const v = e.target.value as 'MA' | 'OTHER' | '';
+                          const locks = countryLockedRef.current;
+                          while (locks.length <= index) locks.push(false);
+                          locks[index] = v !== '';
                           const newTravelers = [...travelers];
-                          newTravelers[index].country = e.target.value as any;
-                          newTravelers[index].noCIN = e.target.value !== 'MA';
+                          newTravelers[index] = {
+                            ...newTravelers[index],
+                            country: v,
+                            noCIN: v !== 'MA',
+                          };
                           setTravelers(newTravelers);
                         }}
                         className="w-full px-4 py-3.5 bg-white border border-[#B0B0B0] rounded-lg outline-none transition-shadow font-medium text-[#222222] appearance-none focus:border-[#222222] focus:ring-2 focus:ring-[#222222] focus:ring-offset-0"
