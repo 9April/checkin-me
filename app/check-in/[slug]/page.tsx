@@ -1,15 +1,19 @@
 import { prisma } from "@/lib/prisma";
-import { getPrivacyPolicyHtml } from "@/lib/privacy-policy-html";
+import { normalizeLang } from "@/lib/lang";
 import { reserveUniquePropertySlug } from "@/lib/property-slug";
 import { notFound } from "next/navigation";
 import CheckInForm from "../../components/CheckInForm";
 
 export default async function PropertyCheckInPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ lang?: string }>;
 }) {
   const { slug: segment } = await params;
+  const { lang: langParam } = await searchParams;
+  const initialLang = normalizeLang(langParam);
   const decoded = decodeURIComponent(segment);
 
   let property = await prisma.property.findFirst({
@@ -32,6 +36,7 @@ export default async function PropertyCheckInPage({
 
   return (
     <CheckInForm
+      initialLang={initialLang}
       property={{
         id: property.id,
         name: property.name,
@@ -41,7 +46,7 @@ export default async function PropertyCheckInPage({
         showWhatsApp: property.showWhatsApp,
         requireSelfie: property.requireSelfie,
         requireIdPhotos: property.requireIdPhotos,
-        privacyPolicyHtml: getPrivacyPolicyHtml(property.privacyPolicy),
+        privacyPolicy: property.privacyPolicy,
       }}
     />
   );

@@ -159,14 +159,14 @@ export default async function DashboardPage() {
                   {booking.pdfUrl ? (
                     <>
                       <Link
-                        href={`/api/pdf/${booking.pdfUrl}`}
+                        href={`/api/pdf/${encodeURIComponent(booking.pdfUrl)}`}
                         target="_blank"
                         className="text-[#EF4444] hover:underline text-sm font-bold"
                       >
                         View PDF
                       </Link>
                       <Link
-                        href={`/api/pdf/${booking.pdfUrl}`}
+                        href={`/api/pdf/${encodeURIComponent(booking.pdfUrl)}`}
                         target="_blank"
                         className="text-gray-600 hover:text-gray-900 text-sm inline-flex items-center gap-1"
                         title="Print PDF"
@@ -175,8 +175,8 @@ export default async function DashboardPage() {
                         Print
                       </Link>
                       <a
-                        href={`/api/pdf/${booking.pdfUrl}`}
-                        download
+                        href={`/api/pdf/${encodeURIComponent(booking.pdfUrl)}?download=1`}
+                        download={booking.pdfUrl}
                         className="text-gray-500 hover:text-gray-700 text-sm font-medium"
                       >
                         Download
@@ -235,7 +235,7 @@ export default async function DashboardPage() {
                       {booking.pdfUrl ? (
                         <>
                           <Link
-                            href={`/api/pdf/${booking.pdfUrl}`}
+                            href={`/api/pdf/${encodeURIComponent(booking.pdfUrl)}`}
                             target="_blank"
                             className="text-[#EF4444] hover:underline text-sm font-bold"
                           >
@@ -243,7 +243,7 @@ export default async function DashboardPage() {
                           </Link>
                           <span className="text-gray-300">|</span>
                           <Link
-                            href={`/api/pdf/${booking.pdfUrl}`}
+                            href={`/api/pdf/${encodeURIComponent(booking.pdfUrl)}`}
                             target="_blank"
                             className="text-gray-600 hover:text-gray-900"
                             title="Print PDF"
@@ -252,8 +252,8 @@ export default async function DashboardPage() {
                           </Link>
                           <span className="text-gray-300">|</span>
                           <a
-                            href={`/api/pdf/${booking.pdfUrl}`}
-                            download
+                            href={`/api/pdf/${encodeURIComponent(booking.pdfUrl)}?download=1`}
+                            download={booking.pdfUrl}
                             className="text-gray-500 hover:text-gray-700 text-sm font-medium"
                           >
                             Download

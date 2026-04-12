@@ -1,6 +1,10 @@
 'use server';
 
 import { buildPDF } from '@/lib/pdf';
+import { getCheckinEmailTemplates } from '@/lib/checkin-i18n';
+import { parseHouseRulesForLang } from '@/lib/house-rules';
+import type { Lang } from '@/lib/lang';
+import { normalizeLang } from '@/lib/lang';
 import { prisma } from '@/lib/prisma';
 import { sendEmail } from '@/lib/mail';
 import { supabaseAdmin } from '@/lib/supabase';
@@ -29,43 +33,43 @@ async function sendCheckInEmails(opts: {
   checkout: string;
   pdfAttachment?: PdfAttachment;
   pdfFailedNote?: string;
+  lang: Lang;
 }): Promise<{ mailError: string }> {
+  const tm = getCheckinEmailTemplates(opts.lang);
   const guest = opts.guestEmail.trim();
   const admin =
     (opts.adminEmail && String(opts.adminEmail).trim()) ||
     '';
 
   const pdfNote = opts.pdfFailedNote
-    ? `\n\nNote: ${opts.pdfFailedNote}\n`
+    ? `\n\n${opts.pdfFailedNote}\n`
     : '';
-  const attachmentLine = opts.pdfAttachment
-    ? '\n\nPlease find attached a copy of your signed agreement for your records.'
-    : '';
-  const guestBody = `Dear ${opts.guestName},\n\nThank you for completing your pre-check-in for ${opts.propertyName}.${attachmentLine}${pdfNote}\n\nWe look forward to welcoming you soon!\n\nBest regards,\n${opts.propertyName} Management`;
+  const attachmentLine = opts.pdfAttachment ? tm.guestAttachmentLine : '';
+  const guestBody = `${tm.guestDear(opts.guestName)}\n\n${tm.guestThanks(opts.propertyName)}${attachmentLine}${pdfNote}\n\n${tm.guestLookForward}\n\n${tm.guestBestRegards(opts.propertyName)}`;
   const guestBodyHtml = `<!DOCTYPE html><html><body style="font-family:system-ui,-apple-system,sans-serif;line-height:1.6;color:#222;max-width:560px">
-<p>Dear ${escapeHtml(opts.guestName)},</p>
-<p>Thank you for completing your pre-check-in for <strong>${escapeHtml(opts.propertyName)}</strong>.</p>
-${opts.pdfAttachment ? '<p>Please find <strong>your copy of the signed agreement</strong> attached to this email.</p>' : ''}
-${opts.pdfFailedNote ? `<p><em>Note: ${escapeHtml(opts.pdfFailedNote)}</em></p>` : ''}
-<p>We look forward to welcoming you soon!</p>
-<p>Best regards,<br/>${escapeHtml(opts.propertyName)}</p>
+<p>${escapeHtml(tm.guestDear(opts.guestName))}</p>
+<p>${tm.guestThanksHtml(escapeHtml(opts.propertyName))}</p>
+${opts.pdfAttachment ? `<p>${tm.guestHtmlAttachment}</p>` : ''}
+${opts.pdfFailedNote ? `<p><em>${escapeHtml(opts.pdfFailedNote)}</em></p>` : ''}
+<p>${escapeHtml(tm.guestLookForward)}</p>
+<p>${escapeHtml(tm.guestBestRegards(opts.propertyName)).replace(/\n/g, '<br/>')}</p>
 </body></html>`;
   const adminAttachmentLine = opts.pdfAttachment
-    ? '\n\nThe signed agreement is attached.'
+    ? '\n\n' + tm.adminAttachment
     : '';
-  const adminBody = `A new guest registration has been completed.${adminAttachmentLine}${pdfNote}\n\nProperty: ${opts.propertyName}\nGuest: ${opts.guestName}\nEmail: ${guest || '(not provided)'}\nDates: ${opts.checkin} to ${opts.checkout}\n`;
+  const adminBody = `${tm.adminBodyIntro}${adminAttachmentLine}${pdfNote}\n\n${tm.adminProperty} ${opts.propertyName}\n${tm.adminGuest} ${opts.guestName}\n${tm.adminEmailLabel} ${guest || tm.adminNotProvided}\n${tm.adminDates} ${opts.checkin} — ${opts.checkout}\n`;
   const adminBodyHtml = `<!DOCTYPE html><html><body style="font-family:system-ui,-apple-system,sans-serif;line-height:1.6;color:#222">
-<p>A new guest registration has been completed.</p>
-${opts.pdfAttachment ? '<p>The signed agreement is attached.</p>' : ''}
+<p>${tm.adminBodyIntro}</p>
+${opts.pdfAttachment ? `<p>${tm.adminAttachment}</p>` : ''}
 ${opts.pdfFailedNote ? `<p><em>${escapeHtml(opts.pdfFailedNote)}</em></p>` : ''}
-<p><strong>Property:</strong> ${escapeHtml(opts.propertyName)}<br/>
-<strong>Guest:</strong> ${escapeHtml(opts.guestName)}<br/>
-<strong>Email:</strong> ${escapeHtml(guest || '(not provided)')}<br/>
-<strong>Dates:</strong> ${escapeHtml(opts.checkin)} → ${escapeHtml(opts.checkout)}</p>
+<p><strong>${tm.adminProperty}</strong> ${escapeHtml(opts.propertyName)}<br/>
+<strong>${tm.adminGuest}</strong> ${escapeHtml(opts.guestName)}<br/>
+<strong>${tm.adminEmailLabel}</strong> ${escapeHtml(guest || tm.adminNotProvided)}<br/>
+<strong>${tm.adminDates}</strong> ${escapeHtml(opts.checkin)} → ${escapeHtml(opts.checkout)}</p>
 </body></html>`;
 
-  const guestSubject = `Your Check-in Confirmation - ${opts.propertyName}`;
-  const adminSubject = `New Registration: ${opts.guestName} - ${opts.propertyName}`;
+  const guestSubject = tm.guestSubject(opts.propertyName);
+  const adminSubject = tm.adminSubject(opts.guestName, opts.propertyName);
 
   const attach = opts.pdfAttachment ? [opts.pdfAttachment] : undefined;
 
@@ -80,9 +84,9 @@ ${opts.pdfFailedNote ? `<p><em>${escapeHtml(opts.pdfFailedNote)}</em></p>` : ''}
     tasks.push(
       sendEmail({
         to: guest,
-        subject: `Check-in: ${opts.guestName} — ${opts.propertyName}`,
-        text: `${guestBody}\n\n--- Admin copy ---\n${adminBody}`,
-        html: `${guestBodyHtml}<hr/><p><strong>Admin copy</strong></p>${adminBodyHtml}`,
+        subject: tm.sameSubject(opts.guestName, opts.propertyName),
+        text: `${guestBody}${tm.sameAdminSeparator}${adminBody}`,
+        html: `${guestBodyHtml}<hr/><p><strong>${escapeHtml(tm.sameAdminCopyHtml)}</strong></p>${adminBodyHtml}`,
         attachments: attach,
       })
     );
@@ -149,7 +153,7 @@ export async function saveBooking(formData: FormData) {
     const selfieInput = formData.get('selfie');
     const isFile = (obj: any): obj is File => obj && typeof obj === 'object' && typeof obj.arrayBuffer === 'function';
     const selfieFile = isFile(selfieInput) ? selfieInput : null;
-    const lang = (formData.get('lang') as string || 'EN') as 'EN' | 'FR' | 'SP';
+    const lang = normalizeLang(formData.get('lang') as string | null);
     const guestName = (formData.get('guestName') as string || '').trim();
     const guestEmail = (formData.get('guestEmail') as string || '').trim();
     const checkin = formData.get('checkin') as string;
@@ -277,11 +281,8 @@ export async function saveBooking(formData: FormData) {
       }
     });
 
-    /* ---------- 4. house rules ---------- */
-    let rules = ["Please respect the house rules."];
-    try {
-      rules = JSON.parse(property.houseRules || '[]');
-    } catch (e) { console.error('Rules parse failed', e); }
+    /* ---------- 4. house rules (legacy array or { EN, FR, SP } lists) ---------- */
+    const rules = parseHouseRulesForLang(property.houseRules, lang);
 
     const idFiles = travelersData.flatMap((t) => t.idFiles);
 
@@ -323,6 +324,7 @@ export async function saveBooking(formData: FormData) {
       console.error('PDF Crash Protection:', pdfErr);
       const adminEmail =
         property.adminEmail?.trim() || property.host?.email?.trim() || null;
+      const tmFail = getCheckinEmailTemplates(lang);
       const { mailError } = await sendCheckInEmails({
         guestEmail,
         guestName,
@@ -330,12 +332,12 @@ export async function saveBooking(formData: FormData) {
         propertyName: property.name,
         checkin,
         checkout,
-        pdfFailedNote:
-          'The PDF could not be generated. Your registration was saved.',
+        pdfFailedNote: tmFail.pdfFailedNote,
+        lang,
       });
       const queryString = new URLSearchParams({
         ...(mailError
-          ? { mailError }
+          ? { mailError: '1' }
           : { emailSent: '1' }),
       }).toString();
       return {
@@ -367,23 +369,23 @@ export async function saveBooking(formData: FormData) {
         checkin,
         checkout,
         pdfAttachment,
+        lang,
       });
 
       const queryString = new URLSearchParams({
         pdf: pdfName,
         ...(mailError
-          ? { mailError }
+          ? { mailError: '1' }
           : { emailSent: '1' }),
       }).toString();
 
       return { success: true, pdfName, redirectUrl: `/success?${queryString}` };
     } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : 'Email failed';
       console.error('Check-in email notification failed:', e);
       return {
         success: true,
         pdfName,
-        redirectUrl: `/success?pdf=${encodeURIComponent(pdfName)}&mailError=${encodeURIComponent(message)}`,
+        redirectUrl: `/success?pdf=${encodeURIComponent(pdfName)}&mailError=1`,
       };
     }
   } catch (error) {

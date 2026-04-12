@@ -73,16 +73,16 @@ export default async function BookingsPage() {
                   {booking.pdfUrl ? (
                     <>
                       <Link
-                        href={`/api/pdf/${booking.pdfUrl}`}
+                        href={`/api/pdf/${encodeURIComponent(booking.pdfUrl)}`}
                         target="_blank"
                         className="text-sm font-bold text-blue-600"
                       >
                         Open PDF
                       </Link>
-                      <Link href={`/api/pdf/${booking.pdfUrl}`} target="_blank" className="text-sm text-gray-600 inline-flex items-center gap-1">
+                      <Link href={`/api/pdf/${encodeURIComponent(booking.pdfUrl)}`} target="_blank" className="text-sm text-gray-600 inline-flex items-center gap-1">
                         <Printer size={16} /> Print
                       </Link>
-                      <a href={`/api/pdf/${booking.pdfUrl}`} download className="text-sm text-gray-500">
+                      <a href={`/api/pdf/${encodeURIComponent(booking.pdfUrl)}?download=1`} download={booking.pdfUrl} className="text-sm text-gray-500">
                         Download
                       </a>
                     </>
@@ -145,7 +145,7 @@ export default async function BookingsPage() {
                       {booking.pdfUrl ? (
                          <>
                           <Link
-                            href={`/api/pdf/${booking.pdfUrl}`}
+                            href={`/api/pdf/${encodeURIComponent(booking.pdfUrl)}`}
                             target="_blank"
                             className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                             title='View PDF'
@@ -153,7 +153,7 @@ export default async function BookingsPage() {
                             <ExternalLink size={18} />
                           </Link>
                           <Link
-                            href={`/api/pdf/${booking.pdfUrl}`}
+                            href={`/api/pdf/${encodeURIComponent(booking.pdfUrl)}`}
                             target="_blank"
                             className="p-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
                             title='Print PDF'
@@ -161,8 +161,8 @@ export default async function BookingsPage() {
                             <Printer size={18} />
                           </Link>
                           <a
-                            href={`/api/pdf/${booking.pdfUrl}`}
-                            download
+                            href={`/api/pdf/${encodeURIComponent(booking.pdfUrl)}?download=1`}
+                            download={booking.pdfUrl}
                             className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors border-r pr-2 py-2"
                             title="Download PDF"
                           >

@@ -58,10 +58,16 @@ export async function GET(
 
     const blob = await data.arrayBuffer();
 
+    const wantsDownload =
+      request.nextUrl.searchParams.get('download') === '1' ||
+      request.nextUrl.searchParams.get('download') === 'true';
+
+    const disposition = wantsDownload ? 'attachment' : 'inline';
+
     return new NextResponse(blob, {
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `inline; filename="${filename}"`,
+        'Content-Disposition': `${disposition}; filename="${filename}"`,
         'Cache-Control': 'private, max-age=300',
       },
     });

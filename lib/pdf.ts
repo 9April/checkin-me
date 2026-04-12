@@ -1,9 +1,17 @@
 import jsPDF from 'jspdf';
+import type { Lang } from './lang';
 
-export type Lang = 'EN' | 'FR' | 'SP';
+export type { Lang } from './lang';
 
 const translations = {
   EN: {
+    pdfGuestStayAgreement: 'GUEST STAY AGREEMENT',
+    pdfGuestLabel: 'GUEST',
+    pdfStayPeriodLabel: 'STAY PERIOD',
+    pdfAcknowledgementTitle: 'ACKNOWLEDGEMENT AND CONDITIONS',
+    pdfDateOfArrivalLabel: 'DATE OF ARRIVAL:',
+    pdfDateTo: 'to',
+    pdfFooterDefault: '© 2026 • Secure digital registration',
     agreementTitle: 'HOUSE RULES',
     agreementSubtitle: 'Property Rules – Guest Agreement',
     guest: 'Guest',
@@ -38,6 +46,13 @@ const translations = {
     ]
   },
   FR: {
+    pdfGuestStayAgreement: 'CONTRAT DE SÉJOUR',
+    pdfGuestLabel: 'VOYAGEUR',
+    pdfStayPeriodLabel: 'PÉRIODE DE SÉJOUR',
+    pdfAcknowledgementTitle: 'ACCORD ET CONDITIONS',
+    pdfDateOfArrivalLabel: 'DATE D’ARRIVÉE :',
+    pdfDateTo: 'au',
+    pdfFooterDefault: '© 2026 • Enregistrement numérique sécurisé',
     agreementTitle: 'RÈGLEMENT INTÉRIEUR',
     agreementSubtitle: 'Règlement du logement – Accord du voyageur',
     guest: 'Voyageur',
@@ -68,10 +83,17 @@ const translations = {
       { t: '13. Activités illégales', d: 'Toute activité illégale est strictement interdite et peut entraîner l’annulation du séjour.' },
       { t: '14. Économie d’énergie', d: 'Merci d’éteindre les lumières, la climatisation et les appareils lorsque vous ne les utilisez pas.' },
       { t: '15. Assistance', d: 'En cas de problème, veuillez contacter l’hôte avant de tenter toute réparation.' },
-      { t: '16. Security', d: 'Les voyageurs doivent respecter les consignes de sécurité et ne pas utiliser d’équipements dangereux.' },
+      { t: '16. Sécurité', d: 'Les voyageurs doivent respecter les consignes de sécurité et ne pas utiliser d’équipements dangereux.' },
     ]
   },
   SP: {
+    pdfGuestStayAgreement: 'ACUERDO DE ESTANCIA',
+    pdfGuestLabel: 'VIAJERO',
+    pdfStayPeriodLabel: 'PERÍODO DE ESTANCIA',
+    pdfAcknowledgementTitle: 'RECONOCIMIENTO Y CONDICIONES',
+    pdfDateOfArrivalLabel: 'FECHA DE LLEGADA:',
+    pdfDateTo: 'a',
+    pdfFooterDefault: '© 2026 • Registro digital seguro',
     agreementTitle: 'REGLAMENTO INTERNO',
     agreementSubtitle: 'Reglamento de la vivienda – Acuerdo del viajero',
     guest: 'Viajero',
@@ -100,9 +122,9 @@ const translations = {
       { t: '11. Limpieza', d: 'La vivienda debe mantenerse limpia y dejarse en un estado correcto al salir.' },
       { t: '12. Llaves y acceso', d: 'Los viajeros son responsables de las llaves y códigos. Su pérdida puede conllevar gastos.' },
       { t: '13. Activividades ilegales', d: 'Cualquier actividad ilegal está prohibida y puede causar la cancelación inmediata.' },
-      { t: '14. Ahorro de energía', d: 'Por favor, apague luces y aire acondicionado when not in use.' },
+      { t: '14. Ahorro de energía', d: 'Apague las luces, el aire acondicionado y los aparatos cuando no los use.' },
       { t: '15. Asistencia', d: 'Contacte con el anfitrión antes de intentar cualquier reparación.' },
-      { t: '16. Seguridad', d: 'Los viajeros deben respetar las normas de seguridad et ne pas utiliser d’équipements dangereux.' },
+      { t: '16. Seguridad', d: 'Los viajeros deben respetar las normas de seguridad y no usar equipos peligrosos.' },
     ]
   }
 };
@@ -129,8 +151,9 @@ export async function buildPDF(data: {
   checkinHour?: string;
   whatsapp?: string;
 }) {
-  const lang = data.lang || 'EN';
-  const t = translations[lang as keyof typeof translations] || translations.EN;
+  const lang: Lang =
+    data.lang === 'FR' || data.lang === 'SP' ? data.lang : 'EN';
+  const t = translations[lang];
   const primaryColor = data.primaryColor || '#EF4444';
 
   const hexToRgb = (hex: string) => {
@@ -174,7 +197,7 @@ export async function buildPDF(data: {
     </td>
     <td style="padding-left: 20px; vertical-align: middle;">
       <h1 style="color: #C5A059; margin: 0; padding: 0; line-height: 1;">{{propertyName}}</h1>
-      <h3 style="color: #4B5563; margin: 0; padding: 0; font-size: 10px; font-weight: normal; letter-spacing: 1px;">GUEST STAY AGREEMENT</h3>
+      <h3 style="color: #4B5563; margin: 0; padding: 0; font-size: 10px; font-weight: normal; letter-spacing: 1px;">${t.pdfGuestStayAgreement}</h3>
     </td>
   </tr>
 </table>
@@ -183,12 +206,12 @@ export async function buildPDF(data: {
 
 <table style="width: 100%;">
   <tr>
-    <td style="color: #6B7280; font-size: 8px;">GUEST</td>
-    <td style="color: #6B7280; font-size: 8px; text-align: right;">STAY PERIOD</td>
+    <td style="color: #6B7280; font-size: 8px;">${t.pdfGuestLabel}</td>
+    <td style="color: #6B7280; font-size: 8px; text-align: right;">${t.pdfStayPeriodLabel}</td>
   </tr>
   <tr>
     <td style="color: #1A1A1A;"><b>{{guestName}}</b></td>
-    <td style="color: #1A1A1A; text-align: right;"><b>{{checkinDate}} to {{checkoutDate}}</b></td>
+    <td style="color: #1A1A1A; text-align: right;"><b>{{checkinDate}} ${t.pdfDateTo} {{checkoutDate}}</b></td>
   </tr>
 </table>
 
@@ -196,21 +219,21 @@ export async function buildPDF(data: {
 <hr style="color: #C5A059; height: 0.5px;"/>
 <br/>
 
-<h3 style="color: #C5A059; text-align: center; letter-spacing: 2px;">ACKNOWLEDGEMENT AND CONDITIONS</h3>
+<h3 style="color: #C5A059; text-align: center; letter-spacing: 2px;">${t.pdfAcknowledgementTitle}</h3>
 <br/>
 <small style="color: #1A1A1A;">
 {{houseRules}}
 </small>
 <br/>
 <p style="text-align: center; color: #1A1A1A; font-style: italic;">
-  ${t.accordText || 'I confirm that I have read and agree to respect the rules.'}
+  ${t.accordText}
 </p>
 
 <br/><br/>
 
 <table style="width: 100%; border-top: 0.5px solid #E5E7EB; padding-top: 20px;">
   <tr>
-    <td style="color: #6B7280; font-size: 8px;">DATE OF ARRIVAL:</td>
+    <td style="color: #6B7280; font-size: 8px;">${t.pdfDateOfArrivalLabel}</td>
   </tr>
   <tr>
     <td style="color: #1A1A1A;"><b>{{checkinDate}}</b></td>
@@ -488,7 +511,7 @@ export async function buildPDF(data: {
 
   doc.setFontSize(7);
   setColor({r: 156, g: 163, b: 175});
-  const footerText = data.pdfFooter || `© 2026 Admin • Secure Digital Registration`;
+  const footerText = data.pdfFooter || t.pdfFooterDefault;
   doc.text(footerText, pageW / 2, pageH - 25, { align: 'center' });
 
   return doc.output('arraybuffer');

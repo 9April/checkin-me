@@ -15,6 +15,10 @@ interface CameraCaptureProps {
   documentVariant?: DocumentCaptureVariant;
   /** Short instruction under the frame (localized). */
   documentHint?: string;
+  /** Optional title above the frame (e.g. "Moroccan CIN — front"). */
+  guideTitle?: string;
+  /** Center label inside the frame placeholder (localized: passport / front / back). */
+  frameCenterLabel?: string;
   /** Red border when validation failed */
   hasError?: boolean;
   className?: string;
@@ -39,6 +43,8 @@ export default function CameraCapture({
   guide = 'face',
   documentVariant,
   documentHint,
+  guideTitle,
+  frameCenterLabel,
   hasError = false,
   className = '',
   lang = 'EN',
@@ -142,6 +148,11 @@ export default function CameraCapture({
         <div className="space-y-3">
           {guide === 'document' && (
             <div className="rounded-2xl border-2 border-dashed border-[#FF385C]/40 bg-[#FFF5F6] p-4 space-y-2">
+              {guideTitle && (
+                <p className="text-center text-[10px] font-black uppercase tracking-[0.2em] text-[#FF385C]">
+                  {guideTitle}
+                </p>
+              )}
               <div
                 className={`relative mx-auto flex items-center justify-center rounded-xl bg-white/80 border-2 border-[#222222]/10 shadow-inner overflow-hidden ${
                   documentVariant === 'passport'
@@ -151,8 +162,12 @@ export default function CameraCapture({
               >
                 <div className="absolute inset-3 border-2 border-dashed border-[#FF385C]/50 rounded-lg pointer-events-none" />
                 {documentVariant === 'passport' ? (
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-[#717171] text-center px-2 leading-tight">
+                    {frameCenterLabel ?? 'PASSPORT'}
+                  </span>
+                ) : frameCenterLabel ? (
                   <span className="text-[10px] font-bold uppercase tracking-widest text-[#717171] text-center px-2">
-                    ID
+                    {frameCenterLabel}
                   </span>
                 ) : (
                   <span className="text-[10px] font-bold uppercase tracking-widest text-[#717171]">

@@ -4,10 +4,11 @@ import Link from 'next/link';
 import SignaturePad from 'react-signature-canvas';
 import { saveBooking } from '../actions';
 import { parseWhatsAppForCheckin, regionDisplayName } from '@/lib/infer-document-country-from-phone';
+import { parseHouseRulesForLang } from '@/lib/house-rules';
+import type { Lang } from '@/lib/lang';
+import { getPrivacyPolicyHtml } from '@/lib/privacy-policy-html';
 import DatePicker from './DatePicker';
 import CameraCapture from './CameraCapture';
-
-type Lang = 'EN' | 'FR' | 'SP';
 
 const TRANSLATIONS = {
   EN: {
@@ -43,6 +44,8 @@ const TRANSLATIONS = {
     verification: "Verification",
     faceSelfie: "Face selfie (for verification)",
     houseRulesTitle: "House Rules",
+    houseRulesFallback:
+      "No detailed rules list is set for this property. Please be respectful of the accommodation and neighbors.",
     readHouseRules: "Read House Rules",
     houseRulesAgreement: "I agree to the house rules",
     mustAgree: "You must agree to the house rules to proceed.",
@@ -90,9 +93,22 @@ const TRANSLATIONS = {
     errMoreFields: "And {n} more fields...",
     continue: "Continue",
     back: "Back",
-    docGuidePassport: "Fit the passport photo page in the frame — use the back camera in good light.",
-    docGuideIdFront: "Place the front of your ID card flat in the frame — use the back camera.",
-    docGuideIdBack: "Flip the card and capture the back in the frame — use the back camera.",
+    docCameraTitleCinFront: "Moroccan national ID (CIN) — front",
+    docCameraTitleCinBack: "Moroccan national ID (CIN) — back",
+    docCameraTitlePassport: "Passport — photo page",
+    docGuidePassport:
+      "Fit the passport photo page in the frame — all corners visible, no glare. Use the back camera in good light.",
+    docGuidePassportMaNoCin:
+      "You chose passport instead of CIN — photograph the main photo page with your details and MRZ lines visible if possible.",
+    docGuideCinFront:
+      "Lay the front of your CIN flat in the frame — full card visible, text readable, no glare. Use the back camera.",
+    docGuideCinBack:
+      "Turn the card over and capture the back in the frame — chip side if visible. Keep the card flat.",
+    docFramePassport: "Photo page",
+    docFrameCinFront: "Front",
+    docFrameCinBack: "Back",
+    docNoCinPassportGuide:
+      "The steps below switch to a passport photo — use the framing guide for the passport page.",
   },
   FR: {
     title: "Pré-enregistrement",
@@ -127,6 +143,8 @@ const TRANSLATIONS = {
     verification: "Vérification",
     faceSelfie: "Selfie (pour vérification)",
     houseRulesTitle: "Règlement intérieur",
+    houseRulesFallback:
+      "Aucune liste détaillée n’est définie pour ce logement. Merci de respecter le lieu et le voisinage.",
     readHouseRules: "Lire le règlement intérieur",
     houseRulesAgreement: "J'accepte le règlement intérieur",
     mustAgree: "Vous devez accepter le règlement intérieur pour continuer.",
@@ -174,9 +192,22 @@ const TRANSLATIONS = {
     errMoreFields: "Et {n} autres champs...",
     continue: "Continuer",
     back: "Retour",
-    docGuidePassport: "Cadrez la page photo du passeport — utilisez la caméra arrière, bien éclairé.",
-    docGuideIdFront: "Placez le recto de la carte à puce dans le cadre — caméra arrière.",
-    docGuideIdBack: "Retournez la carte et capturez le verso — caméra arrière.",
+    docCameraTitleCinFront: "CIN marocaine — recto",
+    docCameraTitleCinBack: "CIN marocaine — verso",
+    docCameraTitlePassport: "Passeport — page photo",
+    docGuidePassport:
+      "Cadrez la page photo du passeport — quatre coins visibles, sans reflet. Caméra arrière, bonne lumière.",
+    docGuidePassportMaNoCin:
+      "Vous avez choisi le passeport à la place de la CIN — photographiez la page principale avec vos informations, lignes MRZ visibles si possible.",
+    docGuideCinFront:
+      "Posez le recto de la CIN à plat dans le cadre — carte entière, texte lisible, sans reflet. Caméra arrière.",
+    docGuideCinBack:
+      "Retournez la carte et capturez le verso — côté puce si visible. Gardez la carte bien à plat.",
+    docFramePassport: "Page photo",
+    docFrameCinFront: "Recto",
+    docFrameCinBack: "Verso",
+    docNoCinPassportGuide:
+      "Les étapes ci-dessous passent à une photo de passeport — suivez le guide pour la page du passeport.",
   },
   SP: {
     title: "Pre-registro",
@@ -211,6 +242,8 @@ const TRANSLATIONS = {
     verification: "Verificación",
     faceSelfie: "Selfie (para verificación)",
     houseRulesTitle: "Reglamento interno",
+    houseRulesFallback:
+      "No hay una lista detallada para este alojamiento. Respete el alojamiento y el vecindario.",
     readHouseRules: "Leer reglamento interno",
     houseRulesAgreement: "Acepto el reglamento interno",
     mustAgree: "Debe aceptar el reglamento interno para continuar.",
@@ -258,9 +291,22 @@ const TRANSLATIONS = {
     errMoreFields: "Y {n} campos más...",
     continue: "Continuar",
     back: "Atrás",
-    docGuidePassport: "Encuadre la página con foto del pasaporte — use la cámara trasera con buena luz.",
-    docGuideIdFront: "Coloque el anverso de la tarjeta en el marco — cámara trasera.",
-    docGuideIdBack: "Gire la tarjeta y capture el reverso en el marco — cámara trasera.",
+    docCameraTitleCinFront: "CIN marroquí — anverso",
+    docCameraTitleCinBack: "CIN marroquí — reverso",
+    docCameraTitlePassport: "Pasaporte — página de la foto",
+    docGuidePassport:
+      "Encuadre la página con la foto del pasaporte — esquinas visibles, sin reflejos. Cámara trasera y buena luz.",
+    docGuidePassportMaNoCin:
+      "Eligió pasaporte en lugar de CIN — fotografíe la página principal con sus datos; líneas MRZ visibles si es posible.",
+    docGuideCinFront:
+      "Coloque el anverso de la CIN plano en el marco — tarjeta completa, texto legible, sin reflejos. Cámara trasera.",
+    docGuideCinBack:
+      "Gire la tarjeta y capture el reverso — lado del chip si se ve. Mantenga la tarjeta plana.",
+    docFramePassport: "Página foto",
+    docFrameCinFront: "Anverso",
+    docFrameCinBack: "Reverso",
+    docNoCinPassportGuide:
+      "Los pasos de abajo usan la guía de pasaporte — siga el encuadre de la página del pasaporte.",
   }
 };
 
@@ -315,12 +361,19 @@ interface PropertyData {
   showWhatsApp: boolean;
   requireSelfie: boolean;
   requireIdPhotos: boolean;
-  /** Pre-rendered HTML (same as `/privacy`) — inlined in modal, no iframe */
-  privacyPolicyHtml: string;
+  /** Raw policy from DB; language resolved in the form from guest UI language. */
+  privacyPolicy?: string | null;
 }
 
-export default function CheckInForm({ property }: { property: PropertyData }) {
-  const [lang, setLang] = useState<Lang>('EN');
+export default function CheckInForm({
+  property,
+  initialLang = 'EN',
+}: {
+  property: PropertyData;
+  /** From `/check-in/...?lang=FR` or returning from `/privacy?...&lang=FR`. */
+  initialLang?: Lang;
+}) {
+  const [lang, setLang] = useState<Lang>(initialLang);
   const t = TRANSLATIONS[lang];
   const brandPrimary = "#FF385C";
   
@@ -383,12 +436,15 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
     return () => window.removeEventListener('resize', resizeCanvas);
   }, []);
 
-  let rulesList = [];
-  try {
-    rulesList = JSON.parse(property.houseRules || '[]');
-  } catch (e) {
-    rulesList = [];
-  }
+  const rulesList = useMemo(
+    () => parseHouseRulesForLang(property.houseRules, lang),
+    [property.houseRules, lang]
+  );
+
+  const privacyPolicyHtmlResolved = useMemo(
+    () => getPrivacyPolicyHtml(property.privacyPolicy, lang),
+    [property.privacyPolicy, lang]
+  );
 
   const [travelers, setTravelers] = useState<Array<{
     country: 'MA' | 'OTHER' | '';
@@ -907,15 +963,31 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
                     </label>
                   )}
 
+                  {traveler.country === 'MA' && traveler.noCIN && (
+                    <p className="text-xs font-semibold text-gray-600 leading-snug -mt-1">
+                      {t.docNoCinPassportGuide}
+                    </p>
+                  )}
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    { (traveler.country === 'OTHER' || traveler.country === '' || traveler.noCIN) ? (
+                    {traveler.country === 'OTHER' ||
+                    traveler.country === '' ||
+                    traveler.noCIN ? (
                       <div className="md:col-span-2">
                         <CameraCapture
                           name={`traveler_${index}_passport`}
                           guide="document"
                           documentVariant="passport"
-                          documentHint={t.docGuidePassport}
-                          hasError={!!validationErrors[`traveler_${index}_passport`]}
+                          guideTitle={t.docCameraTitlePassport}
+                          frameCenterLabel={t.docFramePassport}
+                          documentHint={
+                            traveler.country === 'MA' && traveler.noCIN
+                              ? t.docGuidePassportMaNoCin
+                              : t.docGuidePassport
+                          }
+                          hasError={
+                            !!validationErrors[`traveler_${index}_passport`]
+                          }
                           lang={lang}
                           labels={t}
                         />
@@ -926,8 +998,12 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
                           name={`traveler_${index}_cinFront`}
                           guide="document"
                           documentVariant="idFront"
-                          documentHint={t.docGuideIdFront}
-                          hasError={!!validationErrors[`traveler_${index}_cinFront`]}
+                          guideTitle={t.docCameraTitleCinFront}
+                          frameCenterLabel={t.docFrameCinFront}
+                          documentHint={t.docGuideCinFront}
+                          hasError={
+                            !!validationErrors[`traveler_${index}_cinFront`]
+                          }
                           lang={lang}
                           labels={t}
                         />
@@ -935,8 +1011,12 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
                           name={`traveler_${index}_cinBack`}
                           guide="document"
                           documentVariant="idBack"
-                          documentHint={t.docGuideIdBack}
-                          hasError={!!validationErrors[`traveler_${index}_cinBack`]}
+                          guideTitle={t.docCameraTitleCinBack}
+                          frameCenterLabel={t.docFrameCinBack}
+                          documentHint={t.docGuideCinBack}
+                          hasError={
+                            !!validationErrors[`traveler_${index}_cinBack`]
+                          }
                           lang={lang}
                           labels={t}
                         />
@@ -1133,12 +1213,16 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
               <button onClick={() => setIsRulesOpen(false)} className="w-12 h-12 flex items-center justify-center bg-gray-100 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all font-black">✕</button>
             </div>
             <div className="p-4 sm:p-10 flex-1 overflow-y-auto checkin-app-scroll space-y-4 sm:space-y-6">
-               {rulesList.map((rule: string, i: number) => (
-                 <div key={i} className="flex gap-3 sm:gap-4 p-4 sm:p-6 bg-gray-50 rounded-2xl sm:rounded-[2rem] border border-gray-100 items-start">
-                   <span className="w-10 h-10 bg-white rounded-2xl flex items-center justify-center text-red-500 font-black shrink-0 shadow-lg text-xs leading-none">{(i+1).toString().padStart(2, '0')}</span>
-                   <p className="text-gray-700 font-black text-sm leading-relaxed tracking-tight">{rule}</p>
-                 </div>
-               ))}
+               {rulesList.length === 0 ? (
+                 <p className="text-gray-700 font-semibold text-sm leading-relaxed px-2">{t.houseRulesFallback}</p>
+               ) : (
+                 rulesList.map((rule: string, i: number) => (
+                   <div key={i} className="flex gap-3 sm:gap-4 p-4 sm:p-6 bg-gray-50 rounded-2xl sm:rounded-[2rem] border border-gray-100 items-start">
+                     <span className="w-10 h-10 bg-white rounded-2xl flex items-center justify-center text-red-500 font-black shrink-0 shadow-lg text-xs leading-none">{(i+1).toString().padStart(2, '0')}</span>
+                     <p className="text-gray-700 font-black text-sm leading-relaxed tracking-tight">{rule}</p>
+                   </div>
+                 ))
+               )}
             </div>
             <div className="p-4 sm:p-10 pb-safe sm:pb-10 bg-gray-50/50 shrink-0">
               <button onClick={() => setIsRulesOpen(false)} className="w-full py-4 sm:py-6 bg-gray-900 text-white font-black rounded-2xl sm:rounded-[2rem] shadow-2xl hover:bg-black transition-all text-xs sm:text-sm uppercase tracking-widest">
@@ -1160,8 +1244,7 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
             <div className="flex-1 min-h-0 overflow-y-auto checkin-app-scroll bg-[#FDFCF9] relative">
               <div
                 className="luxury-privacy-container min-h-full"
-                // Host-edited HTML from dashboard; same source as /privacy
-                dangerouslySetInnerHTML={{ __html: property.privacyPolicyHtml }}
+                dangerouslySetInnerHTML={{ __html: privacyPolicyHtmlResolved }}
               />
             </div>
             <div className="p-4 sm:p-10 pb-safe sm:pb-10 bg-gray-50/50 shrink-0">
