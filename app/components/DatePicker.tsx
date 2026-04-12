@@ -12,6 +12,8 @@ interface DatePickerProps {
   max?: string;
   lang?: string;
   className?: string;
+  /** Show red border when dates missing / invalid */
+  error?: boolean;
 }
 
 export default function DatePicker({
@@ -25,6 +27,7 @@ export default function DatePicker({
   max,
   lang = 'EN',
   className = '',
+  error = false,
 }: DatePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState(value || '');
@@ -275,7 +278,8 @@ export default function DatePicker({
         }}
         disabled={disabled}
         className={`
-          input w-full text-left flex items-center justify-between
+          w-full text-left flex items-center justify-between rounded-lg border px-4 py-3.5 md:px-6 md:py-5 bg-white font-medium text-base transition-shadow outline-none
+          ${error ? 'border-red-500 bg-red-50/50 ring-1 ring-red-200' : 'border-[#B0B0B0] focus:border-[#222222] focus:ring-2 focus:ring-[#222222] focus:ring-offset-0'}
           ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}
         `}
       >

@@ -1,13 +1,23 @@
 'use client';
 import { useState, useRef } from 'react';
 
+export type DocumentCaptureVariant = 'passport' | 'idFront' | 'idBack';
+
 interface CameraCaptureProps {
   name: string;
   required?: boolean;
   disabled?: boolean;
   onCapture?: (file: File) => void;
+  /** Selfie: `user` (front). ID documents: `environment` (rear/main). Default follows `guide`. */
   mode?: 'user' | 'environment';
   guide?: 'face' | 'document';
+  /** When set with guide=document, shows frame + hint (not for selfie). */
+  documentVariant?: DocumentCaptureVariant;
+  /** Short instruction under the frame (localized). */
+  documentHint?: string;
+  /** Red border when validation failed */
+  hasError?: boolean;
+  className?: string;
   lang?: string;
   labels: {
     takeSelfie: string;
@@ -25,11 +35,17 @@ export default function CameraCapture({
   required = false,
   disabled = false,
   onCapture,
-  mode = 'user',
+  mode,
   guide = 'face',
+  documentVariant,
+  documentHint,
+  hasError = false,
+  className = '',
   lang = 'EN',
   labels,
 }: CameraCaptureProps) {
+  const resolvedMode: 'user' | 'environment' =
+    mode ?? (guide === 'document' ? 'environment' : 'user');
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const [pendingImage, setPendingImage] = useState<string | null>(null);
@@ -42,7 +58,10 @@ export default function CameraCapture({
     if (disabled || !fileInputRef.current) return;
     
     // Set capture attribute to open native camera
-    fileInputRef.current.setAttribute('capture', mode === 'user' ? 'user' : 'environment');
+    fileInputRef.current.setAttribute(
+      'capture',
+      resolvedMode === 'user' ? 'user' : 'environment'
+    );
     fileInputRef.current.click();
   };
 
@@ -98,7 +117,11 @@ export default function CameraCapture({
   };
 
   return (
-    <div className="space-y-3">
+    <div
+      className={`space-y-3 rounded-xl p-1 -m-1 transition-colors ${
+        hasError ? 'ring-2 ring-red-500 ring-offset-2 ring-offset-[#F7F7F7]' : ''
+      } ${className}`}
+    >
       <input
         ref={fileInputRef}
         type="file"
@@ -117,6 +140,33 @@ export default function CameraCapture({
 
       {!capturedImage && !showPreview && (
         <div className="space-y-3">
+          {guide === 'document' && (
+            <div className="rounded-2xl border-2 border-dashed border-[#FF385C]/40 bg-[#FFF5F6] p-4 space-y-2">
+              <div
+                className={`relative mx-auto flex items-center justify-center rounded-xl bg-white/80 border-2 border-[#222222]/10 shadow-inner overflow-hidden ${
+                  documentVariant === 'passport'
+                    ? 'aspect-[3/4] max-h-[140px] w-[min(100%,200px)]'
+                    : 'aspect-[1.586/1] max-h-[120px] w-[min(100%,220px)]'
+                }`}
+              >
+                <div className="absolute inset-3 border-2 border-dashed border-[#FF385C]/50 rounded-lg pointer-events-none" />
+                {documentVariant === 'passport' ? (
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-[#717171] text-center px-2">
+                    ID
+                  </span>
+                ) : (
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-[#717171]">
+                    {documentVariant === 'idBack' ? '◀ ▶' : '▶ ◀'}
+                  </span>
+                )}
+              </div>
+              {documentHint && (
+                <p className="text-center text-xs font-semibold text-[#222222] leading-snug px-1">
+                  {documentHint}
+                </p>
+              )}
+            </div>
+          )}
           <button
             type="button"
             onClick={openCamera}
@@ -130,7 +180,7 @@ export default function CameraCapture({
                 </svg>
             </div>
             <span className="text-lg tracking-wide uppercase">
-                {mode === 'user' ? labels.takeSelfie : labels.takeDocument}
+                {resolvedMode === 'user' ? labels.takeSelfie : labels.takeDocument}
             </span>
           </button>
           

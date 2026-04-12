@@ -11,6 +11,14 @@ type PdfAttachment = {
   contentType: string;
 };
 
+function escapeHtml(s: string): string {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
 /** Sends check-in PDF (or text-only if PDF missing) to guest and property admin. */
 async function sendCheckInEmails(opts: {
   guestEmail: string;
@@ -34,10 +42,27 @@ async function sendCheckInEmails(opts: {
     ? '\n\nPlease find attached a copy of your signed agreement for your records.'
     : '';
   const guestBody = `Dear ${opts.guestName},\n\nThank you for completing your pre-check-in for ${opts.propertyName}.${attachmentLine}${pdfNote}\n\nWe look forward to welcoming you soon!\n\nBest regards,\n${opts.propertyName} Management`;
+  const guestBodyHtml = `<!DOCTYPE html><html><body style="font-family:system-ui,-apple-system,sans-serif;line-height:1.6;color:#222;max-width:560px">
+<p>Dear ${escapeHtml(opts.guestName)},</p>
+<p>Thank you for completing your pre-check-in for <strong>${escapeHtml(opts.propertyName)}</strong>.</p>
+${opts.pdfAttachment ? '<p>Please find <strong>your copy of the signed agreement</strong> attached to this email.</p>' : ''}
+${opts.pdfFailedNote ? `<p><em>Note: ${escapeHtml(opts.pdfFailedNote)}</em></p>` : ''}
+<p>We look forward to welcoming you soon!</p>
+<p>Best regards,<br/>${escapeHtml(opts.propertyName)}</p>
+</body></html>`;
   const adminAttachmentLine = opts.pdfAttachment
     ? '\n\nThe signed agreement is attached.'
     : '';
   const adminBody = `A new guest registration has been completed.${adminAttachmentLine}${pdfNote}\n\nProperty: ${opts.propertyName}\nGuest: ${opts.guestName}\nEmail: ${guest || '(not provided)'}\nDates: ${opts.checkin} to ${opts.checkout}\n`;
+  const adminBodyHtml = `<!DOCTYPE html><html><body style="font-family:system-ui,-apple-system,sans-serif;line-height:1.6;color:#222">
+<p>A new guest registration has been completed.</p>
+${opts.pdfAttachment ? '<p>The signed agreement is attached.</p>' : ''}
+${opts.pdfFailedNote ? `<p><em>${escapeHtml(opts.pdfFailedNote)}</em></p>` : ''}
+<p><strong>Property:</strong> ${escapeHtml(opts.propertyName)}<br/>
+<strong>Guest:</strong> ${escapeHtml(opts.guestName)}<br/>
+<strong>Email:</strong> ${escapeHtml(guest || '(not provided)')}<br/>
+<strong>Dates:</strong> ${escapeHtml(opts.checkin)} → ${escapeHtml(opts.checkout)}</p>
+</body></html>`;
 
   const guestSubject = `Your Check-in Confirmation - ${opts.propertyName}`;
   const adminSubject = `New Registration: ${opts.guestName} - ${opts.propertyName}`;
@@ -57,6 +82,7 @@ async function sendCheckInEmails(opts: {
         to: guest,
         subject: `Check-in: ${opts.guestName} — ${opts.propertyName}`,
         text: `${guestBody}\n\n--- Admin copy ---\n${adminBody}`,
+        html: `${guestBodyHtml}<hr/><p><strong>Admin copy</strong></p>${adminBodyHtml}`,
         attachments: attach,
       })
     );
@@ -67,6 +93,7 @@ async function sendCheckInEmails(opts: {
           to: guest,
           subject: guestSubject,
           text: guestBody,
+          html: guestBodyHtml,
           attachments: attach,
         })
       );
@@ -77,7 +104,9 @@ async function sendCheckInEmails(opts: {
           to: admin,
           subject: adminSubject,
           text: adminBody,
+          html: adminBodyHtml,
           attachments: attach,
+          replyTo: guest || undefined,
         })
       );
     }

@@ -6,6 +6,7 @@ export interface SendEmailParams {
   subject: string;
   text: string;
   html?: string;
+  replyTo?: string;
   attachments?: Array<{
     filename: string;
     content: Buffer | string;
@@ -50,7 +51,14 @@ function getTransporter() {
   return transporter;
 }
 
-export async function sendEmail({ to, subject, text, html, attachments }: SendEmailParams) {
+export async function sendEmail({
+  to,
+  subject,
+  text,
+  html,
+  attachments,
+  replyTo,
+}: SendEmailParams) {
   const host = (process.env.SMTP_HOST || '').trim();
   const user = (process.env.SMTP_USER || '').trim();
   const pass = (process.env.SMTP_PASS || '').trim();
@@ -73,6 +81,7 @@ export async function sendEmail({ to, subject, text, html, attachments }: SendEm
       text,
       html: html || text,
       attachments,
+      ...(replyTo ? { replyTo } : {}),
     });
     console.log('Email successfully sent to:', to, ' - MessageId:', info.messageId);
     return { success: true, messageId: info.messageId };

@@ -51,7 +51,7 @@ const TRANSLATIONS = {
     privacyTitle: "How we use your data",
     privacyEmail: "Email: For booking confirmation and communication.",
     privacyID: "Identity Documents: Legal requirement for police reporting.",
-    privacySelfie: "Selfie: To verify that you match your identity document.",
+    privacySelfie: "Document photos: Used only for legal registration.",
     privacyArrival: "Arrival Time: To ensure the host is ready for you.",
     signatureTitle: "Signature",
     tapToStart: "Tap the box below to start signing",
@@ -74,6 +74,7 @@ const TRANSLATIONS = {
     usePhoto: "Use this photo",
     successfullyCaptured: "Successfully Captured",
     errNameRequired: "Full name is required",
+    errCountryRequired: "Country of document is required",
     errEmailRequired: "Email is required",
     errCheckinRequired: "Check-in date is required",
     errCheckoutRequired: "Check-out date is required",
@@ -89,6 +90,9 @@ const TRANSLATIONS = {
     errMoreFields: "And {n} more fields...",
     continue: "Continue",
     back: "Back",
+    docGuidePassport: "Fit the passport photo page in the frame — use the back camera in good light.",
+    docGuideIdFront: "Place the front of your ID card flat in the frame — use the back camera.",
+    docGuideIdBack: "Flip the card and capture the back in the frame — use the back camera.",
   },
   FR: {
     title: "Pré-enregistrement",
@@ -131,7 +135,7 @@ const TRANSLATIONS = {
     privacyTitle: "Utilisation de vos données",
     privacyEmail: "E-mail : Pour la confirmation et la communication.",
     privacyID: "Documents d'identité : Obligation légale (déclaration police).",
-    privacySelfie: "Selfie : Pour vérifier l'identité de la personne présente.",
+    privacySelfie: "Photos des documents : uniquement pour l'enregistrement légal.",
     privacyArrival: "Heure d'arrivée : Pour organiser votre accueil.",
     signatureTitle: "Signature",
     tapToStart: "Appuyez sur la case ci-dessous pour signer",
@@ -154,6 +158,7 @@ const TRANSLATIONS = {
     usePhoto: "Utiliser cette photo",
     successfullyCaptured: "Capturé avec succès",
     errNameRequired: "Le nom complet est requis",
+    errCountryRequired: "Le pays du document est requis",
     errEmailRequired: "L'e-mail est requis",
     errCheckinRequired: "La date d'arrivée est requise",
     errCheckoutRequired: "La date de départ est requise",
@@ -169,6 +174,9 @@ const TRANSLATIONS = {
     errMoreFields: "Et {n} autres champs...",
     continue: "Continuer",
     back: "Retour",
+    docGuidePassport: "Cadrez la page photo du passeport — utilisez la caméra arrière, bien éclairé.",
+    docGuideIdFront: "Placez le recto de la carte à puce dans le cadre — caméra arrière.",
+    docGuideIdBack: "Retournez la carte et capturez le verso — caméra arrière.",
   },
   SP: {
     title: "Pre-registro",
@@ -211,7 +219,7 @@ const TRANSLATIONS = {
     privacyTitle: "Uso de sus datos",
     privacyEmail: "Correo: Para confirmación y comunicación.",
     privacyID: "Documentos: Requisito legal para informe policial.",
-    privacySelfie: "Selfie: Para verificar su identidad.",
+    privacySelfie: "Fotos del documento: solo para registro legal.",
     privacyArrival: "Hora de llegada: Para asegurar su recepción.",
     signatureTitle: "Firma",
     tapToStart: "Toque el cuadro de abajo para firmar",
@@ -234,6 +242,7 @@ const TRANSLATIONS = {
     usePhoto: "Usar esta foto",
     successfullyCaptured: "Capturado con éxito",
     errNameRequired: "El nombre completo es obligatorio",
+    errCountryRequired: "El país del documento es obligatorio",
     errEmailRequired: "El correo electrónico es obligatorio",
     errCheckinRequired: "La fecha de entrada es obligatoria",
     errCheckoutRequired: "La fecha de salida es obligatoria",
@@ -249,6 +258,9 @@ const TRANSLATIONS = {
     errMoreFields: "Y {n} campos más...",
     continue: "Continuar",
     back: "Atrás",
+    docGuidePassport: "Encuadre la página con foto del pasaporte — use la cámara trasera con buena luz.",
+    docGuideIdFront: "Coloque el anverso de la tarjeta en el marco — cámara trasera.",
+    docGuideIdBack: "Gire la tarjeta y capture el reverso en el marco — cámara trasera.",
   }
 };
 
@@ -264,17 +276,15 @@ function usePhoneFormLayout() {
   return phone;
 }
 
-function firstWizardStepForErrors(
-  errors: Record<string, string>,
-  requireSelfie: boolean
-): number {
+function firstWizardStepForErrors(errors: Record<string, string>): number {
   const keys = Object.keys(errors);
-  const finish = requireSelfie ? 3 : 2;
+  const finish = 2;
   for (const k of keys) {
     if (
       k === "guestName" ||
       k === "guestEmail" ||
       k === "checkin" ||
+      k === "checkout" ||
       k === "checkinHour"
     ) {
       return 0;
@@ -283,7 +293,13 @@ function firstWizardStepForErrors(
   for (const k of keys) {
     if (k.startsWith("traveler_")) return 1;
   }
-  if (requireSelfie && keys.includes("selfie")) return 2;
+  if (
+    keys.includes("agreement") ||
+    keys.includes("privacy") ||
+    keys.includes("signature")
+  ) {
+    return 2;
+  }
   return finish;
 }
 
@@ -310,7 +326,8 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
   const [adults, setAdults] = useState(1);
   const [kids, setKids] = useState(0);
   const sigRef = useRef<SignaturePad>(null);
-  const [selfieFile, setSelfieFile] = useState<File | null>(null);
+  const [guestName, setGuestName] = useState('');
+  const [otherTravelerNames, setOtherTravelerNames] = useState<Record<number, string>>({});
   const [hasAgreed, setHasAgreed] = useState(false);
   const [hasAgreedPrivacy, setHasAgreedPrivacy] = useState(false);
   const [isRulesOpen, setIsRulesOpen] = useState(false);
@@ -323,7 +340,7 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
     [property.showWhatsApp, whatsappValue]
   );
   const phoneLayout = usePhoneFormLayout();
-  const finishStep = property.requireSelfie ? 3 : 2;
+  const finishStep = 2;
   const [wizardStep, setWizardStep] = useState(0);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
@@ -336,6 +353,11 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
     const id = requestAnimationFrame(() => window.dispatchEvent(new Event("resize")));
     return () => cancelAnimationFrame(id);
   }, [phoneLayout, wizardStep, finishStep]);
+
+  const fieldErr = (key: string) =>
+    validationErrors[key]
+      ? 'border-red-500 bg-red-50/50 ring-1 ring-red-200'
+      : 'border-[#B0B0B0] focus:border-[#222222] focus:ring-2 focus:ring-[#222222] focus:ring-offset-0';
 
   useEffect(() => {
     const resizeCanvas = () => {
@@ -432,12 +454,19 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
     const formDataObj = new FormData(e.currentTarget);
     const errors: Record<string, string> = {};
 
-    if (!formDataObj.get('guestName')) errors['guestName'] = t.errNameRequired;
-    if (!formDataObj.get('guestEmail')) errors['guestEmail'] = t.errEmailRequired;
+    if (!String(formDataObj.get('guestName') || '').trim()) errors['guestName'] = t.errNameRequired;
+    if (!String(formDataObj.get('guestEmail') || '').trim()) errors['guestEmail'] = t.errEmailRequired;
     if (!formDataObj.get('checkin')) errors['checkin'] = t.errCheckinRequired;
+    if (!formDataObj.get('checkout')) errors['checkout'] = t.errCheckoutRequired;
     if (!formDataObj.get('checkinHour')) errors['checkinHour'] = t.errArrivalRequired;
 
     travelers.forEach((traveler, index) => {
+      if (!String(formDataObj.get(`traveler_${index}_name`) || '').trim()) {
+        errors[`traveler_${index}_name`] = t.errNameRequired;
+      }
+      if (!String(formDataObj.get(`traveler_${index}_country`) || '').trim()) {
+        errors[`traveler_${index}_country`] = t.errCountryRequired;
+      }
       if (!formDataObj.get(`traveler_${index}_idNumber`)) errors[`traveler_${index}_idNumber`] = t.errIdNumberRequired;
       
       // Photo validation only if property.requireIdPhotos is enabled
@@ -452,7 +481,6 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
       }
     });
 
-    if (property.requireSelfie && !selfieFile) errors['selfie'] = t.errSelfieRequired;
     if (!hasAgreed) errors['agreement'] = t.errAgreementRequired;
     if (!hasAgreedPrivacy) errors['privacy'] = t.errPrivacyRequired;
     if (!sigRef.current || sigRef.current.isEmpty()) errors['signature'] = t.errSignatureRequired;
@@ -460,7 +488,7 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
     if (Object.keys(errors).length > 0) {
       setValidationErrors(errors);
       if (phoneLayout) {
-        setWizardStep(firstWizardStepForErrors(errors, property.requireSelfie));
+        setWizardStep(firstWizardStepForErrors(errors));
         scrollAreaRef.current?.scrollTo(0, 0);
       }
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -477,8 +505,6 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
       formData.set('signature', signatureData as string);
       formData.set('lang', lang);
       formData.set('propertyId', property.id);
-      if (selfieFile) formData.set('selfie', selfieFile);
-
       const result = await saveBooking(formData);
       if (result.success) {
         const next =
@@ -498,7 +524,6 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
 
   const showPersonal = !phoneLayout || wizardStep === 0;
   const showTravelers = !phoneLayout || wizardStep === 1;
-  const showSelfie = property.requireSelfie && (!phoneLayout || wizardStep === 2);
   const showFinish = !phoneLayout || wizardStep === finishStep;
 
   return (
@@ -632,11 +657,11 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
             >
               {Object.keys(validationErrors).length > 0 && (
                 <div
-                  className={`p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-center gap-3 animate-in slide-in-from-top-4 duration-500 ${
+                  className={`p-4 bg-red-50 border border-red-200 rounded-2xl flex items-center gap-3 animate-in slide-in-from-top-4 duration-500 ${
                     phoneLayout ? "" : "mx-6 sm:mx-12 mb-12 p-5 rounded-3xl"
                   }`}
                 >
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white rounded-2xl flex items-center justify-center text-amber-600 shadow-sm shrink-0">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white rounded-2xl flex items-center justify-center text-red-600 shadow-sm shrink-0">
                     <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.718-3L12 3 3.424 16c-.784 1.334.177 3 1.718 3z" />
                     </svg>
@@ -661,17 +686,38 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 <div className="space-y-2 md:space-y-3">
                   <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#222222] ml-1">{t.fullName}</label>
-                  <input name="guestName" placeholder={t.fullNamePlaceholder} required className={`w-full px-4 py-3.5 md:px-6 md:py-5 bg-white border border-[#B0B0B0] rounded-lg outline-none transition-shadow font-normal text-[#222222] placeholder:text-[#717171] text-base ${validationErrors['guestName'] ? 'border-amber-500 bg-amber-50 ring-0' : 'focus:border-[#222222] focus:ring-2 focus:ring-[#222222] focus:ring-offset-0'}`} />
+                  <input
+                    name="guestName"
+                    value={guestName}
+                    onChange={(e) => setGuestName(e.target.value)}
+                    placeholder={t.fullNamePlaceholder}
+                    required
+                    autoComplete="name"
+                    className={`w-full px-4 py-3.5 md:px-6 md:py-5 bg-white border rounded-lg outline-none transition-shadow font-normal text-[#222222] placeholder:text-[#717171] text-base ${fieldErr('guestName')}`}
+                  />
                 </div>
                 <div className="space-y-2 md:space-y-3">
                   <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#222222] ml-1">{t.email}</label>
-                  <input name="guestEmail" type="email" placeholder={t.emailPlaceholder} required className={`w-full px-4 py-3.5 md:px-6 md:py-5 bg-white border border-[#B0B0B0] rounded-lg outline-none transition-shadow font-normal text-[#222222] placeholder:text-[#717171] text-base ${validationErrors['guestEmail'] ? 'border-amber-500 bg-amber-50 ring-0' : 'focus:border-[#222222] focus:ring-2 focus:ring-[#222222] focus:ring-offset-0'}`} />
+                  <input
+                    name="guestEmail"
+                    type="email"
+                    autoComplete="email"
+                    placeholder={t.emailPlaceholder}
+                    required
+                    className={`w-full px-4 py-3.5 md:px-6 md:py-5 bg-white border rounded-lg outline-none transition-shadow font-normal text-[#222222] placeholder:text-[#717171] text-base ${fieldErr('guestEmail')}`}
+                  />
                 </div>
                 
                 {property.showWhatsApp && (
                   <div className="space-y-2 md:space-y-3 md:col-span-2">
                     <label className="text-[10px] font-black uppercase tracking-[0.25em] text-gray-400 ml-1">{t.whatsapp}</label>
-                    <div className="flex rounded-lg border border-[#B0B0B0] bg-white overflow-hidden transition-shadow focus-within:border-[#222222] focus-within:ring-2 focus-within:ring-[#222222] focus-within:ring-offset-0">
+                    <div
+                      className={`flex rounded-lg border bg-white overflow-hidden transition-shadow focus-within:ring-2 focus-within:ring-offset-0 ${
+                        validationErrors['whatsapp']
+                          ? 'border-red-500 ring-1 ring-red-200'
+                          : 'border-[#B0B0B0] focus-within:border-[#222222] focus-within:ring-[#222222]'
+                      }`}
+                    >
                       <div
                         className="flex items-center justify-center px-3 md:px-4 py-3.5 md:py-5 bg-[#F7F7F7] border-r border-[#DDDDDD] min-w-[3.25rem] md:min-w-[3.75rem] shrink-0 text-xl md:text-2xl leading-none select-none"
                         title={whatsappParsed?.dialLabel ?? ''}
@@ -695,12 +741,31 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
 
                 <div className="space-y-2 md:space-y-3">
                   <label className="text-[10px] font-black uppercase tracking-[0.25em] text-gray-400 ml-1">{t.checkinDates}</label>
-                  <DatePicker name="checkin" endDateName="checkout" required lang={lang} />
+                  <DatePicker
+                    name="checkin"
+                    endDateName="checkout"
+                    required
+                    lang={lang}
+                    error={!!(validationErrors['checkin'] || validationErrors['checkout'])}
+                  />
                 </div>
                 
                 <div className="space-y-2 md:space-y-3">
                   <label className="text-[10px] font-black uppercase tracking-[0.25em] text-gray-400 ml-1">{t.estimatedArrival}</label>
-                  <input name="checkinHour" type="time" required className="w-full px-4 py-3.5 md:px-6 md:py-5 bg-white border border-[#B0B0B0] rounded-lg outline-none transition-shadow font-medium text-[#222222] text-base focus:border-[#222222] focus:ring-2 focus:ring-[#222222] focus:ring-offset-0" />
+                  <div
+                    className={`rounded-lg border bg-white overflow-hidden transition-shadow focus-within:ring-2 focus-within:ring-offset-0 ${
+                      validationErrors['checkinHour']
+                        ? 'border-red-500 ring-1 ring-red-200'
+                        : 'border-[#B0B0B0] focus-within:border-[#222222] focus-within:ring-[#222222]'
+                    }`}
+                  >
+                    <input
+                      name="checkinHour"
+                      type="time"
+                      required
+                      className="w-full min-h-[3.25rem] md:min-h-[3.75rem] px-4 py-3 md:px-6 md:py-4 bg-transparent border-0 outline-none font-semibold text-[#222222] text-base tabular-nums [color-scheme:light] [&::-webkit-datetime-edit-fields-wrapper]:p-0 [&::-webkit-calendar-picker-indicator]:opacity-100 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:ml-1"
+                    />
+                  </div>
                 </div>
               </div>
             </section>
@@ -745,10 +810,16 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
                     <label className="text-[10px] font-black uppercase tracking-[0.25em] text-gray-400 ml-1">{t.fullName}</label>
                     <input 
                       name={`traveler_${index}_name`}
-                      defaultValue={index === 0 ? '' : ''} 
+                      value={index === 0 ? guestName : (otherTravelerNames[index] ?? '')}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        if (index === 0) setGuestName(v);
+                        else setOtherTravelerNames((prev) => ({ ...prev, [index]: v }));
+                      }}
                       placeholder={t.fullNamePlaceholder}
                       required 
-                      className={`w-full px-4 py-3.5 bg-white border border-[#B0B0B0] rounded-lg outline-none transition-shadow font-normal text-[#222222] placeholder:text-[#717171] focus:border-[#222222] focus:ring-2 focus:ring-[#222222] focus:ring-offset-0 ${validationErrors[`traveler_${index}_name`] ? 'border-amber-500 bg-amber-50 ring-0' : ''}`} 
+                      autoComplete={index === 0 ? 'name' : 'off'}
+                      className={`w-full px-4 py-3.5 bg-white border rounded-lg outline-none transition-shadow font-normal text-[#222222] placeholder:text-[#717171] ${fieldErr(`traveler_${index}_name`)}`} 
                     />
                   </div>
 
@@ -773,7 +844,7 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
                           };
                           setTravelers(newTravelers);
                         }}
-                        className="w-full px-4 py-3.5 bg-white border border-[#B0B0B0] rounded-lg outline-none transition-shadow font-medium text-[#222222] appearance-none focus:border-[#222222] focus:ring-2 focus:ring-[#222222] focus:ring-offset-0"
+                        className={`w-full px-4 py-3.5 bg-white border rounded-lg outline-none transition-shadow font-medium text-[#222222] appearance-none ${fieldErr(`traveler_${index}_country`)}`}
                       >
                         <option value="">{t.selectCountry}</option>
                         <option value="MA">{t.morocco}</option>
@@ -806,12 +877,36 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     { (traveler.country === 'OTHER' || traveler.country === '' || traveler.noCIN) ? (
                       <div className="md:col-span-2">
-                        <CameraCapture name={`traveler_${index}_passport`} guide="document" lang={lang} labels={t} />
+                        <CameraCapture
+                          name={`traveler_${index}_passport`}
+                          guide="document"
+                          documentVariant="passport"
+                          documentHint={t.docGuidePassport}
+                          hasError={!!validationErrors[`traveler_${index}_passport`]}
+                          lang={lang}
+                          labels={t}
+                        />
                       </div>
                     ) : (
                       <>
-                        <CameraCapture name={`traveler_${index}_cinFront`} guide="document" lang={lang} labels={t} />
-                        <CameraCapture name={`traveler_${index}_cinBack`} guide="document" lang={lang} labels={t} />
+                        <CameraCapture
+                          name={`traveler_${index}_cinFront`}
+                          guide="document"
+                          documentVariant="idFront"
+                          documentHint={t.docGuideIdFront}
+                          hasError={!!validationErrors[`traveler_${index}_cinFront`]}
+                          lang={lang}
+                          labels={t}
+                        />
+                        <CameraCapture
+                          name={`traveler_${index}_cinBack`}
+                          guide="document"
+                          documentVariant="idBack"
+                          documentHint={t.docGuideIdBack}
+                          hasError={!!validationErrors[`traveler_${index}_cinBack`]}
+                          lang={lang}
+                          labels={t}
+                        />
                       </>
                     )}
                   </div>
@@ -820,21 +915,11 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
                     <label className="text-[10px] font-black uppercase tracking-[0.25em] text-gray-400 ml-1">
                       {(traveler.country === 'OTHER' || traveler.country === '' || traveler.noCIN) ? t.passportNumber : t.cinNumber}
                     </label>
-                    <input name={`traveler_${index}_idNumber`} required className="w-full px-4 py-3.5 bg-white border border-[#B0B0B0] rounded-lg outline-none transition-shadow font-normal text-[#222222] placeholder:text-[#717171] focus:border-[#222222] focus:ring-2 focus:ring-[#222222] focus:ring-offset-0" />
+                    <input name={`traveler_${index}_idNumber`} required className={`w-full px-4 py-3.5 bg-white border rounded-lg outline-none transition-shadow font-normal text-[#222222] placeholder:text-[#717171] ${fieldErr(`traveler_${index}_idNumber`)}`} />
                   </div>
                 </div>
               </section>
             ))}
-
-            {showSelfie && (
-              <section className="space-y-5 md:space-y-8 pt-6 md:pt-8 border-t border-[#DDDDDD]/30">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-0.5 bg-[#DDDDDD]/50" />
-                  <h2 className="text-sm font-bold text-[#222222] tracking-[0.3em] uppercase">{t.verification}</h2>
-                </div>
-                <CameraCapture name="selfie" lang={lang} labels={t} onCapture={setSelfieFile} />
-              </section>
-            )}
 
             <section className={`space-y-5 md:space-y-8 pt-6 md:pt-8 border-t border-gray-50 ${showFinish ? "" : "hidden md:block"}`}>
                <div className="p-5 md:p-8 bg-gray-900 rounded-2xl md:rounded-[2.5rem] text-white space-y-4 md:space-y-6 shadow-2xl shadow-gray-200">
@@ -853,7 +938,13 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
                </div>
 
                <div className="space-y-3 md:space-y-4">
-                 <button type="button" onClick={() => setHasAgreed(!hasAgreed)} className={`w-full p-4 md:p-6 rounded-2xl md:rounded-3xl border transition-all duration-500 flex items-start gap-3 md:gap-4 text-left ${hasAgreed ? 'bg-[#F7F7F7] border-[#FF385C]/30 shadow-lg shadow-[#FF385C]/5' : 'bg-[#F7F7F7] border-[#DDDDDD] hover:border-[#FF385C]/30'}`}>
+                 <button type="button" onClick={() => setHasAgreed(!hasAgreed)} className={`w-full p-4 md:p-6 rounded-2xl md:rounded-3xl border transition-all duration-500 flex items-start gap-3 md:gap-4 text-left ${
+                    validationErrors['agreement']
+                      ? 'border-red-500 ring-1 ring-red-200 bg-red-50/40'
+                      : hasAgreed
+                        ? 'bg-[#F7F7F7] border-[#FF385C]/30 shadow-lg shadow-[#FF385C]/5'
+                        : 'bg-[#F7F7F7] border-[#DDDDDD] hover:border-[#FF385C]/30'
+                  }`}>
                     <div className={`w-6 h-6 rounded-lg border mt-0.5 shrink-0 flex items-center justify-center transition-all duration-500 ${hasAgreed ? 'bg-[#FF385C] border-[#FF385C]' : 'bg-white border-[#DDDDDD]'}`}>
                       {hasAgreed && <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>}
                     </div>
@@ -863,7 +954,13 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
                     </div>
                  </button>
 
-                 <button type="button" onClick={() => setHasAgreedPrivacy(!hasAgreedPrivacy)} className={`w-full p-4 md:p-6 rounded-2xl md:rounded-3xl border transition-all duration-500 flex items-start gap-3 md:gap-4 text-left ${hasAgreedPrivacy ? 'bg-[#F7F7F7] border-[#FF385C]/30 shadow-lg shadow-[#FF385C]/5' : 'bg-[#F7F7F7] border-[#DDDDDD] hover:border-[#FF385C]/30'}`}>
+                 <button type="button" onClick={() => setHasAgreedPrivacy(!hasAgreedPrivacy)} className={`w-full p-4 md:p-6 rounded-2xl md:rounded-3xl border transition-all duration-500 flex items-start gap-3 md:gap-4 text-left ${
+                    validationErrors['privacy']
+                      ? 'border-red-500 ring-1 ring-red-200 bg-red-50/40'
+                      : hasAgreedPrivacy
+                        ? 'bg-[#F7F7F7] border-[#FF385C]/30 shadow-lg shadow-[#FF385C]/5'
+                        : 'bg-[#F7F7F7] border-[#DDDDDD] hover:border-[#FF385C]/30'
+                  }`}>
                     <div className={`w-6 h-6 rounded-lg border mt-0.5 shrink-0 flex items-center justify-center transition-all duration-500 ${hasAgreedPrivacy ? 'bg-[#FF385C] border-[#FF385C]' : 'bg-white border-[#DDDDDD]'}`}>
                       {hasAgreedPrivacy && <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>}
                     </div>
@@ -881,7 +978,15 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
                 <h2 className="text-sm font-bold text-[#222222] tracking-[0.3em] uppercase">{t.signatureTitle}</h2>
               </div>
               
-              <div className={`relative border-2 md:border-4 rounded-2xl md:rounded-[2.5rem] bg-gray-50 overflow-hidden transition-all ${isSigningActive ? 'border-[var(--primary-color)]' : 'border-gray-100'}`}>
+              <div
+                className={`relative border-2 md:border-4 rounded-2xl md:rounded-[2.5rem] bg-gray-50 overflow-hidden transition-all ${
+                  validationErrors['signature']
+                    ? 'border-red-500 ring-2 ring-red-200'
+                    : isSigningActive
+                      ? 'border-[var(--primary-color)]'
+                      : 'border-gray-100'
+                }`}
+              >
                 {!isSigningActive && (
                   <div className="absolute inset-0 z-10 bg-white/40 backdrop-blur-[2px] flex flex-col items-center justify-center cursor-pointer gap-4 group" onClick={() => setIsSigningActive(true)}>
                     <div className="w-16 h-16 bg-white rounded-full shadow-xl flex items-center justify-center group-hover:scale-110 transition-transform text-[#FF385C]">
