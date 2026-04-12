@@ -3,8 +3,19 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { Prisma } from "@prisma/client";
 import { unlink } from "fs/promises";
 import path from "path";
+
+function revalidateDashboard() {
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/bookings");
+  revalidatePath("/dashboard/trash");
+}
+
+function isNotFound(e: unknown): boolean {
+  return e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2025";
+}
 
 export async function softDeleteBooking(bookingId: string) {
   const session = await auth();
@@ -20,21 +31,22 @@ export async function softDeleteBooking(bookingId: string) {
     select: { id: true },
   });
 
+  // Already trashed / not ours: idempotent. Do NOT revalidate here — spamming revalidatePath caused Next.js digest errors.
   if (!row) {
-    revalidatePath("/dashboard");
-    revalidatePath("/dashboard/bookings");
-    revalidatePath("/dashboard/trash");
     return { success: true };
   }
 
-  await prisma.booking.update({
-    where: { id: bookingId },
-    data: { deletedAt: new Date() },
-  });
+  try {
+    await prisma.booking.update({
+      where: { id: bookingId },
+      data: { deletedAt: new Date() },
+    });
+  } catch (e) {
+    if (isNotFound(e)) return { success: true };
+    throw e;
+  }
 
-  revalidatePath("/dashboard");
-  revalidatePath("/dashboard/bookings");
-  revalidatePath("/dashboard/trash");
+  revalidateDashboard();
   return { success: true };
 }
 
@@ -52,20 +64,20 @@ export async function restoreBooking(bookingId: string) {
   });
 
   if (!row) {
-    revalidatePath("/dashboard");
-    revalidatePath("/dashboard/bookings");
-    revalidatePath("/dashboard/trash");
     return { success: true };
   }
 
-  await prisma.booking.update({
-    where: { id: bookingId },
-    data: { deletedAt: null },
-  });
+  try {
+    await prisma.booking.update({
+      where: { id: bookingId },
+      data: { deletedAt: null },
+    });
+  } catch (e) {
+    if (isNotFound(e)) return { success: true };
+    throw e;
+  }
 
-  revalidatePath("/dashboard");
-  revalidatePath("/dashboard/bookings");
-  revalidatePath("/dashboard/trash");
+  revalidateDashboard();
   return { success: true };
 }
 
@@ -80,11 +92,7 @@ export async function permanentlyDeleteBooking(bookingId: string) {
     },
   });
 
-  // Idempotent: second concurrent delete finds nothing — no throw (avoids Next.js digest errors)
   if (!booking) {
-    revalidatePath("/dashboard");
-    revalidatePath("/dashboard/bookings");
-    revalidatePath("/dashboard/trash");
     return { success: true };
   }
 
@@ -97,12 +105,15 @@ export async function permanentlyDeleteBooking(bookingId: string) {
     }
   }
 
-  await prisma.booking.delete({
-    where: { id: bookingId },
-  });
+  try {
+    await prisma.booking.delete({
+      where: { id: bookingId },
+    });
+  } catch (e) {
+    if (isNotFound(e)) return { success: true };
+    throw e;
+  }
 
-  revalidatePath("/dashboard");
-  revalidatePath("/dashboard/bookings");
-  revalidatePath("/dashboard/trash");
+  revalidateDashboard();
   return { success: true };
 }
