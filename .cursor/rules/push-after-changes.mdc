@@ -1,0 +1,12 @@
+---
+description: After code changes, commit and push to GitHub so Vercel deploys
+alwaysApply: true
+---
+
+# Deploy via GitHub / Vercel
+
+When you finish a task that changes the codebase (and the user has not asked to skip git):
+
+1. Stage relevant files, commit with a clear message, and **push `main` to `origin`** so Vercel can deploy.
+2. If there is nothing to commit, still **push** if local `main` is ahead of `origin/main`.
+3. Do not force-push or rewrite history unless the user explicitly requests it.
