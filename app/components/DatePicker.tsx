@@ -248,10 +248,10 @@ export default function DatePicker({
         disabled={disabled}
         className={`
           w-12 h-12 rounded-lg text-sm font-medium transition-all
-          ${disabled ? 'text-gray-300 cursor-not-allowed' : 'text-gray-700 hover:bg-blue-50 cursor-pointer'}
-          ${selected ? 'bg-blue-600 text-white hover:bg-blue-700' : ''}
-          ${inRange && !selected ? 'bg-blue-50 text-blue-800 font-semibold' : ''}
-          ${today && !selected && !inRange ? 'bg-blue-100 text-blue-700 font-semibold' : ''}
+          ${disabled ? 'text-gray-300 cursor-not-allowed' : 'text-gray-700 hover:bg-rose-50 cursor-pointer'}
+          ${selected ? 'bg-[#FF385C] text-white hover:bg-[#E31C5F]' : ''}
+          ${inRange && !selected ? 'bg-rose-50 text-[#222222] font-semibold' : ''}
+          ${today && !selected && !inRange ? 'bg-rose-100 text-[#E31C5F] font-semibold' : ''}
           ${!disabled && !selected && !today && !inRange ? 'hover:bg-gray-100' : ''}
         `}
       >
@@ -282,7 +282,7 @@ export default function DatePicker({
         <span className={displayValue ? 'text-gray-900' : 'text-gray-500'}>
           {displayValue || (endDateName ? 'Select dates' : 'Select a date')}
         </span>
-        <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-5 h-5 text-[#FF385C]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
         </svg>
       </button>
@@ -320,7 +320,7 @@ export default function DatePicker({
                   const isCurrentYear = year === currentMonth.getFullYear();
                   const isDisabled = (min && year < new Date(min).getFullYear()) || (max && year > new Date(max).getFullYear());
                   return (
-                    <button key={year} type="button" onClick={() => handleYearSelect(year)} disabled={isDisabled as boolean} className={`py-2 px-3 rounded-lg text-sm font-medium transition-colors ${isCurrentYear ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-blue-50'} ${isDisabled ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'}`}>{d(year)}</button>
+                    <button key={year} type="button" onClick={() => handleYearSelect(year)} disabled={isDisabled as boolean} className={`py-2 px-3 rounded-lg text-sm font-medium transition-colors ${isCurrentYear ? 'bg-[#FF385C] text-white' : 'bg-white text-gray-700 hover:bg-rose-50'} ${isDisabled ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'}`}>{d(year)}</button>
                   );
                 })}
               </div>
@@ -333,7 +333,7 @@ export default function DatePicker({
               <div className="text-sm font-medium text-gray-600 mb-2 text-center">Select Month</div>
               <div className="grid grid-cols-3 gap-2">
                 {currentMonths.map((month, index) => (
-                  <button key={month} type="button" onClick={() => handleMonthSelect(index)} className={`py-2 px-3 rounded-lg text-sm font-medium transition-colors ${index === currentMonth.getMonth() ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-blue-50'} cursor-pointer`}>{month.substring(0, 3)}</button>
+                  <button key={month} type="button" onClick={() => handleMonthSelect(index)} className={`py-2 px-3 rounded-lg text-sm font-medium transition-colors ${index === currentMonth.getMonth() ? 'bg-[#FF385C] text-white' : 'bg-white text-gray-700 hover:bg-rose-50'} cursor-pointer`}>{month.substring(0, 3)}</button>
                 ))}
               </div>
             </div>

@@ -41,7 +41,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-[#F9FAFB] flex items-center justify-center p-4">
       <div className="max-w-md w-full">
         <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-[#EF4444] rounded-2xl text-white font-bold text-3xl mb-4 shadow-lg shadow-red-100">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-[#FF385C] rounded-xl text-white font-bold text-3xl mb-4 shadow-md">
             C
           </div>
           <h1 className="text-3xl font-bold text-[#111827]">Welcome Back</h1>
@@ -68,7 +68,7 @@ export default function LoginPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="block w-full pl-11 pr-4 py-3.5 bg-[#F9FAFB] border border-[#E5E7EB] rounded-2xl focus:ring-2 focus:ring-[#EF4444] focus:border-transparent transition-all outline-none text-[#111827]"
+                  className="block w-full pl-11 pr-4 py-3.5 bg-white border border-[#B0B0B0] rounded-lg focus:ring-2 focus:ring-[#222222] focus:border-[#222222] transition-all outline-none text-[#222222]"
                   placeholder="host@example.com"
                   required
                 />
@@ -87,7 +87,7 @@ export default function LoginPage() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full pl-11 pr-4 py-3.5 bg-[#F9FAFB] border border-[#E5E7EB] rounded-2xl focus:ring-2 focus:ring-[#EF4444] focus:border-transparent transition-all outline-none text-[#111827]"
+                  className="block w-full pl-11 pr-4 py-3.5 bg-white border border-[#B0B0B0] rounded-lg focus:ring-2 focus:ring-[#222222] focus:border-[#222222] transition-all outline-none text-[#222222]"
                   placeholder="••••••••"
                   required
                 />
@@ -97,7 +97,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#EF4444] hover:bg-[#DC2626] text-white font-bold py-4 rounded-2xl shadow-lg shadow-red-100 transition-all active:scale-[0.98] disabled:opacity-70 flex items-center justify-center gap-2"
+              className="w-full bg-[#FF385C] hover:bg-[#E31C5F] text-white font-semibold py-4 rounded-lg shadow-md transition-all active:scale-[0.98] disabled:opacity-70 flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>

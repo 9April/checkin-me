@@ -68,7 +68,7 @@ model Property {
   privacyPolicy   String?
   formTitle       String?
   formSubtitle    String?
-  primaryColor    String?   @default("#EF4444")
+  primaryColor    String?   @default("#FF385C")
   showWhatsApp    Boolean   @default(true)
   requireSelfie   Boolean   @default(true)
   requireIdPhotos Boolean   @default(true)

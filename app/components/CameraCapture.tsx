@@ -121,7 +121,7 @@ export default function CameraCapture({
             type="button"
             onClick={openCamera}
             disabled={disabled}
-            className="w-full py-4 px-6 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl transition-all shadow-lg active:scale-95 flex items-center justify-center gap-3 disabled:opacity-50"
+            className="w-full py-4 px-6 bg-[#FF385C] hover:bg-[#E31C5F] text-white font-semibold rounded-lg transition-all shadow-md active:scale-95 flex items-center justify-center gap-3 disabled:opacity-50"
           >
             <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -180,7 +180,7 @@ export default function CameraCapture({
               <button
                 type="button"
                 onClick={confirmPhoto}
-                className="flex-1 py-4 px-6 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl transition-all shadow-lg active:scale-95 uppercase tracking-widest text-xs"
+                className="flex-1 py-4 px-6 bg-[#FF385C] hover:bg-[#E31C5F] text-white font-semibold rounded-lg transition-all shadow-md active:scale-95 uppercase tracking-widest text-xs"
               >
                 {labels.usePhoto}
               </button>

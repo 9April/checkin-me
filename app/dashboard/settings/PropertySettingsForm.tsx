@@ -30,7 +30,7 @@ export default function PropertySettingsForm({ property, initialRules }: Propert
   const [logoPreview, setLogoPreview] = useState<string | null>(property.logoUrl || null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [primaryColor, setPrimaryColor] = useState(property.primaryColor || '#EF4444');
+  const [primaryColor, setPrimaryColor] = useState(property.primaryColor || '#FF385C');
 
   async function handleSubmit(formData: FormData) {
     const name = formData.get('name') as string;
@@ -287,7 +287,7 @@ export default function PropertySettingsForm({ property, initialRules }: Propert
                 </div>
               </div>
               <div className="flex flex-wrap gap-2">
-                {['#EF4444', '#3B82F6', '#10B981', '#6366F1', '#F59E0B', '#111827'].map((c) => (
+                {['#FF385C', '#E31C5F', '#3B82F6', '#10B981', '#111827', '#222222'].map((c) => (
                   <button 
                     key={c}
                     type="button"

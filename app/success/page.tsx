@@ -21,9 +21,9 @@ export default async function Success({
   const emailStatusUnknown = !emailSent && !mailError && !!params.pdf;
 
   return (
-    <main className="p-8 max-w-xl mx-auto text-center space-y-6">
-      <h1 className="text-2xl font-bold text-green-700">Check-in completed ✅</h1>
-      <p className="text-gray-600">
+    <main className="p-8 max-w-xl mx-auto text-center space-y-6 text-[#222222] font-sans">
+      <h1 className="text-2xl font-semibold text-[#222222]">Check-in completed</h1>
+      <p className="text-[#717171]">
         Your signed agreement has been generated. Tap the button below to download it.
       </p>
 
@@ -108,7 +108,7 @@ export default async function Success({
           href={pdfUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-4 rounded-2xl font-bold shadow-lg shadow-blue-100 transition-all active:scale-[0.98]"
+          className="inline-flex items-center justify-center gap-2 bg-[#FF385C] hover:bg-[#E31C5F] text-white px-6 py-4 rounded-lg font-semibold shadow-md transition-all active:scale-[0.98]"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -120,7 +120,7 @@ export default async function Success({
         <a
           href={pdfUrl}
           download
-          className="inline-flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-4 rounded-2xl font-bold transition-all active:scale-[0.98]"
+          className="inline-flex items-center justify-center gap-2 bg-white border border-[#222222] text-[#222222] hover:bg-[#F7F7F7] px-6 py-4 rounded-lg font-semibold transition-all active:scale-[0.98]"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />

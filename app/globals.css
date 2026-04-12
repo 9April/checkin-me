@@ -2,24 +2,41 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
-  --gold-primary: #C5A059;
-  --gold-dark: #B08D43;
-  --gold-light: #F4EBD0;
-  --luxury-cream: #FDFCF9;
-  --deep-charcoal: #1A1A1A;
-  --silk-white: #FFFFFF;
+  --foreground: #222222;
+  /* Airbnb-inspired */
+  --ab-brand: #ff385c;
+  --ab-brand-hover: #e31c5f;
+  --ab-surface: #ffffff;
+  --ab-muted: #f7f7f7;
+  --ab-border: #dddddd;
+  --ab-border-input: #b0b0b0;
+  --ab-text: #222222;
+  --ab-text-secondary: #717171;
+  /* Legacy aliases (dashboard / older screens) */
+  --gold-primary: var(--ab-brand);
+  --gold-dark: var(--ab-brand-hover);
+  --gold-light: #ebebeb;
+  --luxury-cream: var(--ab-muted);
+  --deep-charcoal: var(--ab-text);
+  --silk-white: #ffffff;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-ab-brand: var(--ab-brand);
+  --color-ab-brand-hover: var(--ab-brand-hover);
+  --color-ab-muted: var(--ab-muted);
+  --color-ab-border: var(--ab-border);
+  --color-ab-text: var(--ab-text);
+  --color-ab-text-secondary: var(--ab-text-secondary);
   --color-gold-primary: var(--gold-primary);
   --color-gold-dark: var(--gold-dark);
   --color-gold-light: var(--gold-light);
   --color-luxury-cream: var(--luxury-cream);
   --color-deep-charcoal: var(--deep-charcoal);
-  --font-sans: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-inter), "Circular", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, "Helvetica Neue", sans-serif;
   --font-mono: var(--font-geist-mono);
 }
 
@@ -32,8 +49,9 @@ html {
 
 body {
   background: #ffffff;
-  color: #171717;
-  font-family: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
+  color: var(--ab-text);
+  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", sans-serif;
   overflow-x: clip;
   max-width: 100%;
 }
@@ -79,11 +97,11 @@ body {
 
 .input {
   width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #d1d5db;
-  border-radius: 0.375rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--ab-border-input);
+  border-radius: 0.5rem;
   background-color: #ffffff;
-  color: #171717;
+  color: var(--ab-text);
   font-size: 1rem;
   line-height: 1.5;
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
@@ -91,8 +109,8 @@ body {
 
 .input:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: var(--ab-text);
+  box-shadow: 0 0 0 2px #222222;
 }
 
 .input:disabled {
@@ -122,8 +140,8 @@ select.input {
 
 select.input:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: var(--ab-text);
+  box-shadow: 0 0 0 2px #222222;
 }
 
 select.input option {

@@ -304,9 +304,7 @@ interface PropertyData {
 export default function CheckInForm({ property }: { property: PropertyData }) {
   const [lang, setLang] = useState<Lang>('EN');
   const t = TRANSLATIONS[lang];
-  const goldPrimary = '#C5A059'; 
-  const deepCharcoal = '#1A1A1A';
-  const luxuryCream = '#FDFCF9';
+  const brandPrimary = "#FF385C";
   
   const [isLoading, setIsLoading] = useState(false);
   const [adults, setAdults] = useState(1);
@@ -449,12 +447,12 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
 
   return (
     <main
-      className={`bg-[#FDFCF9] font-sans w-full max-w-full overflow-x-hidden ${
+      className={`bg-[#F7F7F7] font-sans w-full max-w-full overflow-x-hidden ${
         phoneLayout
           ? "h-[100dvh] max-h-[100dvh] flex flex-col overflow-hidden overscroll-none"
           : "min-h-screen py-8 px-4 sm:px-6 lg:px-8 pb-24"
       }`}
-      style={{ "--primary-color": goldPrimary } as CSSProperties}
+      style={{ "--primary-color": brandPrimary } as CSSProperties}
     >
       <div
         className={`transition-all duration-300 ${
@@ -470,12 +468,12 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
         >
           {/* Header */}
           <div
-            className={`flex justify-between items-center gap-3 border-b border-[#F4EBD0]/50 bg-white/60 backdrop-blur-xl shrink-0 z-20 max-w-full min-w-0 ${
+            className={`flex justify-between items-center gap-3 border-b border-[#DDDDDD]/50 bg-white/60 backdrop-blur-xl shrink-0 z-20 max-w-full min-w-0 ${
               phoneLayout ? "p-3 pt-safe checkin-px flex-row" : "p-6 sm:p-8 flex-col sm:flex-row gap-6 sticky top-0"
             }`}
           >
             <div
-              className={`flex items-center gap-1 p-1 bg-[#F9F7F2] rounded-2xl overflow-x-auto no-scrollbar shrink-0 ${
+              className={`flex items-center gap-1 p-1 bg-[#F7F7F7] rounded-xl overflow-x-auto no-scrollbar shrink-0 border border-[#DDDDDD] ${
                 phoneLayout ? "max-w-[55%]" : "w-full sm:w-auto gap-2 p-1.5"
               }`}
             >
@@ -485,7 +483,7 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
                   type="button"
                   onClick={() => setLang(l)}
                   className={`flex-1 sm:flex-none rounded-xl font-bold uppercase tracking-widest transition-all duration-500 text-[9px] px-3 py-2 sm:text-[10px] sm:px-6 sm:py-2.5
-                    ${lang === l ? "bg-white text-[#C5A059] shadow-sm" : "text-gray-400 hover:text-[#C5A059] hover:bg-white/50"}`}
+                    ${lang === l ? "bg-white text-[#222222] shadow-sm font-semibold" : "text-[#717171] hover:text-[#222222] hover:bg-white"}`}
                 >
                   {l}
                 </button>
@@ -493,7 +491,7 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
             </div>
             {property.logoUrl && (
               <div
-                className={`bg-white rounded-2xl border border-[#F4EBD0]/50 shadow-sm flex items-center justify-center shrink-0 ${
+                className={`bg-white rounded-2xl border border-[#DDDDDD]/50 shadow-sm flex items-center justify-center shrink-0 ${
                   phoneLayout ? "px-3 py-2" : "px-8 py-6 rounded-3xl"
                 }`}
               >
@@ -507,8 +505,8 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
           </div>
 
           {phoneLayout && (
-            <div className="shrink-0 checkin-px py-2.5 border-b border-[#F4EBD0]/40 bg-[#FDFCF9]/90">
-              <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#B08D43] truncate text-center">
+            <div className="shrink-0 checkin-px py-2.5 border-b border-[#DDDDDD]/40 bg-[#F7F7F7]/90">
+              <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#222222] truncate text-center">
                 {property.formTitle || property.name}
               </p>
               <div className="flex justify-center gap-1.5 mt-2" role="tablist" aria-label="Form steps">
@@ -516,7 +514,7 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
                   <span
                     key={i}
                     className={`h-1.5 rounded-full transition-all duration-300 ${
-                      i === wizardStep ? "w-7 bg-[#C5A059]" : "w-1.5 bg-[#F4EBD0]"
+                      i === wizardStep ? "w-7 bg-[#FF385C]" : "w-1.5 bg-[#DDDDDD]"
                     }`}
                   />
                 ))}
@@ -525,15 +523,15 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
                 <button
                   type="button"
                   onClick={() => setIsPrivacyOpen(true)}
-                  className="text-[9px] font-bold text-[#C5A059] uppercase tracking-widest"
+                  className="text-[9px] font-bold text-[#FF385C] uppercase tracking-widest"
                 >
                   Privacy
                 </button>
-                <span className="text-[#F4EBD0]">·</span>
+                <span className="text-[#DDDDDD]">·</span>
                 <button
                   type="button"
                   onClick={() => setIsRulesOpen(true)}
-                  className="text-[9px] font-bold text-[#C5A059] uppercase tracking-widest"
+                  className="text-[9px] font-bold text-[#FF385C] uppercase tracking-widest"
                 >
                   House rules
                 </button>
@@ -542,12 +540,12 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
           )}
 
           <div
-            className={`text-center bg-gradient-to-b from-[#FDFCF9] to-white ${
+            className={`text-center bg-gradient-to-b from-[#F7F7F7] to-white ${
               phoneLayout ? "checkin-px py-5" : "px-6 py-20 sm:px-12"
             } ${phoneLayout && wizardStep !== 0 ? "hidden" : ""}`}
           >
             <span
-              className={`inline-block bg-[#F4EBD0] rounded-full font-bold uppercase text-[#B08D43] ${
+              className={`inline-block bg-[#DDDDDD] rounded-full font-bold uppercase text-[#222222] ${
                 phoneLayout
                   ? "px-3 py-1 text-[8px] tracking-[0.35em] mb-3"
                   : "px-5 py-2 text-[10px] tracking-[0.4em] mb-8 animate-pulse"
@@ -556,15 +554,15 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
               {t.title}
             </span>
             <h1
-              className={`font-bold text-[#1A1A1A] tracking-tighter mb-3 sm:mb-6 leading-[1.1] font-serif italic ${
-                phoneLayout ? "text-2xl sm:text-3xl" : "text-5xl"
+              className={`font-semibold text-[#222222] tracking-tight mb-3 sm:mb-6 leading-snug ${
+                phoneLayout ? "text-2xl sm:text-[26px]" : "text-4xl"
               }`}
             >
               {property.formTitle || `${property.name}`}
             </h1>
             {property.formSubtitle && (
               <p
-                className={`text-[#6B635C] font-medium max-w-md mx-auto leading-relaxed tracking-tight opacity-80 ${
+                className={`text-[#717171] font-medium max-w-md mx-auto leading-relaxed tracking-tight opacity-80 ${
                   phoneLayout ? "text-sm" : "text-lg"
                 }`}
               >
@@ -601,8 +599,8 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
                     </svg>
                   </div>
                   <div className="min-w-0">
-                    <h3 className="text-[#B08D43] font-bold text-xs sm:text-sm tracking-tight">{t.errPleaseCheck}</h3>
-                    <p className="text-[#C5A059] text-[11px] sm:text-xs font-medium opacity-80 break-words">{Object.values(validationErrors)[0]}</p>
+                    <h3 className="text-[#222222] font-bold text-xs sm:text-sm tracking-tight">{t.errPleaseCheck}</h3>
+                    <p className="text-[#FF385C] text-[11px] sm:text-xs font-medium opacity-80 break-words">{Object.values(validationErrors)[0]}</p>
                   </div>
                 </div>
               )}
@@ -612,25 +610,25 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
               className={`space-y-6 md:space-y-10 ${showPersonal ? "" : "hidden md:block"}`}
             >
               <div className="flex items-center gap-4 mb-2">
-                <div className="w-12 h-0.5 bg-gradient-to-r from-transparent via-[#C5A059] to-transparent flex-1" />
-                <h2 className="text-sm font-bold text-[#B08D43] tracking-[0.3em] uppercase">{t.personalInfo}</h2>
-                <div className="w-12 h-0.5 bg-gradient-to-r from-[#C5A059] via-[#C5A059] to-transparent flex-1 opacity-20" />
+                <div className="w-12 h-0.5 bg-gradient-to-r from-transparent via-[#FF385C] to-transparent flex-1" />
+                <h2 className="text-sm font-bold text-[#222222] tracking-[0.3em] uppercase">{t.personalInfo}</h2>
+                <div className="w-12 h-0.5 bg-gradient-to-r from-[#FF385C] via-[#FF385C] to-transparent flex-1 opacity-20" />
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 <div className="space-y-2 md:space-y-3">
-                  <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#B08D43] ml-1">{t.fullName}</label>
-                  <input name="guestName" placeholder={t.fullNamePlaceholder} required className={`w-full px-4 py-3.5 md:px-6 md:py-5 bg-[#FDFCF9] border border-[#F4EBD0] rounded-2xl outline-none focus:bg-white transition-all duration-500 font-medium text-[#1A1A1A] placeholder:text-[#B08D43]/30 text-base ${validationErrors['guestName'] ? 'border-amber-200 bg-amber-50' : 'focus:border-[#C5A059] focus:shadow-lg focus:shadow-[#C5A059]/5'}`} />
+                  <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#222222] ml-1">{t.fullName}</label>
+                  <input name="guestName" placeholder={t.fullNamePlaceholder} required className={`w-full px-4 py-3.5 md:px-6 md:py-5 bg-white border border-[#B0B0B0] rounded-lg outline-none transition-shadow font-normal text-[#222222] placeholder:text-[#717171] text-base ${validationErrors['guestName'] ? 'border-amber-500 bg-amber-50 ring-0' : 'focus:border-[#222222] focus:ring-2 focus:ring-[#222222] focus:ring-offset-0'}`} />
                 </div>
                 <div className="space-y-2 md:space-y-3">
-                  <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#B08D43] ml-1">{t.email}</label>
-                  <input name="guestEmail" type="email" placeholder={t.emailPlaceholder} required className={`w-full px-4 py-3.5 md:px-6 md:py-5 bg-[#FDFCF9] border border-[#F4EBD0] rounded-2xl outline-none focus:bg-white transition-all duration-500 font-medium text-[#1A1A1A] placeholder:text-[#B08D43]/30 text-base ${validationErrors['guestEmail'] ? 'border-amber-200 bg-amber-50' : 'focus:border-[#C5A059] focus:shadow-lg focus:shadow-[#C5A059]/5'}`} />
+                  <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#222222] ml-1">{t.email}</label>
+                  <input name="guestEmail" type="email" placeholder={t.emailPlaceholder} required className={`w-full px-4 py-3.5 md:px-6 md:py-5 bg-white border border-[#B0B0B0] rounded-lg outline-none transition-shadow font-normal text-[#222222] placeholder:text-[#717171] text-base ${validationErrors['guestEmail'] ? 'border-amber-500 bg-amber-50 ring-0' : 'focus:border-[#222222] focus:ring-2 focus:ring-[#222222] focus:ring-offset-0'}`} />
                 </div>
                 
                 {property.showWhatsApp && (
                   <div className="space-y-2 md:space-y-3 md:col-span-2">
                     <label className="text-[10px] font-black uppercase tracking-[0.25em] text-gray-400 ml-1">{t.whatsapp}</label>
-                    <input name="whatsapp" type="tel" placeholder={t.whatsappPlaceholder} className="w-full px-4 py-3.5 md:px-6 md:py-5 bg-gray-50 border-2 border-gray-100 rounded-2xl outline-none focus:bg-white focus:border-[var(--primary-color)] transition-all font-semibold text-gray-900 placeholder:text-gray-300 placeholder:font-medium text-base" />
+                    <input name="whatsapp" type="tel" placeholder={t.whatsappPlaceholder} className="w-full px-4 py-3.5 md:px-6 md:py-5 bg-white border border-[#B0B0B0] rounded-lg outline-none transition-shadow font-normal text-[#222222] placeholder:text-[#717171] text-base focus:border-[#222222] focus:ring-2 focus:ring-[#222222] focus:ring-offset-0" />
                   </div>
                 )}
 
@@ -641,25 +639,25 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
                 
                 <div className="space-y-2 md:space-y-3">
                   <label className="text-[10px] font-black uppercase tracking-[0.25em] text-gray-400 ml-1">{t.estimatedArrival}</label>
-                  <input name="checkinHour" type="time" required className="w-full px-4 py-3.5 md:px-6 md:py-5 bg-gray-50 border-2 border-gray-100 rounded-2xl outline-none focus:bg-white focus:border-[var(--primary-color)] transition-all font-black text-gray-900 text-base" />
+                  <input name="checkinHour" type="time" required className="w-full px-4 py-3.5 md:px-6 md:py-5 bg-white border border-[#B0B0B0] rounded-lg outline-none transition-shadow font-medium text-[#222222] text-base focus:border-[#222222] focus:ring-2 focus:ring-[#222222] focus:ring-offset-0" />
                 </div>
               </div>
             </section>
 
             <section className={`space-y-5 md:space-y-8 ${showTravelers ? "" : "hidden md:block"}`}>
               <div className="flex items-center gap-4 mb-2">
-                <div className="w-1.5 h-10 rounded-full" style={{ backgroundColor: goldPrimary }} />
+                <div className="w-1.5 h-10 rounded-full bg-[#FF385C]" />
                 <h2 className="text-lg md:text-2xl font-black text-gray-900 tracking-tighter uppercase">{t.numTravelers}</h2>
               </div>
               
               <div className="grid grid-cols-2 gap-3 md:gap-4">
                 {[ {id: 'adults', label: t.adults, value: adults, set: setAdults, min: 1}, {id: 'kids', label: t.kids, value: kids, set: setKids, min: 0} ].map((group) => (
-                  <div key={group.id} className="p-4 md:p-6 bg-[#FDFCF9] rounded-2xl md:rounded-3xl border border-[#F4EBD0] flex flex-col items-center gap-3 md:gap-4 shadow-sm hover:shadow-md transition-shadow duration-500">
-                    <label className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.3em] text-[#B08D43] text-center">{group.label}</label>
+                  <div key={group.id} className="p-4 md:p-6 bg-[#F7F7F7] rounded-2xl md:rounded-3xl border border-[#DDDDDD] flex flex-col items-center gap-3 md:gap-4 shadow-sm hover:shadow-md transition-shadow duration-500">
+                    <label className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.3em] text-[#222222] text-center">{group.label}</label>
                     <div className="flex items-center gap-4 md:gap-6">
-                      <button type="button" onClick={() => group.set(Math.max(group.min, group.value - 1))} className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-white border border-[#F4EBD0] flex items-center justify-center text-lg md:text-xl font-medium text-[#B08D43] hover:bg-[#F4EBD0] active:scale-90 transition-all">−</button>
-                      <span className="text-2xl md:text-3xl font-bold text-[#1A1A1A] min-w-[1.5rem] text-center font-serif italic">{group.value}</span>
-                      <button type="button" onClick={() => group.set(group.value + 1)} className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-white border border-[#F4EBD0] flex items-center justify-center text-lg md:text-xl font-medium text-[#B08D43] hover:bg-[#F4EBD0] active:scale-90 transition-all">+</button>
+                      <button type="button" onClick={() => group.set(Math.max(group.min, group.value - 1))} className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-white border border-[#DDDDDD] flex items-center justify-center text-lg md:text-xl font-medium text-[#222222] hover:bg-[#DDDDDD] active:scale-90 transition-all">−</button>
+                      <span className="text-2xl md:text-3xl font-semibold text-[#222222] min-w-[1.5rem] text-center tabular-nums">{group.value}</span>
+                      <button type="button" onClick={() => group.set(group.value + 1)} className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-white border border-[#DDDDDD] flex items-center justify-center text-lg md:text-xl font-medium text-[#222222] hover:bg-[#DDDDDD] active:scale-90 transition-all">+</button>
                     </div>
                   </div>
                 ))}
@@ -670,12 +668,12 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
               <section key={index} className={`space-y-4 md:space-y-6 pt-6 md:pt-8 border-t border-gray-50 ${showTravelers ? "" : "hidden md:block"}`}>
                 <div className="flex items-center justify-between mb-4">
                    <div className="flex items-center gap-4">
-                    <div className="w-12 h-0.5 bg-[#F4EBD0]/50" />
-                    <h2 className="text-sm font-bold text-[#B08D43] tracking-[0.3em] uppercase">
+                    <div className="w-12 h-0.5 bg-[#DDDDDD]/50" />
+                    <h2 className="text-sm font-bold text-[#222222] tracking-[0.3em] uppercase">
                       {t.docInfo} - #{index + 1}
                     </h2>
                   </div>
-                  <span className="px-5 py-2 bg-[#F4EBD0]/30 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] text-[#B08D43]">
+                  <span className="px-5 py-2 bg-[#DDDDDD]/30 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] text-[#222222]">
                     {index < adults ? t.adult : t.kid}
                   </span>
                 </div>
@@ -689,7 +687,7 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
                       defaultValue={index === 0 ? '' : ''} 
                       placeholder={t.fullNamePlaceholder}
                       required 
-                      className={`w-full px-6 py-5 bg-gray-50 border-2 border-gray-100 rounded-2xl outline-none focus:bg-white focus:border-[var(--primary-color)] transition-all font-medium text-gray-900 placeholder:text-gray-300 ${validationErrors[`traveler_${index}_name`] ? 'border-amber-200 bg-amber-50' : ''}`} 
+                      className={`w-full px-4 py-3.5 bg-white border border-[#B0B0B0] rounded-lg outline-none transition-shadow font-normal text-[#222222] placeholder:text-[#717171] focus:border-[#222222] focus:ring-2 focus:ring-[#222222] focus:ring-offset-0 ${validationErrors[`traveler_${index}_name`] ? 'border-amber-500 bg-amber-50 ring-0' : ''}`} 
                     />
                   </div>
 
@@ -705,7 +703,7 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
                           newTravelers[index].noCIN = e.target.value !== 'MA';
                           setTravelers(newTravelers);
                         }}
-                        className="w-full px-6 py-5 bg-gray-50 border-2 border-gray-100 rounded-2xl outline-none focus:bg-white focus:border-[var(--primary-color)] transition-all font-black text-gray-900 appearance-none"
+                        className="w-full px-4 py-3.5 bg-white border border-[#B0B0B0] rounded-lg outline-none transition-shadow font-medium text-[#222222] appearance-none focus:border-[#222222] focus:ring-2 focus:ring-[#222222] focus:ring-offset-0"
                       >
                         <option value="">{t.selectCountry}</option>
                         <option value="MA">{t.morocco}</option>
@@ -748,17 +746,17 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
                     <label className="text-[10px] font-black uppercase tracking-[0.25em] text-gray-400 ml-1">
                       {(traveler.country === 'OTHER' || traveler.country === '' || traveler.noCIN) ? t.passportNumber : t.cinNumber}
                     </label>
-                    <input name={`traveler_${index}_idNumber`} required className="w-full px-6 py-5 bg-gray-50 border-2 border-gray-100 rounded-2xl outline-none focus:bg-white focus:border-[var(--primary-color)] transition-all font-black text-gray-900 placeholder:text-gray-300" />
+                    <input name={`traveler_${index}_idNumber`} required className="w-full px-4 py-3.5 bg-white border border-[#B0B0B0] rounded-lg outline-none transition-shadow font-normal text-[#222222] placeholder:text-[#717171] focus:border-[#222222] focus:ring-2 focus:ring-[#222222] focus:ring-offset-0" />
                   </div>
                 </div>
               </section>
             ))}
 
             {showSelfie && (
-              <section className="space-y-5 md:space-y-8 pt-6 md:pt-8 border-t border-[#F4EBD0]/30">
+              <section className="space-y-5 md:space-y-8 pt-6 md:pt-8 border-t border-[#DDDDDD]/30">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-0.5 bg-[#F4EBD0]/50" />
-                  <h2 className="text-sm font-bold text-[#B08D43] tracking-[0.3em] uppercase">{t.verification}</h2>
+                  <div className="w-12 h-0.5 bg-[#DDDDDD]/50" />
+                  <h2 className="text-sm font-bold text-[#222222] tracking-[0.3em] uppercase">{t.verification}</h2>
                 </div>
                 <CameraCapture name="selfie" lang={lang} labels={t} onCapture={setSelfieFile} />
               </section>
@@ -781,38 +779,38 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
                </div>
 
                <div className="space-y-3 md:space-y-4">
-                 <button type="button" onClick={() => setHasAgreed(!hasAgreed)} className={`w-full p-4 md:p-6 rounded-2xl md:rounded-3xl border transition-all duration-500 flex items-start gap-3 md:gap-4 text-left ${hasAgreed ? 'bg-[#FDFCF9] border-[#C5A059]/30 shadow-lg shadow-[#C5A059]/5' : 'bg-[#FDFCF9] border-[#F4EBD0] hover:border-[#C5A059]/30'}`}>
-                    <div className={`w-6 h-6 rounded-lg border mt-0.5 shrink-0 flex items-center justify-center transition-all duration-500 ${hasAgreed ? 'bg-[#C5A059] border-[#C5A059]' : 'bg-white border-[#F4EBD0]'}`}>
+                 <button type="button" onClick={() => setHasAgreed(!hasAgreed)} className={`w-full p-4 md:p-6 rounded-2xl md:rounded-3xl border transition-all duration-500 flex items-start gap-3 md:gap-4 text-left ${hasAgreed ? 'bg-[#F7F7F7] border-[#FF385C]/30 shadow-lg shadow-[#FF385C]/5' : 'bg-[#F7F7F7] border-[#DDDDDD] hover:border-[#FF385C]/30'}`}>
+                    <div className={`w-6 h-6 rounded-lg border mt-0.5 shrink-0 flex items-center justify-center transition-all duration-500 ${hasAgreed ? 'bg-[#FF385C] border-[#FF385C]' : 'bg-white border-[#DDDDDD]'}`}>
                       {hasAgreed && <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>}
                     </div>
                     <div>
-                      <p className={`text-sm font-bold leading-tight tracking-tight ${hasAgreed ? 'text-[#B08D43]' : 'text-[#1A1A1A]'}`}>{t.houseRulesAgreement}</p>
-                      <span onClick={(e) => { e.stopPropagation(); setIsRulesOpen(true); }} className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#C5A059] hover:text-[#B08D43] underline mt-3 block transition-colors cursor-pointer">({t.readHouseRules})</span>
+                      <p className={`text-sm font-bold leading-tight tracking-tight ${hasAgreed ? 'text-[#222222]' : 'text-[#222222]'}`}>{t.houseRulesAgreement}</p>
+                      <span onClick={(e) => { e.stopPropagation(); setIsRulesOpen(true); }} className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#FF385C] hover:text-[#222222] underline mt-3 block transition-colors cursor-pointer">({t.readHouseRules})</span>
                     </div>
                  </button>
 
-                 <button type="button" onClick={() => setHasAgreedPrivacy(!hasAgreedPrivacy)} className={`w-full p-4 md:p-6 rounded-2xl md:rounded-3xl border transition-all duration-500 flex items-start gap-3 md:gap-4 text-left ${hasAgreedPrivacy ? 'bg-[#FDFCF9] border-[#C5A059]/30 shadow-lg shadow-[#C5A059]/5' : 'bg-[#FDFCF9] border-[#F4EBD0] hover:border-[#C5A059]/30'}`}>
-                    <div className={`w-6 h-6 rounded-lg border mt-0.5 shrink-0 flex items-center justify-center transition-all duration-500 ${hasAgreedPrivacy ? 'bg-[#C5A059] border-[#C5A059]' : 'bg-white border-[#F4EBD0]'}`}>
+                 <button type="button" onClick={() => setHasAgreedPrivacy(!hasAgreedPrivacy)} className={`w-full p-4 md:p-6 rounded-2xl md:rounded-3xl border transition-all duration-500 flex items-start gap-3 md:gap-4 text-left ${hasAgreedPrivacy ? 'bg-[#F7F7F7] border-[#FF385C]/30 shadow-lg shadow-[#FF385C]/5' : 'bg-[#F7F7F7] border-[#DDDDDD] hover:border-[#FF385C]/30'}`}>
+                    <div className={`w-6 h-6 rounded-lg border mt-0.5 shrink-0 flex items-center justify-center transition-all duration-500 ${hasAgreedPrivacy ? 'bg-[#FF385C] border-[#FF385C]' : 'bg-white border-[#DDDDDD]'}`}>
                       {hasAgreedPrivacy && <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>}
                     </div>
                     <div>
-                      <p className={`text-sm font-bold leading-tight tracking-tight ${hasAgreedPrivacy ? 'text-[#B08D43]' : 'text-[#1A1A1A]'}`}>{t.privacyAgreement}</p>
-                      <span onClick={(e) => { e.stopPropagation(); setIsPrivacyOpen(true); }} className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#C5A059] hover:text-[#B08D43] underline mt-3 block transition-colors cursor-pointer">({t.privacyReadMore})</span>
+                      <p className={`text-sm font-bold leading-tight tracking-tight ${hasAgreedPrivacy ? 'text-[#222222]' : 'text-[#222222]'}`}>{t.privacyAgreement}</p>
+                      <span onClick={(e) => { e.stopPropagation(); setIsPrivacyOpen(true); }} className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#FF385C] hover:text-[#222222] underline mt-3 block transition-colors cursor-pointer">({t.privacyReadMore})</span>
                     </div>
                  </button>
                </div>
             </section>
 
-            <section className={`space-y-5 md:space-y-8 pt-6 md:pt-8 border-t border-[#F4EBD0]/30 ${showFinish ? "" : "hidden md:block"}`}>
+            <section className={`space-y-5 md:space-y-8 pt-6 md:pt-8 border-t border-[#DDDDDD]/30 ${showFinish ? "" : "hidden md:block"}`}>
               <div className="flex items-center gap-4">
-                <div className="w-12 h-0.5 bg-[#F4EBD0]/50" />
-                <h2 className="text-sm font-bold text-[#B08D43] tracking-[0.3em] uppercase">{t.signatureTitle}</h2>
+                <div className="w-12 h-0.5 bg-[#DDDDDD]/50" />
+                <h2 className="text-sm font-bold text-[#222222] tracking-[0.3em] uppercase">{t.signatureTitle}</h2>
               </div>
               
               <div className={`relative border-2 md:border-4 rounded-2xl md:rounded-[2.5rem] bg-gray-50 overflow-hidden transition-all ${isSigningActive ? 'border-[var(--primary-color)]' : 'border-gray-100'}`}>
                 {!isSigningActive && (
                   <div className="absolute inset-0 z-10 bg-white/40 backdrop-blur-[2px] flex flex-col items-center justify-center cursor-pointer gap-4 group" onClick={() => setIsSigningActive(true)}>
-                    <div className="w-16 h-16 bg-white rounded-full shadow-xl flex items-center justify-center group-hover:scale-110 transition-transform" style={{ color: goldPrimary }}>
+                    <div className="w-16 h-16 bg-white rounded-full shadow-xl flex items-center justify-center group-hover:scale-110 transition-transform text-[#FF385C]">
                       <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                     </div>
                     <span className="text-xs font-black uppercase tracking-[0.2em] text-gray-900">{t.clickToSign}</span>
@@ -833,7 +831,7 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
             </section>
 
             {showFinish && phoneLayout && (
-              <p className="text-center text-[9px] font-bold text-[#B08D43]/50 uppercase tracking-widest pt-2">
+              <p className="text-center text-[9px] font-bold text-[#222222]/50 uppercase tracking-widest pt-2">
                 Mamounia Check-In · Casablanca
               </p>
             )}
@@ -841,7 +839,7 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
             <button 
               type="submit" 
               disabled={isLoading} 
-              className={`w-full text-white font-bold rounded-2xl md:rounded-3xl shadow-2xl transition-all duration-700 hover:scale-[1.01] active:scale-95 disabled:grayscale flex items-center justify-center gap-3 md:gap-4 uppercase tracking-[0.2em] md:tracking-[0.3em] bg-gradient-to-r from-[#C5A059] via-[#D4AF37] to-[#B08D43] relative overflow-hidden group shadow-[#C5A059]/20 py-5 text-base md:py-8 md:text-xl ${phoneLayout ? "hidden" : ""}`}
+              className={`w-full text-white font-bold rounded-2xl md:rounded-3xl shadow-2xl transition-all duration-700 hover:scale-[1.01] active:scale-95 disabled:grayscale flex items-center justify-center gap-3 md:gap-4 uppercase tracking-[0.2em] md:tracking-[0.3em] bg-gradient-to-r from-[#FF385C] to-[#E31C5F] relative overflow-hidden group shadow-[#FF385C]/20 py-5 text-base md:py-8 md:text-xl ${phoneLayout ? "hidden" : ""}`}
             >
               <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 skew-x-12" />
               {isLoading && <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin" />}
@@ -850,12 +848,12 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
             </div>
 
             {phoneLayout && (
-              <div className="shrink-0 flex gap-2 checkin-px pt-2 pb-safe border-t border-[#F4EBD0]/70 bg-[#FDFCF9]/95 backdrop-blur-md max-w-full min-w-0">
+              <div className="shrink-0 flex gap-2 checkin-px pt-2 pb-safe border-t border-[#DDDDDD]/70 bg-[#F7F7F7]/95 backdrop-blur-md max-w-full min-w-0">
                 {wizardStep > 0 && (
                   <button
                     type="button"
                     onClick={() => setWizardStep((s) => Math.max(0, s - 1))}
-                    className="shrink-0 px-4 py-3.5 rounded-2xl border-2 border-[#F4EBD0] text-[11px] font-bold uppercase tracking-widest text-[#B08D43] bg-white active:scale-[0.98] transition-transform"
+                    className="shrink-0 px-4 py-3.5 rounded-2xl border-2 border-[#DDDDDD] text-[11px] font-bold uppercase tracking-widest text-[#222222] bg-white active:scale-[0.98] transition-transform"
                   >
                     {t.back}
                   </button>
@@ -864,7 +862,7 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
                   <button
                     type="button"
                     onClick={() => setWizardStep((s) => Math.min(finishStep, s + 1))}
-                    className="flex-1 min-w-0 py-3.5 rounded-2xl bg-gradient-to-r from-[#C5A059] to-[#B08D43] text-white text-[11px] font-bold uppercase tracking-[0.2em] shadow-lg shadow-[#C5A059]/25 active:scale-[0.99] transition-transform"
+                    className="flex-1 min-w-0 py-3.5 rounded-2xl bg-gradient-to-r from-[#FF385C] to-[#E31C5F] text-white text-[11px] font-bold uppercase tracking-[0.2em] shadow-lg shadow-[#FF385C]/25 active:scale-[0.99] transition-transform"
                   >
                     {t.continue}
                   </button>
@@ -872,7 +870,7 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="flex-1 min-w-0 py-3.5 rounded-2xl bg-gradient-to-r from-[#C5A059] to-[#B08D43] text-white text-[11px] font-bold uppercase tracking-[0.2em] shadow-lg shadow-[#C5A059]/25 disabled:opacity-60 flex items-center justify-center gap-2"
+                    className="flex-1 min-w-0 py-3.5 rounded-2xl bg-gradient-to-r from-[#FF385C] to-[#E31C5F] text-white text-[11px] font-bold uppercase tracking-[0.2em] shadow-lg shadow-[#FF385C]/25 disabled:opacity-60 flex items-center justify-center gap-2"
                   >
                     {isLoading && <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />}
                     {isLoading ? t.processingBtn : t.submit}
@@ -886,20 +884,20 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
         {/* Branded Footer */}
         <footer className={`mt-16 pb-8 text-center px-4 animate-in fade-in slide-in-from-bottom-4 duration-1000 ${phoneLayout ? "hidden" : ""}`}>
           <div className="flex flex-col items-center gap-6">
-            <div className="h-0.5 w-12 bg-gradient-to-r from-transparent via-[#C5A059] to-transparent opacity-40" />
+            <div className="h-0.5 w-12 bg-gradient-to-r from-transparent via-[#FF385C] to-transparent opacity-40" />
             
             <div className="space-y-4">
-              <h3 className="text-[10px] font-bold text-[#B08D43] tracking-[0.4em] uppercase">Mamounia Check-In Services</h3>
-              <p className="text-[10px] font-medium text-[#6B635C] opacity-60 tracking-wider max-w-xs mx-auto leading-relaxed">Making guest check-in simple, secure, and compliant for short-term rental hosts worldwide.</p>
+              <h3 className="text-[10px] font-bold text-[#222222] tracking-[0.4em] uppercase">Mamounia Check-In Services</h3>
+              <p className="text-[10px] font-medium text-[#717171] opacity-60 tracking-wider max-w-xs mx-auto leading-relaxed">Making guest check-in simple, secure, and compliant for short-term rental hosts worldwide.</p>
             </div>
 
             <div className="flex items-center gap-6">
-               <button type="button" onClick={() => setIsPrivacyOpen(true)} className="text-[10px] font-bold text-[#C5A059] hover:text-[#B08D43] tracking-widest uppercase transition-colors cursor-pointer">Privacy</button>
-               <span className="w-1 h-1 rounded-full bg-[#F4EBD0]" />
-               <button type="button" onClick={() => setIsRulesOpen(true)} className="text-[10px] font-bold text-[#C5A059] hover:text-[#B08D43] tracking-widest uppercase transition-colors cursor-pointer">House Rules</button>
+               <button type="button" onClick={() => setIsPrivacyOpen(true)} className="text-[10px] font-bold text-[#FF385C] hover:text-[#222222] tracking-widest uppercase transition-colors cursor-pointer">Privacy</button>
+               <span className="w-1 h-1 rounded-full bg-[#DDDDDD]" />
+               <button type="button" onClick={() => setIsRulesOpen(true)} className="text-[10px] font-bold text-[#FF385C] hover:text-[#222222] tracking-widest uppercase transition-colors cursor-pointer">House Rules</button>
             </div>
 
-            <div className="text-[9px] font-bold text-[#B08D43] opacity-40 uppercase tracking-[0.2em] space-y-1">
+            <div className="text-[9px] font-bold text-[#222222] opacity-40 uppercase tracking-[0.2em] space-y-1">
               <p>© 2026 Mamounia Check-In Services • Casablanca, Morocco</p>
             </div>
           </div>
@@ -939,7 +937,7 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
               <h2 className="text-lg sm:text-3xl font-black text-gray-900 tracking-tighter uppercase pr-2">{t.privacyReadMore}</h2>
               <button onClick={() => setIsPrivacyOpen(false)} className="w-12 h-12 flex items-center justify-center bg-gray-100 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all font-black">✕</button>
             </div>
-            <div className="flex-1 overflow-hidden relative bg-[#FDFCF9]">
+            <div className="flex-1 overflow-hidden relative bg-[#F7F7F7]">
                <iframe 
                 src={`/privacy?propertyId=${property.id}&is_modal=true`} 
                 className="w-full h-full border-none"
@@ -956,10 +954,10 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
       )}
 
       {isLoading && phoneLayout && (
-        <div className="fixed inset-0 z-[150] bg-[#FDFCF9]/93 backdrop-blur-[3px] flex flex-col items-center justify-center gap-3 px-8 pb-safe pt-safe">
-          <div className="w-10 h-10 border-[3px] border-[#C5A059]/25 border-t-[#C5A059] rounded-full animate-spin" />
-          <p className="text-sm font-bold text-[#B08D43] text-center">{t.processing}</p>
-          <p className="text-xs text-[#6B635C] text-center max-w-[280px] leading-relaxed">{t.pleaseWait}</p>
+        <div className="fixed inset-0 z-[150] bg-[#F7F7F7]/93 backdrop-blur-[3px] flex flex-col items-center justify-center gap-3 px-8 pb-safe pt-safe">
+          <div className="w-10 h-10 border-[3px] border-[#FF385C]/25 border-t-[#FF385C] rounded-full animate-spin" />
+          <p className="text-sm font-bold text-[#222222] text-center">{t.processing}</p>
+          <p className="text-xs text-[#717171] text-center max-w-[280px] leading-relaxed">{t.pleaseWait}</p>
         </div>
       )}
     </main>
