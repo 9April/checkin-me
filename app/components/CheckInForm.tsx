@@ -3,6 +3,7 @@ import { useState, useRef, useEffect, type CSSProperties } from "react";
 import Link from 'next/link';
 import SignaturePad from 'react-signature-canvas';
 import { saveBooking } from '../actions';
+import { inferDocumentCountryFromPhone } from '@/lib/infer-document-country-from-phone';
 import DatePicker from './DatePicker';
 import CameraCapture from './CameraCapture';
 
@@ -316,6 +317,7 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
   const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const [isSigningActive, setIsSigningActive] = useState(false);
+  const [whatsappValue, setWhatsappValue] = useState('');
   const phoneLayout = usePhoneFormLayout();
   const finishStep = property.requireSelfie ? 3 : 2;
   const [wizardStep, setWizardStep] = useState(0);
@@ -369,6 +371,22 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
       return newTravelers.slice(0, totalTravelers);
     });
   }, [adults, kids]);
+
+  useEffect(() => {
+    if (!property.showWhatsApp) return;
+    const inferred = inferDocumentCountryFromPhone(whatsappValue);
+    if (!inferred) return;
+    setTravelers((prev) =>
+      prev.map((t) => {
+        if (t.country !== '') return t;
+        return {
+          ...t,
+          country: inferred,
+          noCIN: inferred === 'MA' ? false : true,
+        };
+      })
+    );
+  }, [whatsappValue, property.showWhatsApp, adults, kids]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -614,7 +632,15 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
                 {property.showWhatsApp && (
                   <div className="space-y-2 md:space-y-3 md:col-span-2">
                     <label className="text-[10px] font-black uppercase tracking-[0.25em] text-gray-400 ml-1">{t.whatsapp}</label>
-                    <input name="whatsapp" type="tel" placeholder={t.whatsappPlaceholder} className="w-full px-4 py-3.5 md:px-6 md:py-5 bg-white border border-[#B0B0B0] rounded-lg outline-none transition-shadow font-normal text-[#222222] placeholder:text-[#717171] text-base focus:border-[#222222] focus:ring-2 focus:ring-[#222222] focus:ring-offset-0" />
+                    <input
+                      name="whatsapp"
+                      type="tel"
+                      autoComplete="tel"
+                      placeholder={t.whatsappPlaceholder}
+                      value={whatsappValue}
+                      onChange={(e) => setWhatsappValue(e.target.value)}
+                      className="w-full px-4 py-3.5 md:px-6 md:py-5 bg-white border border-[#B0B0B0] rounded-lg outline-none transition-shadow font-normal text-[#222222] placeholder:text-[#717171] text-base focus:border-[#222222] focus:ring-2 focus:ring-[#222222] focus:ring-offset-0"
+                    />
                   </div>
                 )}
 
