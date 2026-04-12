@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { getPrivacyPolicyHtml } from "@/lib/privacy-policy-html";
 import { reserveUniquePropertySlug } from "@/lib/property-slug";
 import { notFound } from "next/navigation";
 import CheckInForm from "../../components/CheckInForm";
@@ -40,6 +41,7 @@ export default async function PropertyCheckInPage({
         showWhatsApp: property.showWhatsApp,
         requireSelfie: property.requireSelfie,
         requireIdPhotos: property.requireIdPhotos,
+        privacyPolicyHtml: getPrivacyPolicyHtml(property.privacyPolicy),
       }}
     />
   );

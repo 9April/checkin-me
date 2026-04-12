@@ -315,6 +315,8 @@ interface PropertyData {
   showWhatsApp: boolean;
   requireSelfie: boolean;
   requireIdPhotos: boolean;
+  /** Pre-rendered HTML (same as `/privacy`) — inlined in modal, no iframe */
+  privacyPolicyHtml: string;
 }
 
 export default function CheckInForm({ property }: { property: PropertyData }) {
@@ -1155,12 +1157,12 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
               <h2 className="text-lg sm:text-3xl font-black text-gray-900 tracking-tighter uppercase pr-2">{t.privacyReadMore}</h2>
               <button onClick={() => setIsPrivacyOpen(false)} className="w-12 h-12 flex items-center justify-center bg-gray-100 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all font-black">✕</button>
             </div>
-            <div className="flex-1 overflow-hidden relative bg-[#F7F7F7]">
-               <iframe 
-                src={`/privacy?propertyId=${property.id}&is_modal=true`} 
-                className="w-full h-full border-none"
-                title="Privacy Policy"
-               />
+            <div className="flex-1 min-h-0 overflow-y-auto checkin-app-scroll bg-[#FDFCF9] relative">
+              <div
+                className="luxury-privacy-container min-h-full"
+                // Host-edited HTML from dashboard; same source as /privacy
+                dangerouslySetInnerHTML={{ __html: property.privacyPolicyHtml }}
+              />
             </div>
             <div className="p-4 sm:p-10 pb-safe sm:pb-10 bg-gray-50/50 shrink-0">
               <button onClick={() => setIsPrivacyOpen(false)} className="w-full py-4 sm:py-6 bg-gray-900 text-white font-black rounded-2xl sm:rounded-[2rem] shadow-2xl hover:bg-black transition-all text-xs sm:text-sm uppercase tracking-widest">
