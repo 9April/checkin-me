@@ -236,7 +236,7 @@ export default function DatePicker({
   const firstDay = getFirstDayOfMonth(currentMonth);
 
   const days = [];
-  for (let i = 0; i < firstDay; i++) days.push(<div key={`empty-${i}`} className="w-12 h-12" />);
+  for (let i = 0; i < firstDay; i++) days.push(<div key={`empty-${i}`} className="w-9 h-9 sm:w-10 sm:h-10" />);
   
   for (let day = 1; day <= daysInMonth; day++) {
     const disabled = isDateDisabled(day);
@@ -250,7 +250,7 @@ export default function DatePicker({
         onClick={() => !disabled && handleDateSelect(day)}
         disabled={disabled}
         className={`
-          w-12 h-12 rounded-lg text-sm font-medium transition-all
+          w-9 h-9 sm:w-10 sm:h-10 rounded-lg text-xs sm:text-sm font-medium transition-all
           ${disabled ? 'text-gray-300 cursor-not-allowed' : 'text-gray-700 hover:bg-rose-50 cursor-pointer'}
           ${selected ? 'bg-[#FF385C] text-white hover:bg-[#E31C5F]' : ''}
           ${inRange && !selected ? 'bg-rose-50 text-[#222222] font-semibold' : ''}
@@ -264,7 +264,7 @@ export default function DatePicker({
   }
 
   return (
-    <div ref={pickerRef} className={`relative ${className}`}>
+    <div ref={pickerRef} className={`relative min-w-0 w-full ${className}`}>
       <input type="hidden" name={name} value={selectedDate} required={required} disabled={disabled} />
       {endDateName && (
         <input type="hidden" name={endDateName} value={selectedEndDate} required={required} disabled={disabled} />
@@ -292,7 +292,7 @@ export default function DatePicker({
       </button>
 
       {isOpen && !disabled && (
-        <div className="absolute z-[100] mt-2 bg-white rounded-lg shadow-xl border border-gray-200 p-4 w-80">
+        <div className="absolute z-[100] mt-2 left-1/2 -translate-x-1/2 md:left-0 md:translate-x-0 w-[min(100vw-1.5rem,22rem)] max-w-[22rem] bg-white rounded-2xl shadow-xl border border-[#E8E8E8] p-3 sm:p-4">
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
             <button type="button" onClick={handlePrevMonth} disabled={!canGoToPrevMonth()} className="p-2 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
@@ -345,11 +345,11 @@ export default function DatePicker({
 
           {/* Day labels */}
           <div className="grid grid-cols-7 gap-1 mb-2">
-            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => <div key={day} className="w-12 h-8 flex items-center justify-center text-xs font-semibold text-gray-500">{day}</div>)}
+            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => <div key={day} className="w-9 sm:w-10 h-8 flex items-center justify-center text-[10px] sm:text-xs font-semibold text-gray-500">{day}</div>)}
           </div>
 
           {/* Calendar grid */}
-          <div className="grid grid-cols-7 gap-1">{days}</div>
+          <div className="grid grid-cols-7 gap-0.5 sm:gap-1">{days}</div>
 
           {/* Close button */}
           <div className="mt-4 pt-4 border-t border-gray-200 flex justify-end">

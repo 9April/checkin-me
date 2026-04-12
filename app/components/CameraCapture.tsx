@@ -30,6 +30,12 @@ interface CameraCaptureProps {
   };
 }
 
+/** ICAO ID-3 passport photo page (portrait): 88×125 mm → width/height = 88/125. */
+const PASSPORT_FRAME =
+  'aspect-[88/125] w-[min(78vw,300px)]';
+/** ISO ID-1 card (e.g. Moroccan CIN): ~85.6×54 mm → ~1.586:1 */
+const ID_CARD_FRAME = 'aspect-[1.586/1] w-[min(92vw,360px)]';
+
 /** Full-screen live view: dimmed outside frame + white border + corner brackets. */
 function DocumentLiveGuides({
   variant,
@@ -43,9 +49,7 @@ function DocumentLiveGuides({
     <div className="absolute inset-0 flex items-center justify-center pointer-events-none px-3">
       <div
         className={`relative rounded-xl border-[3px] border-white shadow-[0_0_0_9999px_rgba(0,0,0,0.62)] ${
-          isPassport
-            ? 'aspect-[3/4] w-[min(78vw,300px)]'
-            : 'aspect-[1.586/1] w-[min(92vw,360px)]'
+          isPassport ? PASSPORT_FRAME : ID_CARD_FRAME
         }`}
       >
         <span className="absolute -left-0.5 -top-0.5 h-7 w-7 rounded-tl-lg border-l-[3px] border-t-[3px] border-white shadow-sm" />
@@ -75,8 +79,8 @@ function StaticDocumentGuides({
     <div
       className={`relative mx-auto flex items-center justify-center rounded-xl bg-white/90 shadow-inner ring-2 ring-[#FF385C]/30 ${
         isPassport
-          ? 'aspect-[3/4] max-h-[140px] w-[min(100%,200px)]'
-          : 'aspect-[1.586/1] max-h-[120px] w-[min(100%,220px)]'
+          ? 'aspect-[88/125] max-h-[150px] w-[min(100%,210px)]'
+          : 'aspect-[1.586/1] max-h-[130px] w-[min(100%,230px)]'
       }`}
     >
       <div className="absolute inset-2 rounded-lg border-2 border-dashed border-[#FF385C]/80" />
@@ -465,7 +469,15 @@ export default function CameraCapture({
 
       {capturedImage && (
         <div className="p-4 bg-gray-50 rounded-2xl border-2 border-gray-100 space-y-4 shadow-inner">
-          <div className="relative group aspect-[3/4] max-h-[300px] overflow-hidden rounded-xl border-4 border-white shadow-lg mx-auto w-fit">
+          <div
+            className={`relative group overflow-hidden rounded-xl border-4 border-white shadow-lg mx-auto w-fit ${
+              guide === 'document' && documentVariant
+                ? documentVariant === 'passport'
+                  ? 'aspect-[88/125] max-h-[300px]'
+                  : 'aspect-[1.586/1] max-h-[260px] max-w-[min(100vw-2rem,400px)]'
+                : 'aspect-[3/4] max-h-[300px]'
+            }`}
+          >
             <img
               src={capturedImage}
               alt="Captured result"

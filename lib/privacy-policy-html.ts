@@ -1,4 +1,6 @@
 import { DEFAULT_PRIVACY_POLICY } from '@/lib/constants';
+import { DEFAULT_PRIVACY_POLICY_FR } from '@/lib/privacy-default-fr';
+import { DEFAULT_PRIVACY_POLICY_SP } from '@/lib/privacy-default-sp';
 import type { Lang } from '@/lib/lang';
 
 function themeTweaks(html: string): string {
@@ -12,8 +14,7 @@ function themeTweaks(html: string): string {
  * Resolves privacy HTML for check-in / public privacy page.
  * - Custom policy may be a single HTML string (any language), or JSON:
  *   `{ "EN": "<html>...", "FR": "...", "SP": "..." }` for multilingual policies.
- * - If empty, uses the full styled default from `constants` (same layout for all languages;
- *   language-specific defaults would drop CSS — avoided).
+ * - If empty, uses the full styled default (EN / FR / SP) so the modal matches the form language.
  */
 export function getPrivacyPolicyHtml(
   stored: string | null | undefined,
@@ -47,7 +48,12 @@ export function getPrivacyPolicyHtml(
       raw = trimmed;
     }
   } else {
-    raw = DEFAULT_PRIVACY_POLICY;
+    raw =
+      lang === 'FR'
+        ? DEFAULT_PRIVACY_POLICY_FR
+        : lang === 'SP'
+          ? DEFAULT_PRIVACY_POLICY_SP
+          : DEFAULT_PRIVACY_POLICY;
   }
 
   return themeTweaks(raw);

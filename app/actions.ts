@@ -143,7 +143,15 @@ ${opts.pdfFailedNote ? `<p><em>${escapeHtml(opts.pdfFailedNote)}</em></p>` : ''}
   return { mailError };
 }
 
-export async function saveBooking(formData: FormData) {
+type SaveBookingResult =
+  | { success: true; redirectUrl?: string; pdfName?: string; message?: string }
+  | { success: false; error: string };
+
+function jsonSafeResult<T extends SaveBookingResult>(r: T): T {
+  return JSON.parse(JSON.stringify(r)) as T;
+}
+
+export async function saveBooking(formData: FormData): Promise<SaveBookingResult> {
   let pdfName: string | undefined;
   console.log('--- saveBooking (Stability Fix) called ---');
   try {
@@ -340,11 +348,11 @@ export async function saveBooking(formData: FormData) {
           ? { mailError: '1' }
           : { emailSent: '1' }),
       }).toString();
-      return {
+      return jsonSafeResult({
         success: true,
         message: 'Saved, but PDF failed.',
         redirectUrl: queryString ? `/success?${queryString}` : '/success',
-      };
+      });
     }
 
     pdfName = `Booking-${booking.id}.pdf`;
@@ -379,17 +387,21 @@ export async function saveBooking(formData: FormData) {
           : { emailSent: '1' }),
       }).toString();
 
-      return { success: true, pdfName, redirectUrl: `/success?${queryString}` };
+      return jsonSafeResult({
+        success: true,
+        pdfName,
+        redirectUrl: `/success?${queryString}`,
+      });
     } catch (e: unknown) {
       console.error('Check-in email notification failed:', e);
-      return {
+      return jsonSafeResult({
         success: true,
         pdfName,
         redirectUrl: `/success?pdf=${encodeURIComponent(pdfName)}&mailError=1`,
-      };
+      });
     }
   } catch (error) {
     console.error('saveBooking error:', error);
-    return { success: false, error: 'Submission failed' };
+    return jsonSafeResult({ success: false, error: 'Submission failed' });
   }
 }

@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef, useEffect, useMemo, type CSSProperties } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback, type CSSProperties } from "react";
 import Link from 'next/link';
 import SignaturePad from 'react-signature-canvas';
 import { saveBooking } from '../actions';
@@ -51,6 +51,7 @@ const TRANSLATIONS = {
     mustAgree: "You must agree to the house rules to proceed.",
     close: "Close",
     estimatedArrival: "Estimated arrival time",
+    selectArrivalPlaceholder: "Select arrival time",
     privacyTitle: "How we use your data",
     privacyEmail: "Email: For booking confirmation and communication.",
     privacyID: "Identity Documents: Legal requirement for police reporting.",
@@ -67,6 +68,8 @@ const TRANSLATIONS = {
     provideSignature: "Please provide a signature before submitting.",
     invalidSignature: "Invalid signature. Please sign again.",
     errorOccurred: "An error occurred. Please try again.",
+    submissionNetworkError:
+      "We could not reach the server. Check your connection and try again. If you are in the app browser, open the link in Safari or Chrome.",
     clickToSign: "Click to sign",
     doneSigning: "Done signing",
     takeSelfie: "Take Selfie with Camera",
@@ -150,6 +153,7 @@ const TRANSLATIONS = {
     mustAgree: "Vous devez accepter le règlement intérieur pour continuer.",
     close: "Fermer",
     estimatedArrival: "Heure d'arrivée prévue",
+    selectArrivalPlaceholder: "Choisir l'heure d'arrivée",
     privacyTitle: "Utilisation de vos données",
     privacyEmail: "E-mail : Pour la confirmation et la communication.",
     privacyID: "Documents d'identité : Obligation légale (déclaration police).",
@@ -166,6 +170,8 @@ const TRANSLATIONS = {
     provideSignature: "Veuillez fournir une signature avant de soumettre.",
     invalidSignature: "Signature invalide. Veuillez réessayer.",
     errorOccurred: "Une erreur s'est produite. Veuillez réessayer.",
+    submissionNetworkError:
+      "Impossible de joindre le serveur. Vérifiez la connexion et réessayez. Dans le navigateur intégré d'une application, ouvrez le lien dans Safari ou Chrome.",
     clickToSign: "Cliquez pour signer",
     doneSigning: "Terminer",
     takeSelfie: "Prendre un selfie",
@@ -249,6 +255,7 @@ const TRANSLATIONS = {
     mustAgree: "Debe aceptar el reglamento interno para continuar.",
     close: "Cerrar",
     estimatedArrival: "Hora estimada de llegada",
+    selectArrivalPlaceholder: "Seleccione la hora de llegada",
     privacyTitle: "Uso de sus datos",
     privacyEmail: "Correo: Para confirmación y comunicación.",
     privacyID: "Documentos: Requisito legal para informe policial.",
@@ -265,6 +272,8 @@ const TRANSLATIONS = {
     provideSignature: "Por favor proporcione una firma antes de enviar.",
     invalidSignature: "Firma inválida. Por favor firme de nuevo.",
     errorOccurred: "Ocurrió un error. Por favor intente de nuevo.",
+    submissionNetworkError:
+      "No se pudo conectar con el servidor. Compruebe la conexión e inténtelo de nuevo. Si usa el navegador dentro de una app, abra el enlace en Safari o Chrome.",
     clickToSign: "Haga clic para firmar",
     doneSigning: "Finalizar",
     takeSelfie: "Tomar selfie con la cámara",
@@ -309,6 +318,52 @@ const TRANSLATIONS = {
       "Los pasos de abajo usan la guía de pasaporte — siga el encuadre de la página del pasaporte.",
   }
 };
+
+/** 30-minute slots for arrival (value format HH:MM for server + PDF). */
+const ARRIVAL_SLOT_VALUES = (() => {
+  const v: string[] = [];
+  for (let h = 0; h < 24; h++) {
+    for (const m of [0, 30]) {
+      v.push(`${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`);
+    }
+  }
+  return v;
+})();
+
+function arrivalLocaleForLang(lang: Lang): string {
+  if (lang === "FR") return "fr-FR";
+  if (lang === "SP") return "es-ES";
+  return "en-GB";
+}
+
+function formatArrivalSlotLabel(value: string, locale: string): string {
+  const [hh, mm] = value.split(":").map((x) => parseInt(x, 10));
+  return new Date(2000, 0, 1, hh, mm).toLocaleTimeString(locale, {
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+function filterErrorsForWizardStep(
+  all: Record<string, string>,
+  step: number
+): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(all).filter(([k]) => {
+      if (step === 0) {
+        return (
+          k === "guestName" ||
+          k === "guestEmail" ||
+          k === "checkin" ||
+          k === "checkout" ||
+          k === "checkinHour"
+        );
+      }
+      if (step === 1) return k.startsWith("traveler_");
+      return true;
+    })
+  );
+}
 
 function usePhoneFormLayout() {
   const [phone, setPhone] = useState(false);
@@ -398,6 +453,16 @@ export default function CheckInForm({
   const finishStep = 2;
   const [wizardStep, setWizardStep] = useState(0);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  const arrivalSlotLabels = useMemo(() => {
+    const loc = arrivalLocaleForLang(lang);
+    const map: Record<string, string> = {};
+    for (const v of ARRIVAL_SLOT_VALUES) {
+      map[v] = formatArrivalSlotLabel(v, loc);
+    }
+    return map;
+  }, [lang]);
 
   useEffect(() => {
     scrollAreaRef.current?.scrollTo(0, 0);
@@ -513,41 +578,75 @@ export default function CheckInForm({
     });
   }, [adults, kids, property.showWhatsApp, whatsappParsed, countryUnlockNonce]);
 
+  const computeValidationErrors = useCallback(
+    (formDataObj: FormData): Record<string, string> => {
+      const errors: Record<string, string> = {};
+
+      if (!String(formDataObj.get("guestName") || "").trim())
+        errors["guestName"] = t.errNameRequired;
+      if (!String(formDataObj.get("guestEmail") || "").trim())
+        errors["guestEmail"] = t.errEmailRequired;
+      if (!formDataObj.get("checkin")) errors["checkin"] = t.errCheckinRequired;
+      if (!formDataObj.get("checkout")) errors["checkout"] = t.errCheckoutRequired;
+      if (!formDataObj.get("checkinHour"))
+        errors["checkinHour"] = t.errArrivalRequired;
+
+      travelers.forEach((traveler, index) => {
+        if (!String(formDataObj.get(`traveler_${index}_name`) || "").trim()) {
+          errors[`traveler_${index}_name`] = t.errNameRequired;
+        }
+        if (!String(formDataObj.get(`traveler_${index}_country`) || "").trim()) {
+          errors[`traveler_${index}_country`] = t.errCountryRequired;
+        }
+        if (!formDataObj.get(`traveler_${index}_idNumber`))
+          errors[`traveler_${index}_idNumber`] = t.errIdNumberRequired;
+
+        if (property.requireIdPhotos) {
+          const isPassport =
+            traveler.country === "OTHER" ||
+            traveler.country === "" ||
+            traveler.noCIN;
+          if (isPassport) {
+            if (!(formDataObj.get(`traveler_${index}_passport`) as File)?.size)
+              errors[`traveler_${index}_passport`] = t.errPassportRequired;
+          } else {
+            if (!(formDataObj.get(`traveler_${index}_cinFront`) as File)?.size)
+              errors[`traveler_${index}_cinFront`] = t.errCinFrontRequired;
+            if (!(formDataObj.get(`traveler_${index}_cinBack`) as File)?.size)
+              errors[`traveler_${index}_cinBack`] = t.errCinBackRequired;
+          }
+        }
+      });
+
+      if (!hasAgreed) errors["agreement"] = t.errAgreementRequired;
+      if (!hasAgreedPrivacy) errors["privacy"] = t.errPrivacyRequired;
+      if (!sigRef.current || sigRef.current.isEmpty())
+        errors["signature"] = t.errSignatureRequired;
+
+      return errors;
+    },
+    [travelers, property.requireIdPhotos, t, hasAgreed, hasAgreedPrivacy]
+  );
+
+  const handleWizardContinue = () => {
+    if (!formRef.current) return;
+    const fd = new FormData(formRef.current);
+    const all = computeValidationErrors(fd);
+    const stepErrors = filterErrorsForWizardStep(all, wizardStep);
+    if (Object.keys(stepErrors).length > 0) {
+      setValidationErrors(stepErrors);
+      scrollAreaRef.current?.scrollTo(0, 0);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+    setValidationErrors({});
+    setWizardStep((s) => Math.min(finishStep, s + 1));
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formDataObj = new FormData(e.currentTarget);
-    const errors: Record<string, string> = {};
-
-    if (!String(formDataObj.get('guestName') || '').trim()) errors['guestName'] = t.errNameRequired;
-    if (!String(formDataObj.get('guestEmail') || '').trim()) errors['guestEmail'] = t.errEmailRequired;
-    if (!formDataObj.get('checkin')) errors['checkin'] = t.errCheckinRequired;
-    if (!formDataObj.get('checkout')) errors['checkout'] = t.errCheckoutRequired;
-    if (!formDataObj.get('checkinHour')) errors['checkinHour'] = t.errArrivalRequired;
-
-    travelers.forEach((traveler, index) => {
-      if (!String(formDataObj.get(`traveler_${index}_name`) || '').trim()) {
-        errors[`traveler_${index}_name`] = t.errNameRequired;
-      }
-      if (!String(formDataObj.get(`traveler_${index}_country`) || '').trim()) {
-        errors[`traveler_${index}_country`] = t.errCountryRequired;
-      }
-      if (!formDataObj.get(`traveler_${index}_idNumber`)) errors[`traveler_${index}_idNumber`] = t.errIdNumberRequired;
-      
-      // Photo validation only if property.requireIdPhotos is enabled
-      if (property.requireIdPhotos) {
-        const isPassport = traveler.country === 'OTHER' || traveler.country === '' || traveler.noCIN;
-        if (isPassport) {
-          if (!(formDataObj.get(`traveler_${index}_passport`) as File)?.size) errors[`traveler_${index}_passport`] = t.errPassportRequired;
-        } else {
-          if (!(formDataObj.get(`traveler_${index}_cinFront`) as File)?.size) errors[`traveler_${index}_cinFront`] = t.errCinFrontRequired;
-          if (!(formDataObj.get(`traveler_${index}_cinBack`) as File)?.size) errors[`traveler_${index}_cinBack`] = t.errCinBackRequired;
-        }
-      }
-    });
-
-    if (!hasAgreed) errors['agreement'] = t.errAgreementRequired;
-    if (!hasAgreedPrivacy) errors['privacy'] = t.errPrivacyRequired;
-    if (!sigRef.current || sigRef.current.isEmpty()) errors['signature'] = t.errSignatureRequired;
+    const errors = computeValidationErrors(formDataObj);
 
     if (Object.keys(errors).length > 0) {
       setValidationErrors(errors);
@@ -561,27 +660,34 @@ export default function CheckInForm({
 
     setIsLoading(true);
     try {
-      const signatureData = sigRef.current?.getTrimmedCanvas().toDataURL('image/png');
+      const signatureData = sigRef.current?.getTrimmedCanvas().toDataURL("image/png");
       if (!signatureData) {
-         throw new Error(t.provideSignature);
+        throw new Error(t.provideSignature);
       }
       const formData = new FormData(e.currentTarget);
-      formData.set('signature', signatureData as string);
-      formData.set('lang', lang);
-      formData.set('propertyId', property.id);
+      formData.set("signature", signatureData as string);
+      formData.set("lang", lang);
+      formData.set("propertyId", property.id);
       const result = await saveBooking(formData);
       if (result.success) {
         const next =
           result.redirectUrl ||
           (result.pdfName
             ? `/success?pdf=${encodeURIComponent(result.pdfName)}`
-            : '/success');
+            : "/success");
         window.location.assign(next);
       } else {
-        throw new Error(result.error || 'Unknown error');
+        throw new Error(result.error || "Unknown error");
       }
     } catch (error) {
-      alert(error instanceof Error ? error.message : t.errorOccurred);
+      const raw = error instanceof Error ? error.message : String(error);
+      const lower = raw.toLowerCase();
+      const looksNetwork =
+        lower.includes("unexpected response") ||
+        lower.includes("failed to fetch") ||
+        lower.includes("network") ||
+        lower.includes("load failed");
+      alert(looksNetwork ? t.submissionNetworkError : raw || t.errorOccurred);
       setIsLoading(false);
     }
   };
@@ -704,6 +810,8 @@ export default function CheckInForm({
           </div>
 
           <form
+            ref={formRef}
+            noValidate
             onSubmit={handleSubmit}
             className={
               phoneLayout
@@ -814,7 +922,7 @@ export default function CheckInForm({
                   </div>
                 )}
 
-                <div className="flex flex-col min-w-0">
+                <div className="flex flex-col min-w-0 md:col-span-2">
                   <span className={lbl}>{t.checkinDates}</span>
                   <DatePicker
                     name="checkin"
@@ -825,24 +933,47 @@ export default function CheckInForm({
                   />
                 </div>
 
-                <div className="flex flex-col min-w-0">
+                <div className="flex flex-col min-w-0 md:col-span-2">
                   <label className={lbl} htmlFor="checkinHour">
                     {t.estimatedArrival}
                   </label>
                   <div
-                    className={`flex items-center rounded-xl border bg-white min-h-[3rem] md:min-h-[3.25rem] px-4 md:px-5 transition-shadow focus-within:ring-2 focus-within:ring-offset-0 ${
+                    className={`relative flex items-center rounded-xl border bg-white min-h-[3rem] md:min-h-[3.25rem] pl-4 pr-10 md:pl-5 md:pr-11 transition-shadow focus-within:ring-2 focus-within:ring-offset-0 ${
                       validationErrors['checkinHour']
                         ? 'border-red-500 ring-1 ring-red-200'
                         : 'border-[#B0B0B0] focus-within:border-[#222222] focus-within:ring-[#222222]'
                     }`}
                   >
-                    <input
+                    <select
                       id="checkinHour"
                       name="checkinHour"
-                      type="time"
                       required
-                      className="w-full flex-1 min-h-0 bg-transparent border-0 outline-none font-medium text-[#222222] text-base tabular-nums py-2 [color-scheme:light] [&::-webkit-calendar-picker-indicator]:opacity-90 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:ml-1"
-                    />
+                      defaultValue=""
+                      className="w-full flex-1 min-h-0 cursor-pointer appearance-none bg-transparent border-0 outline-none font-medium text-[#222222] text-base py-2 pr-1"
+                    >
+                      <option value="" disabled>
+                        {t.selectArrivalPlaceholder}
+                      </option>
+                      {ARRIVAL_SLOT_VALUES.map((v) => (
+                        <option key={v} value={v}>
+                          {arrivalSlotLabels[v] ?? v}
+                        </option>
+                      ))}
+                    </select>
+                    <svg
+                      className="pointer-events-none absolute right-3 md:right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#717171]"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      aria-hidden
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
                   </div>
                 </div>
               </div>
@@ -1169,7 +1300,7 @@ export default function CheckInForm({
                 {wizardStep < finishStep ? (
                   <button
                     type="button"
-                    onClick={() => setWizardStep((s) => Math.min(finishStep, s + 1))}
+                    onClick={handleWizardContinue}
                     className="flex-1 min-w-0 py-3.5 rounded-2xl bg-gradient-to-r from-[#FF385C] to-[#E31C5F] text-white text-[11px] font-bold uppercase tracking-[0.2em] shadow-lg shadow-[#FF385C]/25 active:scale-[0.99] transition-transform"
                   >
                     {t.continue}
