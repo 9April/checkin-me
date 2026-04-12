@@ -83,10 +83,10 @@ export default async function DashboardPage() {
   const checkInPath = property ? publicCheckInPath(property) : "/check-in";
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 min-w-0 max-w-full">
       {/* Property Link Card */}
-      <div className="bg-[#FEF2F2] p-6 rounded-3xl border border-[#FEE2E2] flex flex-col md:flex-row items-center justify-between gap-6">
-        <div className="flex items-center gap-4">
+      <div className="bg-[#FEF2F2] p-4 sm:p-6 rounded-3xl border border-[#FEE2E2] flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 md:gap-6 min-w-0">
+        <div className="flex items-center gap-4 min-w-0">
           <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-[#EF4444] shadow-sm">
             <UserPlus size={24} />
           </div>
@@ -124,16 +124,77 @@ export default async function DashboardPage() {
         ))}
       </div>
 
-      {/* Recent Bookings */}
-      <div className="bg-white rounded-3xl border border-[#E5E7EB] shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-[#E5E7EB] flex items-center justify-between">
-          <h2 className="text-lg font-bold text-[#111827]">Recent Submissions</h2>
-          <Link href="/dashboard/bookings" className="text-sm font-medium text-[#EF4444] hover:underline">
+      {/* Recent Bookings — cards on small screens (no horizontal table scroll) */}
+      <div className="bg-white rounded-3xl border border-[#E5E7EB] shadow-sm overflow-hidden min-w-0">
+        <div className="p-4 sm:p-6 border-b border-[#E5E7EB] flex items-center justify-between gap-3 min-w-0">
+          <h2 className="text-base sm:text-lg font-bold text-[#111827] truncate">Recent Submissions</h2>
+          <Link href="/dashboard/bookings" className="text-sm font-medium text-[#EF4444] hover:underline shrink-0">
             View all
           </Link>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
+
+        <div className="md:hidden divide-y divide-[#E5E7EB]">
+          {bookings.length > 0 ? (
+            bookings.map((booking) => (
+              <div key={booking.id} className="p-4 space-y-3 min-w-0">
+                <div className="min-w-0">
+                  <div className="font-medium text-[#111827] break-words">{booking.guestName}</div>
+                  <div className="text-xs text-[#6B7280] break-all">{booking.guestEmail}</div>
+                </div>
+                <div className="text-sm text-[#374151]">
+                  <span className="text-[#6B7280]">Stay </span>
+                  {booking.checkin} → {booking.checkout}
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="px-3 py-1 text-xs font-bold rounded-full bg-green-50 text-green-600 border border-green-100">
+                    COMPLETED
+                  </span>
+                  <span className="text-xs text-[#6B7280]">{booking.travelers.length} travelers</span>
+                </div>
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-2 pt-1">
+                  {booking.pdfUrl ? (
+                    <>
+                      <Link
+                        href={`/api/pdf/${booking.pdfUrl}`}
+                        target="_blank"
+                        className="text-[#EF4444] hover:underline text-sm font-bold"
+                      >
+                        View PDF
+                      </Link>
+                      <Link
+                        href={`/api/pdf/${booking.pdfUrl}`}
+                        target="_blank"
+                        className="text-gray-600 hover:text-gray-900 text-sm inline-flex items-center gap-1"
+                        title="Print PDF"
+                      >
+                        <Printer size={16} />
+                        Print
+                      </Link>
+                      <a
+                        href={`/api/pdf/${booking.pdfUrl}`}
+                        download
+                        className="text-gray-500 hover:text-gray-700 text-sm font-medium"
+                      >
+                        Download
+                      </a>
+                    </>
+                  ) : (
+                    <span className="text-[#9CA3AF] text-sm italic">No PDF</span>
+                  )}
+                  <TrashAction bookingId={booking.id} mode="soft" />
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="px-4 py-12 text-center text-[#6B7280]">
+              No bookings found yet.
+              <div className="mt-2 text-sm">Share your check-in link to get started!</div>
+            </div>
+          )}
+        </div>
+
+        <div className="hidden md:block overflow-x-auto">
+          <table className="w-full text-left min-w-[640px]">
             <thead className="bg-[#F9FAFB] text-xs font-bold text-[#6B7280] uppercase tracking-wider">
               <tr>
                 <th className="px-6 py-4">Guest</th>

@@ -449,7 +449,7 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
 
   return (
     <main
-      className={`bg-[#FDFCF9] font-sans ${
+      className={`bg-[#FDFCF9] font-sans w-full max-w-full overflow-x-hidden ${
         phoneLayout
           ? "h-[100dvh] max-h-[100dvh] flex flex-col overflow-hidden overscroll-none"
           : "min-h-screen py-8 px-4 sm:px-6 lg:px-8 pb-24"
@@ -462,7 +462,7 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
         } ${phoneLayout ? "flex flex-1 min-h-0 min-w-0 flex-col w-full" : "max-w-2xl mx-auto"}`}
       >
         <div
-          className={`bg-white shadow-2xl shadow-gray-200/50 overflow-hidden border border-gray-100 ${
+          className={`bg-white shadow-2xl shadow-gray-200/50 overflow-hidden border border-gray-100 max-w-full ${
             phoneLayout
               ? "flex flex-1 min-h-0 min-w-0 flex-col rounded-none border-x-0"
               : "rounded-[2.5rem]"
@@ -470,8 +470,8 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
         >
           {/* Header */}
           <div
-            className={`flex justify-between items-center gap-3 border-b border-[#F4EBD0]/50 bg-white/60 backdrop-blur-xl shrink-0 z-20 ${
-              phoneLayout ? "p-3 pt-safe flex-row" : "p-6 sm:p-8 flex-col sm:flex-row gap-6 sticky top-0"
+            className={`flex justify-between items-center gap-3 border-b border-[#F4EBD0]/50 bg-white/60 backdrop-blur-xl shrink-0 z-20 max-w-full min-w-0 ${
+              phoneLayout ? "p-3 pt-safe checkin-px flex-row" : "p-6 sm:p-8 flex-col sm:flex-row gap-6 sticky top-0"
             }`}
           >
             <div
@@ -507,7 +507,7 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
           </div>
 
           {phoneLayout && (
-            <div className="shrink-0 px-4 py-2.5 border-b border-[#F4EBD0]/40 bg-[#FDFCF9]/90">
+            <div className="shrink-0 checkin-px py-2.5 border-b border-[#F4EBD0]/40 bg-[#FDFCF9]/90">
               <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#B08D43] truncate text-center">
                 {property.formTitle || property.name}
               </p>
@@ -543,7 +543,7 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
 
           <div
             className={`text-center bg-gradient-to-b from-[#FDFCF9] to-white ${
-              phoneLayout ? "px-4 py-4" : "px-6 py-20 sm:px-12"
+              phoneLayout ? "checkin-px py-5" : "px-6 py-20 sm:px-12"
             } ${phoneLayout && wizardStep !== 0 ? "hidden" : ""}`}
           >
             <span
@@ -585,7 +585,7 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
               ref={scrollAreaRef}
               className={
                 phoneLayout
-                  ? "flex-1 min-h-0 min-w-0 overflow-y-auto checkin-app-scroll px-4 pb-3 space-y-6"
+                  ? "flex-1 min-h-0 min-w-0 overflow-y-auto overflow-x-hidden checkin-app-scroll checkin-px pb-4 space-y-8"
                   : "contents"
               }
             >
@@ -850,7 +850,7 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
             </div>
 
             {phoneLayout && (
-              <div className="shrink-0 flex gap-2 px-3 pt-2 pb-safe border-t border-[#F4EBD0]/70 bg-[#FDFCF9]/95 backdrop-blur-md">
+              <div className="shrink-0 flex gap-2 checkin-px pt-2 pb-safe border-t border-[#F4EBD0]/70 bg-[#FDFCF9]/95 backdrop-blur-md max-w-full min-w-0">
                 {wizardStep > 0 && (
                   <button
                     type="button"

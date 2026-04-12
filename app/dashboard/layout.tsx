@@ -86,7 +86,7 @@ export default function DashboardLayout({
   );
 
   return (
-    <div className="flex h-screen bg-[#F9FAFB] overflow-hidden">
+    <div className="flex h-screen min-h-0 min-w-0 bg-[#F9FAFB] overflow-hidden">
       {/* Mobile Sidebar Overlay */}
       {isMobileMenuOpen && (
         <div 
@@ -109,7 +109,7 @@ export default function DashboardLayout({
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto w-full bg-[#FDFCF9]">
+      <main className="flex-1 min-h-0 min-w-0 overflow-y-auto overflow-x-hidden w-full bg-[#FDFCF9]">
         <header className="h-20 bg-white/60 backdrop-blur-xl border-b border-[#F4EBD0]/50 flex items-center justify-between px-4 sm:px-8 sticky top-0 z-30">
           <div className="flex items-center gap-4">
             <button 
@@ -133,7 +133,7 @@ export default function DashboardLayout({
           </div>
         </header>
 
-        <div className="p-4 sm:p-8 max-w-7xl mx-auto">
+        <div className="p-4 sm:p-8 max-w-7xl mx-auto w-full min-w-0">
           {children}
         </div>
       </main>

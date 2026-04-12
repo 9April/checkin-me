@@ -26,18 +26,29 @@
 /* Force light theme - dark mode disabled */
 html {
   color-scheme: light;
+  overflow-x: clip;
+  max-width: 100%;
 }
 
 body {
   background: #ffffff;
   color: #171717;
   font-family: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
+  overflow-x: clip;
+  max-width: 100%;
 }
 
-/* Check-in mobile: reduce rubber-band scroll, respect safe areas */
+/* Check-in mobile: vertical scroll only inside pane; no horizontal rubber-band */
 .checkin-app-scroll {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
+  overscroll-behavior-x: none;
+}
+
+/* Extra horizontal room for webviews / notches (check-in + bars) */
+.checkin-px {
+  padding-left: max(1.5rem, env(safe-area-inset-left, 0px));
+  padding-right: max(1.5rem, env(safe-area-inset-right, 0px));
 }
 
 .pb-safe {
