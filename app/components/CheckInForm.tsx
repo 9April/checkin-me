@@ -1,9 +1,9 @@
 "use client";
-import { useState, useRef, useEffect, type CSSProperties } from "react";
+import { useState, useRef, useEffect, useMemo, type CSSProperties } from "react";
 import Link from 'next/link';
 import SignaturePad from 'react-signature-canvas';
 import { saveBooking } from '../actions';
-import { inferDocumentCountryFromPhone } from '@/lib/infer-document-country-from-phone';
+import { parseWhatsAppForCheckin } from '@/lib/infer-document-country-from-phone';
 import DatePicker from './DatePicker';
 import CameraCapture from './CameraCapture';
 
@@ -20,7 +20,7 @@ const TRANSLATIONS = {
     email: "Email",
     emailPlaceholder: "Enter your email",
     whatsapp: "WhatsApp Number",
-    whatsappPlaceholder: "e.g. +123456789",
+    whatsappPlaceholder: "e.g. +212 612345678",
     checkinDates: "Check-in & Check-out dates",
     numTravelers: "Number of Travelers",
     adults: "Adults",
@@ -100,7 +100,7 @@ const TRANSLATIONS = {
     email: "E-mail",
     emailPlaceholder: "Entrez votre e-mail",
     whatsapp: "Numéro WhatsApp",
-    whatsappPlaceholder: "ex: +33612345678",
+    whatsappPlaceholder: "ex: +212 6 12 34 56 78",
     checkinDates: "Dates d'arrivée et de départ",
     numTravelers: "Nombre de voyageurs",
     adults: "Adultes",
@@ -180,7 +180,7 @@ const TRANSLATIONS = {
     email: "Correo electrónico",
     emailPlaceholder: "Ingrese su correo",
     whatsapp: "Número de WhatsApp",
-    whatsappPlaceholder: "ej: +34612345678",
+    whatsappPlaceholder: "ej: +212 612 345 678",
     checkinDates: "Fechas de entrada y salida",
     numTravelers: "Número de viajeros",
     adults: "Adultos",
@@ -318,6 +318,10 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const [isSigningActive, setIsSigningActive] = useState(false);
   const [whatsappValue, setWhatsappValue] = useState('');
+  const whatsappParsed = useMemo(
+    () => (property.showWhatsApp ? parseWhatsAppForCheckin(whatsappValue) : null),
+    [property.showWhatsApp, whatsappValue]
+  );
   const phoneLayout = usePhoneFormLayout();
   const finishStep = property.requireSelfie ? 3 : 2;
   const [wizardStep, setWizardStep] = useState(0);
@@ -374,19 +378,19 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
 
   useEffect(() => {
     if (!property.showWhatsApp) return;
-    const inferred = inferDocumentCountryFromPhone(whatsappValue);
-    if (!inferred) return;
-    setTravelers((prev) =>
-      prev.map((t) => {
-        if (t.country !== '') return t;
-        return {
-          ...t,
-          country: inferred,
-          noCIN: inferred === 'MA' ? false : true,
-        };
-      })
-    );
-  }, [whatsappValue, property.showWhatsApp, adults, kids]);
+    const doc = whatsappParsed?.document;
+    if (!doc) return;
+    setTravelers((prev) => {
+      let changed = false;
+      const next = prev.map((t) => {
+        const noCIN = doc === 'MA' ? false : true;
+        if (t.country === doc && t.noCIN === noCIN) return t;
+        changed = true;
+        return { ...t, country: doc, noCIN };
+      });
+      return changed ? next : prev;
+    });
+  }, [whatsappParsed?.document, property.showWhatsApp, adults, kids]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -632,15 +636,25 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
                 {property.showWhatsApp && (
                   <div className="space-y-2 md:space-y-3 md:col-span-2">
                     <label className="text-[10px] font-black uppercase tracking-[0.25em] text-gray-400 ml-1">{t.whatsapp}</label>
-                    <input
-                      name="whatsapp"
-                      type="tel"
-                      autoComplete="tel"
-                      placeholder={t.whatsappPlaceholder}
-                      value={whatsappValue}
-                      onChange={(e) => setWhatsappValue(e.target.value)}
-                      className="w-full px-4 py-3.5 md:px-6 md:py-5 bg-white border border-[#B0B0B0] rounded-lg outline-none transition-shadow font-normal text-[#222222] placeholder:text-[#717171] text-base focus:border-[#222222] focus:ring-2 focus:ring-[#222222] focus:ring-offset-0"
-                    />
+                    <div className="flex rounded-lg border border-[#B0B0B0] bg-white overflow-hidden transition-shadow focus-within:border-[#222222] focus-within:ring-2 focus-within:ring-[#222222] focus-within:ring-offset-0">
+                      <div
+                        className="flex items-center justify-center px-3 md:px-4 py-3.5 md:py-5 bg-[#F7F7F7] border-r border-[#DDDDDD] min-w-[3.25rem] md:min-w-[3.75rem] shrink-0 text-xl md:text-2xl leading-none select-none"
+                        title={whatsappParsed?.dialLabel ?? ''}
+                        aria-hidden
+                      >
+                        {whatsappParsed?.flagEmoji ?? '📱'}
+                      </div>
+                      <input
+                        name="whatsapp"
+                        type="tel"
+                        autoComplete="tel"
+                        inputMode="tel"
+                        placeholder={t.whatsappPlaceholder}
+                        value={whatsappValue}
+                        onChange={(e) => setWhatsappValue(e.target.value)}
+                        className="flex-1 min-w-0 px-4 py-3.5 md:px-6 md:py-5 bg-transparent border-0 outline-none font-normal text-[#222222] placeholder:text-[#717171] text-base rounded-none"
+                      />
+                    </div>
                   </div>
                 )}
 
