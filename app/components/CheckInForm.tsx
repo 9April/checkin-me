@@ -4,6 +4,7 @@ import Link from 'next/link';
 import SignaturePad from 'react-signature-canvas';
 import { saveBooking } from '../actions';
 import type { SaveBookingResult } from '@/lib/save-booking-core';
+import { parseCheckInApiResponse } from '@/lib/parse-check-in-response';
 import { parseWhatsAppForCheckin, regionDisplayName } from '@/lib/infer-document-country-from-phone';
 import { resolveHouseRulesForLang } from '@/lib/house-rules';
 import type { Lang } from '@/lib/lang';
@@ -465,9 +466,25 @@ export default function CheckInForm({
     return map;
   }, [lang]);
 
+  /** Only reset scroll on wizard step changes — not on phoneLayout (viewport can flicker when modals open and retrigger this). */
   useEffect(() => {
     scrollAreaRef.current?.scrollTo(0, 0);
-  }, [wizardStep, phoneLayout]);
+  }, [wizardStep]);
+
+  /** Lock page behind modals without resetting inner scroll panes (mobile form uses scrollAreaRef, not window). */
+  useEffect(() => {
+    if (!isPrivacyOpen && !isRulesOpen) return;
+    const html = document.documentElement;
+    const body = document.body;
+    const prevHtml = html.style.overflow;
+    const prevBody = body.style.overflow;
+    html.style.overflow = 'hidden';
+    body.style.overflow = 'hidden';
+    return () => {
+      html.style.overflow = prevHtml;
+      body.style.overflow = prevBody;
+    };
+  }, [isPrivacyOpen, isRulesOpen]);
 
   useEffect(() => {
     if (!phoneLayout || wizardStep !== finishStep) return;
@@ -670,6 +687,15 @@ export default function CheckInForm({
       formData.set("lang", lang);
       formData.set("propertyId", property.id);
 
+      const cloneFormData = (fd: FormData) => {
+        const n = new FormData();
+        for (const [k, v] of fd.entries()) {
+          n.append(k, v);
+        }
+        return n;
+      };
+      const formDataForApiFallback = cloneFormData(formData);
+
       let result: SaveBookingResult;
       try {
         result = await saveBooking(formData);
@@ -677,13 +703,12 @@ export default function CheckInForm({
         console.warn("saveBooking server action failed, retrying via /api/check-in", actionErr);
         const res = await fetch("/api/check-in", {
           method: "POST",
-          body: formData,
+          body: formDataForApiFallback,
         });
-        const j = (await res.json()) as SaveBookingResult;
-        if (!res.ok || !j || typeof j !== "object" || !("success" in j)) {
-          throw new Error("Request failed");
+        result = await parseCheckInApiResponse(res);
+        if (!result.success) {
+          throw new Error(result.error || "Request failed");
         }
-        result = j;
       }
 
       if (result.success) {
@@ -1373,12 +1398,12 @@ export default function CheckInForm({
       {isRulesOpen && (
         <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-gray-900/80 backdrop-blur-md animate-in fade-in duration-300">
           <div className="bg-white w-full max-w-4xl rounded-t-[2rem] sm:rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 border border-gray-100 flex flex-col max-h-[92dvh] sm:max-h-[90vh]">
-            <div className="flex shrink-0 items-center justify-end border-b border-[#EEEEEE] bg-white px-4 py-3 sm:px-6 sm:py-4">
+            <div className="flex shrink-0 items-center justify-end border-b border-[#EEEEEE] bg-white px-3 py-2.5 sm:px-5 sm:py-3">
               <button
                 type="button"
                 aria-label={t.close}
                 onClick={() => setIsRulesOpen(false)}
-                className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border-2 border-[#DDDDDD] bg-white text-[#222222] shadow-sm transition-all hover:border-[#FF385C] hover:bg-[#FFF5F6] hover:text-[#FF385C] focus:outline-none focus:ring-2 focus:ring-[#FF385C]/30"
+                className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#F0F0F0] text-[#222222] transition-colors hover:bg-[#FF385C] hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF385C] focus-visible:ring-offset-2"
               >
                 <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M6 18L18 6M6 6l12 12" />
@@ -1397,8 +1422,12 @@ export default function CheckInForm({
                  ))
                )}
             </div>
-            <div className="p-4 sm:p-10 pb-safe sm:pb-10 bg-gray-50/50 shrink-0">
-              <button onClick={() => setIsRulesOpen(false)} className="w-full py-4 sm:py-6 bg-gray-900 text-white font-black rounded-2xl sm:rounded-[2rem] shadow-2xl hover:bg-black transition-all text-xs sm:text-sm uppercase tracking-widest">
+            <div className="shrink-0 border-t border-[#EEEEEE] bg-white px-4 py-3 pb-safe sm:px-8 sm:py-4 sm:pb-8">
+              <button
+                type="button"
+                onClick={() => setIsRulesOpen(false)}
+                className="w-full rounded-2xl border-2 border-[#DDDDDD] bg-white py-3.5 text-xs font-bold uppercase tracking-[0.2em] text-[#222222] transition-colors hover:border-[#FF385C] hover:text-[#FF385C] sm:py-4 sm:text-sm"
+              >
                 {t.close}
               </button>
             </div>
@@ -1410,12 +1439,12 @@ export default function CheckInForm({
       {isPrivacyOpen && (
         <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-gray-900/80 backdrop-blur-md animate-in fade-in duration-300">
           <div className="bg-white w-full max-w-6xl rounded-t-[2rem] sm:rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 border border-gray-100 flex flex-col h-[92dvh] sm:h-[90vh]">
-            <div className="flex shrink-0 items-center justify-end border-b border-[#EEEEEE] bg-white px-4 py-3 sm:px-6 sm:py-4">
+            <div className="flex shrink-0 items-center justify-end border-b border-[#EEEEEE] bg-white px-3 py-2.5 sm:px-5 sm:py-3">
               <button
                 type="button"
                 aria-label={t.close}
                 onClick={() => setIsPrivacyOpen(false)}
-                className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border-2 border-[#DDDDDD] bg-white text-[#222222] shadow-sm transition-all hover:border-[#FF385C] hover:bg-[#FFF5F6] hover:text-[#FF385C] focus:outline-none focus:ring-2 focus:ring-[#FF385C]/30"
+                className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#F0F0F0] text-[#222222] transition-colors hover:bg-[#FF385C] hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF385C] focus-visible:ring-offset-2"
               >
                 <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M6 18L18 6M6 6l12 12" />
@@ -1428,8 +1457,12 @@ export default function CheckInForm({
                 dangerouslySetInnerHTML={{ __html: privacyPolicyHtmlResolved }}
               />
             </div>
-            <div className="p-4 sm:p-10 pb-safe sm:pb-10 bg-gray-50/50 shrink-0">
-              <button onClick={() => setIsPrivacyOpen(false)} className="w-full py-4 sm:py-6 bg-gray-900 text-white font-black rounded-2xl sm:rounded-[2rem] shadow-2xl hover:bg-black transition-all text-xs sm:text-sm uppercase tracking-widest">
+            <div className="shrink-0 border-t border-[#EEEEEE] bg-white px-4 py-3 pb-safe sm:px-8 sm:py-4 sm:pb-8">
+              <button
+                type="button"
+                onClick={() => setIsPrivacyOpen(false)}
+                className="w-full rounded-2xl border-2 border-[#DDDDDD] bg-white py-3.5 text-xs font-bold uppercase tracking-[0.2em] text-[#222222] transition-colors hover:border-[#FF385C] hover:text-[#FF385C] sm:py-4 sm:text-sm"
+              >
                 {t.close}
               </button>
             </div>
