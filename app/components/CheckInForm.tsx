@@ -3,7 +3,7 @@ import { useState, useRef, useEffect, useMemo, type CSSProperties } from "react"
 import Link from 'next/link';
 import SignaturePad from 'react-signature-canvas';
 import { saveBooking } from '../actions';
-import { parseWhatsAppForCheckin } from '@/lib/infer-document-country-from-phone';
+import { parseWhatsAppForCheckin, regionDisplayName } from '@/lib/infer-document-country-from-phone';
 import DatePicker from './DatePicker';
 import CameraCapture from './CameraCapture';
 
@@ -33,7 +33,7 @@ const TRANSLATIONS = {
     countryOfIssue: "Country of document issue",
     selectCountry: "Select country",
     morocco: "Morocco",
-    world: "World",
+    otherCountry: "Other country",
     noCIN: "Je n'ai pas de CIN / I don't have a CIN",
     cinFront: "CIN recto (front)",
     cinBack: "CIN verso (back)",
@@ -113,7 +113,7 @@ const TRANSLATIONS = {
     countryOfIssue: "Pays de délivrance",
     selectCountry: "Sélectionnez le pays",
     morocco: "Maroc",
-    world: "Reste du monde",
+    otherCountry: "Autre pays",
     noCIN: "Je n'ai pas de CIN / I don't have a CIN",
     cinFront: "CIN recto",
     cinBack: "CIN verso",
@@ -193,7 +193,7 @@ const TRANSLATIONS = {
     countryOfIssue: "País de emisión del documento",
     selectCountry: "Seleccione país",
     morocco: "Marruecos",
-    world: "Resto del mundo",
+    otherCountry: "Otro país",
     noCIN: "No tengo CIN / I don't have a CIN",
     cinFront: "CIN anverso",
     cinBack: "CIN reverso",
@@ -363,10 +363,14 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
   const [travelers, setTravelers] = useState<Array<{
     country: 'MA' | 'OTHER' | '';
     noCIN: boolean;
+    /** When document is OTHER, ISO region for dropdown label (from phone or unknown). */
+    otherIso?: string;
   }>>([{ country: '', noCIN: true }]);
 
   /** Per traveler: user picked MA/OTHER explicitly — do not overwrite from WhatsApp. Cleared when they choose "Select country". */
   const countryLockedRef = useRef<boolean[]>([]);
+  /** Bumps when a traveler clears country so WhatsApp inference can re-apply (parsed object may be referentially stable). */
+  const [countryUnlockNonce, setCountryUnlockNonce] = useState(0);
 
   useEffect(() => {
     const total = adults + kids;
@@ -375,6 +379,9 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
     if (locks.length > total) locks.length = total;
 
     const doc = property.showWhatsApp ? whatsappParsed?.document : undefined;
+    const inferredIso =
+      property.showWhatsApp && doc === 'OTHER' ? whatsappParsed?.iso2 : undefined;
+    const inferredOtherIso = doc === 'MA' ? undefined : inferredIso;
 
     setTravelers((prev) => {
       let next = [...prev];
@@ -382,7 +389,11 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
         const i = next.length;
         const seeded =
           doc && !locks[i]
-            ? { country: doc, noCIN: doc === 'MA' ? false : true }
+            ? {
+                country: doc,
+                noCIN: doc === 'MA' ? false : true,
+                otherIso: inferredOtherIso,
+              }
             : { country: '' as const, noCIN: true };
         next.push(seeded);
       }
@@ -392,19 +403,29 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
         next = next.map((t, i) => {
           if (locks[i]) return t;
           const noCIN = doc === 'MA' ? false : true;
-          if (t.country === doc && t.noCIN === noCIN) return t;
-          return { ...t, country: doc, noCIN };
+          const otherIso = inferredOtherIso;
+          if (
+            t.country === doc &&
+            t.noCIN === noCIN &&
+            t.otherIso === otherIso
+          ) {
+            return t;
+          }
+          return { ...t, country: doc, noCIN, otherIso };
         });
       }
 
       const same =
         next.length === prev.length &&
         next.every(
-          (t, i) => t.country === prev[i]?.country && t.noCIN === prev[i]?.noCIN
+          (t, i) =>
+            t.country === prev[i]?.country &&
+            t.noCIN === prev[i]?.noCIN &&
+            t.otherIso === prev[i]?.otherIso
         );
       return same ? prev : next;
     });
-  }, [adults, kids, property.showWhatsApp, whatsappParsed?.document]);
+  }, [adults, kids, property.showWhatsApp, whatsappParsed, countryUnlockNonce]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -742,11 +763,13 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
                           const locks = countryLockedRef.current;
                           while (locks.length <= index) locks.push(false);
                           locks[index] = v !== '';
+                          if (v === '') setCountryUnlockNonce((n) => n + 1);
                           const newTravelers = [...travelers];
                           newTravelers[index] = {
                             ...newTravelers[index],
                             country: v,
                             noCIN: v !== 'MA',
+                            otherIso: undefined,
                           };
                           setTravelers(newTravelers);
                         }}
@@ -754,7 +777,11 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
                       >
                         <option value="">{t.selectCountry}</option>
                         <option value="MA">{t.morocco}</option>
-                        <option value="OTHER">{t.world}</option>
+                        <option value="OTHER">
+                          {traveler.country === 'OTHER' && traveler.otherIso
+                            ? regionDisplayName(traveler.otherIso, lang)
+                            : t.otherCountry}
+                        </option>
                       </select>
                       <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7"/></svg>

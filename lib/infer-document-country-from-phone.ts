@@ -318,7 +318,24 @@ export type WhatsAppCheckinParse = {
   document: "MA" | "OTHER";
   flagEmoji: string;
   dialLabel: string;
+  /** ISO 3166-1 alpha-2 when known (for OTHER: passport country label). */
+  iso2?: string;
 };
+
+/** Localized country/territory name for a region code (e.g. FR → France / France / Francia). */
+export function regionDisplayName(
+  iso2: string,
+  lang: "EN" | "FR" | "SP"
+): string {
+  const locale = lang === "EN" ? "en" : lang === "FR" ? "fr" : "es";
+  const code = iso2.toUpperCase();
+  try {
+    const dn = new Intl.DisplayNames([locale, "en"], { type: "region" });
+    return dn.of(code) ?? code;
+  } catch {
+    return code;
+  }
+}
 
 /**
  * Parse phone for UI: document line (MA/OTHER), flag, and shown dial code.
@@ -333,16 +350,31 @@ export function parseWhatsAppForCheckin(raw: string): WhatsAppCheckinParse | nul
 
   // Morocco international (+212 / 00 212 / leading 212…)
   if (d.startsWith("212") && d.length >= 3) {
-    return { document: "MA", flagEmoji: iso2ToFlagEmoji("MA"), dialLabel: "+212" };
+    return {
+      document: "MA",
+      flagEmoji: iso2ToFlagEmoji("MA"),
+      dialLabel: "+212",
+      iso2: "MA",
+    };
   }
 
   // Morocco national mobile (no + / no 00), before matching other country codes
   if (!hasPlus && !had00) {
     if (/^0?[67]\d{8}$/.test(d)) {
-      return { document: "MA", flagEmoji: iso2ToFlagEmoji("MA"), dialLabel: "+212" };
+      return {
+        document: "MA",
+        flagEmoji: iso2ToFlagEmoji("MA"),
+        dialLabel: "+212",
+        iso2: "MA",
+      };
     }
     if (/^0?[67]\d{3,7}$/.test(d) && d.length >= 4 && d.length <= 9) {
-      return { document: "MA", flagEmoji: iso2ToFlagEmoji("MA"), dialLabel: "+212" };
+      return {
+        document: "MA",
+        flagEmoji: iso2ToFlagEmoji("MA"),
+        dialLabel: "+212",
+        iso2: "MA",
+      };
     }
   }
 
@@ -358,6 +390,7 @@ export function parseWhatsAppForCheckin(raw: string): WhatsAppCheckinParse | nul
       document: "OTHER",
       flagEmoji: iso ? iso2ToFlagEmoji(iso) : "🌍",
       dialLabel: "+" + pre,
+      ...(iso ? { iso2: iso } : {}),
     };
   }
 
