@@ -29,10 +29,10 @@ export async function updatePdfTemplate(propertyId: string, template: string, fo
 }
 
 import { buildPDF } from '@/lib/pdf';
-import { parseHouseRulesForLang } from '@/lib/house-rules';
+import { resolveHouseRulesForLang } from '@/lib/house-rules';
 
 export async function generatePdfPreview(propertyName: string, template: string, houseRules: string, footer: string, logoUrl?: string | null) {
-  let rulesArr = parseHouseRulesForLang(houseRules, 'EN');
+  let rulesArr = resolveHouseRulesForLang(houseRules, 'EN');
 
   if (rulesArr.length === 0) {
     rulesArr = ["No smoking inside", "No parties allowed", "Respect the neighbors"];

@@ -1,9 +1,5 @@
 import { DEFAULT_PRIVACY_POLICY } from '@/lib/constants';
 import type { Lang } from '@/lib/lang';
-import {
-  DEFAULT_PRIVACY_POLICY_ES,
-  DEFAULT_PRIVACY_POLICY_FR,
-} from '@/lib/privacy-default-lang';
 
 function themeTweaks(html: string): string {
   return html
@@ -12,22 +8,12 @@ function themeTweaks(html: string): string {
     .replace(/--bg-primary:\s*#FDFBF7/g, '--bg-primary: #FDFCF9');
 }
 
-function defaultPrivacyForLang(lang: Lang): string {
-  switch (lang) {
-    case 'FR':
-      return DEFAULT_PRIVACY_POLICY_FR;
-    case 'SP':
-      return DEFAULT_PRIVACY_POLICY_ES;
-    default:
-      return DEFAULT_PRIVACY_POLICY;
-  }
-}
-
 /**
  * Resolves privacy HTML for check-in / public privacy page.
  * - Custom policy may be a single HTML string (any language), or JSON:
  *   `{ "EN": "<html>...", "FR": "...", "SP": "..." }` for multilingual policies.
- * - If empty, uses built-in defaults per language (EN: full template; FR/SP: concise defaults).
+ * - If empty, uses the full styled default from `constants` (same layout for all languages;
+ *   language-specific defaults would drop CSS — avoided).
  */
 export function getPrivacyPolicyHtml(
   stored: string | null | undefined,
@@ -48,7 +34,9 @@ export function getPrivacyPolicyHtml(
             Object.values(o).find(
               (v) => typeof v === 'string' && v.includes('<')
             );
-          raw = (typeof pick === 'string' && pick.trim()) || defaultPrivacyForLang(lang);
+          raw =
+            (typeof pick === 'string' && pick.trim()) ||
+            DEFAULT_PRIVACY_POLICY;
         } else {
           raw = trimmed;
         }
@@ -59,7 +47,7 @@ export function getPrivacyPolicyHtml(
       raw = trimmed;
     }
   } else {
-    raw = defaultPrivacyForLang(lang);
+    raw = DEFAULT_PRIVACY_POLICY;
   }
 
   return themeTweaks(raw);

@@ -57,35 +57,28 @@ const templates: Record<Lang, EmailTemplates> = {
     sameAdminCopyHtml: 'Admin copy',
   },
   FR: {
-    pdfFailedNote:
-      'Le PDF n’a pas pu être généré. Votre enregistrement a bien été enregistré.',
-    guestAttachmentLine:
-      '\n\nVous trouverez en pièce jointe une copie de votre accord signé pour vos archives.',
+    pdfFailedNote: `Le PDF n'a pas pu être généré. Votre enregistrement a bien été enregistré.`,
+    guestAttachmentLine: `\n\nVous trouverez en pièce jointe une copie de votre accord signé pour vos archives.`,
     guestDear: (name) => `Bonjour ${name},`,
     guestThanks: (property) =>
-      `Merci d’avoir complété votre pré-enregistrement pour ${property}.`,
+      `Merci d'avoir complété votre pré-enregistrement pour ${property}.`,
     guestThanksHtml: (propertyNameEscaped) =>
-      `Merci d’avoir complété votre pré-enregistrement pour <strong>${propertyNameEscaped}</strong>.`,
-    guestLookForward: 'Au plaisir de vous accueillir bientôt !',
-    guestBestRegards: (property) =>
-      `Cordialement,\n${property}`,
-    guestHtmlAttachment:
-      'Vous trouverez <strong>votre copie de l’accord signé</strong> en pièce jointe à cet e-mail.',
-    guestSubject: (property) =>
-      `Confirmation de pré-enregistrement — ${property}`,
-    adminSubject: (guest, property) =>
-      `Nouvelle inscription : ${guest} — ${property}`,
-    adminBodyIntro: 'Une nouvelle inscription d’invité a été enregistrée.',
-    adminAttachment: 'L’accord signé est en pièce jointe.',
-    adminProperty: 'Établissement :',
-    adminGuest: 'Invité :',
-    adminEmailLabel: 'E-mail :',
-    adminDates: 'Dates :',
-    adminNotProvided: '(non fourni)',
-    sameSubject: (guest, property) =>
-      `Pré-enregistrement : ${guest} — ${property}`,
-    sameAdminSeparator: '\n\n--- Copie administration ---\n',
-    sameAdminCopyHtml: 'Copie administration',
+      `Merci d'avoir complété votre pré-enregistrement pour <strong>${propertyNameEscaped}</strong>.`,
+    guestLookForward: `Au plaisir de vous accueillir bientôt !`,
+    guestBestRegards: (property) => `Cordialement,\n${property}`,
+    guestHtmlAttachment: `Vous trouverez <strong>votre copie de l'accord signé</strong> en pièce jointe à cet e-mail.`,
+    guestSubject: (property) => `Confirmation de pré-enregistrement — ${property}`,
+    adminSubject: (guest, property) => `Nouvelle inscription : ${guest} — ${property}`,
+    adminBodyIntro: `Une nouvelle inscription d'invité a été enregistrée.`,
+    adminAttachment: `L'accord signé est en pièce jointe.`,
+    adminProperty: `Établissement :`,
+    adminGuest: `Invité :`,
+    adminEmailLabel: `E-mail :`,
+    adminDates: `Dates :`,
+    adminNotProvided: `(non fourni)`,
+    sameSubject: (guest, property) => `Pré-enregistrement : ${guest} — ${property}`,
+    sameAdminSeparator: `\n\n--- Copie administration ---\n`,
+    sameAdminCopyHtml: `Copie administration`,
   },
   SP: {
     pdfFailedNote:

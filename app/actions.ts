@@ -2,7 +2,7 @@
 
 import { buildPDF } from '@/lib/pdf';
 import { getCheckinEmailTemplates } from '@/lib/checkin-i18n';
-import { parseHouseRulesForLang } from '@/lib/house-rules';
+import { resolveHouseRulesForLang } from '@/lib/house-rules';
 import type { Lang } from '@/lib/lang';
 import { normalizeLang } from '@/lib/lang';
 import { prisma } from '@/lib/prisma';
@@ -282,7 +282,7 @@ export async function saveBooking(formData: FormData) {
     });
 
     /* ---------- 4. house rules (legacy array or { EN, FR, SP } lists) ---------- */
-    const rules = parseHouseRulesForLang(property.houseRules, lang);
+    const rules = resolveHouseRulesForLang(property.houseRules, lang);
 
     const idFiles = travelersData.flatMap((t) => t.idFiles);
 

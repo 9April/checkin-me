@@ -4,7 +4,7 @@ import Link from 'next/link';
 import SignaturePad from 'react-signature-canvas';
 import { saveBooking } from '../actions';
 import { parseWhatsAppForCheckin, regionDisplayName } from '@/lib/infer-document-country-from-phone';
-import { parseHouseRulesForLang } from '@/lib/house-rules';
+import { resolveHouseRulesForLang } from '@/lib/house-rules';
 import type { Lang } from '@/lib/lang';
 import { getPrivacyPolicyHtml } from '@/lib/privacy-policy-html';
 import DatePicker from './DatePicker';
@@ -437,7 +437,7 @@ export default function CheckInForm({
   }, []);
 
   const rulesList = useMemo(
-    () => parseHouseRulesForLang(property.houseRules, lang),
+    () => resolveHouseRulesForLang(property.houseRules, lang),
     [property.houseRules, lang]
   );
 
@@ -1117,16 +1117,24 @@ export default function CheckInForm({
                   </div>
                 )}
                 <SignaturePad ref={sigRef} canvasProps={{ className: "sigCanvas w-full cursor-crosshair" }} onBegin={() => setIsSigningActive(true)} />
-                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3 z-20">
-                   <button type="button" onClick={(e) => { e.stopPropagation(); sigRef.current?.clear(); }} className="px-6 py-2 bg-white/90 backdrop-blur shadow-sm rounded-full text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-[var(--primary-color)] transition-colors">
-                     {t.clearSignature}
-                   </button>
-                   {isSigningActive && (
-                     <button type="button" onClick={() => setIsSigningActive(false)} className="px-6 py-2 bg-green-500 shadow-lg shadow-green-200 rounded-full text-[10px] font-black uppercase tracking-widest text-white hover:bg-green-600 transition-all">
-                       {t.doneSigning}
-                     </button>
-                   )}
-                </div>
+              </div>
+              <div className="flex flex-wrap items-center justify-center gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => sigRef.current?.clear()}
+                  className="px-5 py-2.5 rounded-xl border border-gray-200 bg-white text-[10px] font-black uppercase tracking-widest text-gray-600 hover:border-[var(--primary-color)] hover:text-[var(--primary-color)] transition-colors shadow-sm"
+                >
+                  {t.clearSignature}
+                </button>
+                {isSigningActive && (
+                  <button
+                    type="button"
+                    onClick={() => setIsSigningActive(false)}
+                    className="px-5 py-2.5 rounded-xl bg-emerald-600 text-white text-[10px] font-black uppercase tracking-widest hover:bg-emerald-700 transition-colors shadow-sm"
+                  >
+                    {t.doneSigning}
+                  </button>
+                )}
               </div>
             </section>
 
