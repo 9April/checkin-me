@@ -4,7 +4,6 @@ import Link from 'next/link';
 import SignaturePad from 'react-signature-canvas';
 import { saveBooking } from '../actions';
 import type { SaveBookingResult } from '@/lib/save-booking-core';
-import { parseCheckInApiResponse } from '@/lib/parse-check-in-response';
 import { parseWhatsAppForCheckin, regionDisplayName } from '@/lib/infer-document-country-from-phone';
 import { resolveHouseRulesForLang } from '@/lib/house-rules';
 import type { Lang } from '@/lib/lang';
@@ -471,20 +470,49 @@ export default function CheckInForm({
     scrollAreaRef.current?.scrollTo(0, 0);
   }, [wizardStep]);
 
-  /** Lock page behind modals without resetting inner scroll panes (mobile form uses scrollAreaRef, not window). */
+  /** Lock background scroll (window + mobile form pane). overflow:hidden alone is not enough on iOS. */
   useEffect(() => {
     if (!isPrivacyOpen && !isRulesOpen) return;
     const html = document.documentElement;
     const body = document.body;
-    const prevHtml = html.style.overflow;
-    const prevBody = body.style.overflow;
+    const pane = scrollAreaRef.current;
+    const winY = window.scrollY;
+    const paneY =
+      phoneLayout && pane ? pane.scrollTop : 0;
+
     html.style.overflow = 'hidden';
+    html.style.overscrollBehavior = 'none';
     body.style.overflow = 'hidden';
+    body.style.overscrollBehavior = 'none';
+    body.style.position = 'fixed';
+    body.style.top = `-${winY}px`;
+    body.style.left = '0';
+    body.style.right = '0';
+    body.style.width = '100%';
+
+    if (phoneLayout && pane) {
+      pane.style.overflow = 'hidden';
+      pane.style.overscrollBehavior = 'none';
+    }
+
     return () => {
-      html.style.overflow = prevHtml;
-      body.style.overflow = prevBody;
+      html.style.overflow = '';
+      html.style.overscrollBehavior = '';
+      body.style.overflow = '';
+      body.style.overscrollBehavior = '';
+      body.style.position = '';
+      body.style.top = '';
+      body.style.left = '';
+      body.style.right = '';
+      body.style.width = '';
+      if (phoneLayout && pane) {
+        pane.style.overflow = '';
+        pane.style.overscrollBehavior = '';
+        pane.scrollTop = paneY;
+      }
+      window.scrollTo(0, winY);
     };
-  }, [isPrivacyOpen, isRulesOpen]);
+  }, [isPrivacyOpen, isRulesOpen, phoneLayout]);
 
   useEffect(() => {
     if (!phoneLayout || wizardStep !== finishStep) return;
@@ -687,29 +715,7 @@ export default function CheckInForm({
       formData.set("lang", lang);
       formData.set("propertyId", property.id);
 
-      const cloneFormData = (fd: FormData) => {
-        const n = new FormData();
-        for (const [k, v] of fd.entries()) {
-          n.append(k, v);
-        }
-        return n;
-      };
-      const formDataForApiFallback = cloneFormData(formData);
-
-      let result: SaveBookingResult;
-      try {
-        result = await saveBooking(formData);
-      } catch (actionErr) {
-        console.warn("saveBooking server action failed, retrying via /api/check-in", actionErr);
-        const res = await fetch("/api/check-in", {
-          method: "POST",
-          body: formDataForApiFallback,
-        });
-        result = await parseCheckInApiResponse(res);
-        if (!result.success) {
-          throw new Error(result.error || "Request failed");
-        }
-      }
+      const result: SaveBookingResult = await saveBooking(formData);
 
       if (result.success) {
         const next =
@@ -1396,8 +1402,11 @@ export default function CheckInForm({
 
       {/* House Rules Modal */}
       {isRulesOpen && (
-        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-gray-900/80 backdrop-blur-md animate-in fade-in duration-300">
-          <div className="bg-white w-full max-w-4xl rounded-t-[2rem] sm:rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 border border-gray-100 flex flex-col max-h-[92dvh] sm:max-h-[90vh]">
+        <div
+          className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-gray-900/80 backdrop-blur-md animate-in fade-in duration-300 overscroll-none"
+          style={{ touchAction: 'none' }}
+        >
+          <div className="bg-white w-full max-w-4xl rounded-t-[2rem] sm:rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 border border-gray-100 flex flex-col max-h-[92dvh] sm:max-h-[90vh] touch-auto overscroll-contain">
             <div className="flex shrink-0 items-center justify-end border-b border-[#EEEEEE] bg-white px-3 py-2.5 sm:px-5 sm:py-3">
               <button
                 type="button"
@@ -1410,7 +1419,7 @@ export default function CheckInForm({
                 </svg>
               </button>
             </div>
-            <div className="p-4 sm:p-10 flex-1 overflow-y-auto checkin-app-scroll space-y-4 sm:space-y-6">
+            <div className="p-4 sm:p-10 flex-1 overflow-y-auto checkin-app-scroll space-y-4 sm:space-y-6 touch-pan-y overscroll-y-contain">
                {rulesList.length === 0 ? (
                  <p className="text-gray-700 font-semibold text-sm leading-relaxed px-2">{t.houseRulesFallback}</p>
                ) : (
@@ -1426,7 +1435,7 @@ export default function CheckInForm({
               <button
                 type="button"
                 onClick={() => setIsRulesOpen(false)}
-                className="w-full rounded-2xl border-2 border-[#DDDDDD] bg-white py-3.5 text-xs font-bold uppercase tracking-[0.2em] text-[#222222] transition-colors hover:border-[#FF385C] hover:text-[#FF385C] sm:py-4 sm:text-sm"
+                className="w-full rounded-2xl py-3.5 text-xs font-bold uppercase tracking-[0.2em] text-white shadow-lg shadow-[#FF385C]/25 bg-gradient-to-r from-[#FF385C] to-[#E31C5F] transition-all hover:brightness-105 active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF385C] focus-visible:ring-offset-2 sm:py-4 sm:text-sm"
               >
                 {t.close}
               </button>
@@ -1437,8 +1446,11 @@ export default function CheckInForm({
 
       {/* Privacy Policy Modal */}
       {isPrivacyOpen && (
-        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-gray-900/80 backdrop-blur-md animate-in fade-in duration-300">
-          <div className="bg-white w-full max-w-6xl rounded-t-[2rem] sm:rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 border border-gray-100 flex flex-col h-[92dvh] sm:h-[90vh]">
+        <div
+          className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-gray-900/80 backdrop-blur-md animate-in fade-in duration-300 overscroll-none"
+          style={{ touchAction: 'none' }}
+        >
+          <div className="bg-white w-full max-w-6xl rounded-t-[2rem] sm:rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 border border-gray-100 flex flex-col h-[92dvh] sm:h-[90vh] touch-auto overscroll-contain">
             <div className="flex shrink-0 items-center justify-end border-b border-[#EEEEEE] bg-white px-3 py-2.5 sm:px-5 sm:py-3">
               <button
                 type="button"
@@ -1451,7 +1463,7 @@ export default function CheckInForm({
                 </svg>
               </button>
             </div>
-            <div className="flex-1 min-h-0 overflow-y-auto checkin-app-scroll bg-[#FDFCF9] relative">
+            <div className="flex-1 min-h-0 overflow-y-auto checkin-app-scroll bg-[#FDFCF9] relative touch-pan-y overscroll-y-contain">
               <div
                 className="luxury-privacy-container min-h-full"
                 dangerouslySetInnerHTML={{ __html: privacyPolicyHtmlResolved }}
@@ -1461,7 +1473,7 @@ export default function CheckInForm({
               <button
                 type="button"
                 onClick={() => setIsPrivacyOpen(false)}
-                className="w-full rounded-2xl border-2 border-[#DDDDDD] bg-white py-3.5 text-xs font-bold uppercase tracking-[0.2em] text-[#222222] transition-colors hover:border-[#FF385C] hover:text-[#FF385C] sm:py-4 sm:text-sm"
+                className="w-full rounded-2xl py-3.5 text-xs font-bold uppercase tracking-[0.2em] text-white shadow-lg shadow-[#FF385C]/25 bg-gradient-to-r from-[#FF385C] to-[#E31C5F] transition-all hover:brightness-105 active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF385C] focus-visible:ring-offset-2 sm:py-4 sm:text-sm"
               >
                 {t.close}
               </button>

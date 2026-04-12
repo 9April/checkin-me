@@ -148,9 +148,7 @@ function jsonSafeResult<T extends SaveBookingResult>(r: T): T {
   return JSON.parse(JSON.stringify(r)) as T;
 }
 
-/**
- * Shared implementation for check-in submission (server action + /api/check-in fallback).
- */
+/** Shared implementation for check-in submission (used by the server action only). */
 export async function executeSaveBooking(
   formData: FormData
 ): Promise<SaveBookingResult> {
