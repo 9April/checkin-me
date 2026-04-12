@@ -4,7 +4,6 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { publicCheckInPath, reserveUniquePropertySlug } from "@/lib/property-slug";
 import { revalidatePath } from "next/cache";
-import { supabaseAdmin } from "@/lib/supabase";
 
 export async function updateProperty(formData: FormData) {
   const session = await auth();
@@ -25,32 +24,6 @@ export async function updateProperty(formData: FormData) {
   const showWhatsApp = formData.get('showWhatsApp') === 'true';
   const requireSelfie = formData.get('requireSelfie') === 'true';
   const requireIdPhotos = formData.get('requireIdPhotos') === 'true';
-
-  // Handle Logo Upload
-  const logoFile = formData.get('logo') as File | null;
-  let logoUrl: string | undefined;
-
-  if (logoFile && logoFile.size > 0 && typeof logoFile.arrayBuffer === 'function') {
-    try {
-      const ext = logoFile.name.split('.').pop() || 'png';
-      const filename = `logo_${propertyId}_${Date.now()}.${ext}`;
-      const buffer = Buffer.from(await logoFile.arrayBuffer());
-      
-      const { error } = await supabaseAdmin.storage
-        .from('checkin-me')
-        .upload(filename, buffer, { 
-          contentType: logoFile.type || 'image/png',
-          upsert: true 
-        });
-      
-      if (error) throw new Error(`Logo Upload Error: ${error.message}`);
-      
-      // Use the API bridge so it's accessible to guests
-      logoUrl = `/api/images/${filename}`;
-    } catch (e) {
-      console.error("Logo upload failed:", e);
-    }
-  }
 
   // Validate house rules is valid JSON array of strings
   let houseRules = houseRulesRaw;
@@ -85,7 +58,6 @@ export async function updateProperty(formData: FormData) {
         showWhatsApp,
         requireSelfie,
         requireIdPhotos,
-        ...(logoUrl ? { logoUrl } : {})
       }
     });
 

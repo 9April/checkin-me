@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import { Save, Info, ListTodo, Clock, CheckCircle, AlertCircle, X, Image as ImageIcon, Palette, Layout } from 'lucide-react';
+import { useState } from 'react';
+import { Save, Info, ListTodo, Clock, CheckCircle, AlertCircle, X, Palette, Layout } from 'lucide-react';
 import { updateProperty } from './actions';
 
 interface PropertySettingsFormProps {
@@ -13,7 +13,6 @@ interface PropertySettingsFormProps {
     checkoutTime: string;
     houseRules?: string | null;
     privacyPolicy?: string | null;
-    logoUrl?: string | null;
     formTitle?: string | null;
     formSubtitle?: string | null;
     primaryColor?: string | null;
@@ -27,9 +26,6 @@ interface PropertySettingsFormProps {
 export default function PropertySettingsForm({ property, initialRules }: PropertySettingsFormProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [status, setStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
-  const [logoPreview, setLogoPreview] = useState<string | null>(property.logoUrl || null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
   const [primaryColor, setPrimaryColor] = useState(property.primaryColor || '#FF385C');
 
   async function handleSubmit(formData: FormData) {
@@ -58,17 +54,6 @@ export default function PropertySettingsForm({ property, initialRules }: Propert
       setIsSaving(false);
     }
   }
-
-  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setLogoPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
 
   return (
     <form action={handleSubmit} className="space-y-8 text-[#111827] pb-12">
@@ -228,40 +213,6 @@ export default function PropertySettingsForm({ property, initialRules }: Propert
         </div>
 
         <div className="space-y-8">
-          <section className="bg-white rounded-3xl border border-[#E5E7EB] shadow-sm overflow-hidden text-black">
-            <div className="p-6 border-b border-[#E5E7EB] flex items-center gap-3">
-              <div className="w-10 h-10 bg-green-50 text-green-500 rounded-xl flex items-center justify-center">
-                <ImageIcon size={20} />
-              </div>
-              <h2 className="text-lg font-bold">Property Logo</h2>
-            </div>
-            <div className="p-8 flex flex-col items-center">
-              <div className="w-32 h-32 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200 flex items-center justify-center relative overflow-hidden group mb-4">
-                {logoPreview ? (
-                  <img src={logoPreview} alt="Logo preview" className="w-full h-full object-contain p-2" />
-                ) : (
-                  <ImageIcon className="text-gray-300" size={40} />
-                )}
-                <button 
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-bold"
-                >
-                  Change Logo
-                </button>
-              </div>
-              <input 
-                ref={fileInputRef}
-                type="file" 
-                name="logo" 
-                accept="image/*" 
-                className="hidden" 
-                onChange={handleLogoChange}
-              />
-              <p className="text-xs text-center text-[#6B7280]">PNG, JPG up to 2MB.<br/>Recommended: Square or horizontal.</p>
-            </div>
-          </section>
-
           <section className="bg-white rounded-3xl border border-[#E5E7EB] shadow-sm overflow-hidden text-black">
             <div className="p-6 border-b border-[#E5E7EB] flex items-center gap-3">
               <div className="w-10 h-10 bg-indigo-50 text-indigo-500 rounded-xl flex items-center justify-center">

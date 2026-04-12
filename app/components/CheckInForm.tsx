@@ -289,7 +289,6 @@ function firstWizardStepForErrors(
 interface PropertyData {
   id: string;
   name: string;
-  logoUrl?: string | null;
   checkinTime: string;
   checkoutTime: string;
   houseRules?: string | null;
@@ -489,19 +488,6 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
                 </button>
               ))}
             </div>
-            {property.logoUrl && (
-              <div
-                className={`bg-white rounded-2xl border border-[#DDDDDD]/50 shadow-sm flex items-center justify-center shrink-0 ${
-                  phoneLayout ? "px-3 py-2" : "px-8 py-6 rounded-3xl"
-                }`}
-              >
-                <img
-                  src={property.logoUrl}
-                  alt={property.name}
-                  className={`object-contain ${phoneLayout ? "h-10 max-w-[120px]" : "h-20 sm:h-24 max-w-[280px]"}`}
-                />
-              </div>
-            )}
           </div>
 
           {phoneLayout && (

@@ -34,7 +34,6 @@ export default async function PropertyCheckInPage({
       property={{
         id: property.id,
         name: property.name,
-        logoUrl: property.logoUrl,
         checkinTime: property.checkinTime,
         checkoutTime: property.checkoutTime,
         houseRules: property.houseRules,
