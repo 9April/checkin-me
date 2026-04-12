@@ -378,6 +378,16 @@ function usePhoneFormLayout() {
   return phone;
 }
 
+/**
+ * Inactive mobile wizard steps must not use `display: none` (Tailwind `hidden`) — WebKit
+ * and others can omit those controls from FormData on submit, breaking validation and save.
+ */
+function wizardStepHiddenClass(visible: boolean, phoneLayout: boolean): string {
+  if (visible) return "";
+  if (phoneLayout) return "sr-only pointer-events-none";
+  return "hidden md:block";
+}
+
 function firstWizardStepForErrors(errors: Record<string, string>): number {
   const keys = Object.keys(errors);
   const finish = 2;
@@ -900,7 +910,7 @@ export default function CheckInForm({
 
             <input type="hidden" name="totalTravelers" value={adults + kids} readOnly />
             <section
-              className={`space-y-6 md:space-y-8 ${showPersonal ? "" : "hidden md:block"} ${!phoneLayout ? "md:rounded-2xl md:border md:border-[#EEEEEE] md:bg-[#FAFAFA] md:p-6 lg:p-8" : ""}`}
+              className={`space-y-6 md:space-y-8 ${wizardStepHiddenClass(showPersonal, phoneLayout)} ${!phoneLayout ? "md:rounded-2xl md:border md:border-[#EEEEEE] md:bg-[#FAFAFA] md:p-6 lg:p-8" : ""}`}
             >
               <div className="flex items-center gap-4 mb-0 md:mb-1">
                 <div className="h-px min-w-[2rem] flex-1 bg-gradient-to-r from-transparent via-[#FF385C]/80 to-[#FF385C]/40" />
@@ -1032,7 +1042,7 @@ export default function CheckInForm({
               </div>
             </section>
 
-            <section className={`space-y-6 md:space-y-8 ${showTravelers ? "" : "hidden md:block"} ${!phoneLayout ? "md:rounded-2xl md:border md:border-[#EEEEEE] md:bg-[#FAFAFA] md:p-6 lg:p-8" : ""}`}>
+            <section className={`space-y-6 md:space-y-8 ${wizardStepHiddenClass(showTravelers, phoneLayout)} ${!phoneLayout ? "md:rounded-2xl md:border md:border-[#EEEEEE] md:bg-[#FAFAFA] md:p-6 lg:p-8" : ""}`}>
               <div className="flex items-center gap-4">
                 <div className="h-px min-w-[2rem] flex-1 bg-gradient-to-r from-transparent via-[#FF385C]/80 to-[#FF385C]/40" />
                 <h2 className="text-xs md:text-sm font-bold text-[#222222] tracking-[0.25em] uppercase text-center shrink-0">
@@ -1058,7 +1068,7 @@ export default function CheckInForm({
             {travelers.map((traveler, index) => (
               <section
                 key={index}
-                className={`space-y-6 md:space-y-8 pt-6 md:pt-8 border-t border-[#EBEBEB] ${showTravelers ? "" : "hidden md:block"} ${!phoneLayout ? "md:rounded-2xl md:border md:border-[#EEEEEE] md:bg-[#FAFAFA] md:p-6 lg:p-8 md:mt-4" : ""}`}
+                className={`space-y-6 md:space-y-8 pt-6 md:pt-8 border-t border-[#EBEBEB] ${wizardStepHiddenClass(showTravelers, phoneLayout)} ${!phoneLayout ? "md:rounded-2xl md:border md:border-[#EEEEEE] md:bg-[#FAFAFA] md:p-6 lg:p-8 md:mt-4" : ""}`}
               >
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="flex items-center gap-3 min-w-0">
@@ -1219,7 +1229,7 @@ export default function CheckInForm({
               </section>
             ))}
 
-            <section className={`space-y-6 md:space-y-8 pt-6 md:pt-10 border-t border-[#EBEBEB] ${showFinish ? "" : "hidden md:block"} ${!phoneLayout ? "md:rounded-2xl md:border md:border-[#EEEEEE] md:bg-[#FAFAFA] md:p-6 lg:p-8 md:mt-2" : ""}`}>
+            <section className={`space-y-6 md:space-y-8 pt-6 md:pt-10 border-t border-[#EBEBEB] ${wizardStepHiddenClass(showFinish, phoneLayout)} ${!phoneLayout ? "md:rounded-2xl md:border md:border-[#EEEEEE] md:bg-[#FAFAFA] md:p-6 lg:p-8 md:mt-2" : ""}`}>
                <div className="p-5 md:p-8 bg-[#1a1a1a] rounded-2xl md:rounded-3xl text-white space-y-4 md:space-y-6 shadow-lg shadow-gray-400/20">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-white/10 rounded-2xl flex items-center justify-center text-blue-400">
@@ -1270,7 +1280,7 @@ export default function CheckInForm({
                </div>
             </section>
 
-            <section className={`space-y-6 md:space-y-8 pt-6 md:pt-10 border-t border-[#EBEBEB] ${showFinish ? "" : "hidden md:block"}`}>
+            <section className={`space-y-6 md:space-y-8 pt-6 md:pt-10 border-t border-[#EBEBEB] ${wizardStepHiddenClass(showFinish, phoneLayout)}`}>
               <div className="flex items-center gap-4">
                 <div className="h-px min-w-[2rem] flex-1 bg-gradient-to-r from-transparent via-[#FF385C]/80 to-[#FF385C]/40" />
                 <h2 className="text-xs md:text-sm font-bold text-[#222222] tracking-[0.25em] uppercase text-center shrink-0">
