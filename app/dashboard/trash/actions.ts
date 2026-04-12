@@ -10,12 +10,14 @@ export async function softDeleteBooking(bookingId: string) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
 
-  await prisma.booking.update({
-    where: { 
+  // Idempotent: repeated clicks / races after first soft-delete affect 0 rows — still OK
+  await prisma.booking.updateMany({
+    where: {
       id: bookingId,
-      property: { hostId: session.user.id }
+      property: { hostId: session.user.id },
+      deletedAt: null,
     },
-    data: { deletedAt: new Date() }
+    data: { deletedAt: new Date() },
   });
 
   revalidatePath("/dashboard");
@@ -28,12 +30,13 @@ export async function restoreBooking(bookingId: string) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
 
-  await prisma.booking.update({
-    where: { 
+  await prisma.booking.updateMany({
+    where: {
       id: bookingId,
-      property: { hostId: session.user.id }
+      property: { hostId: session.user.id },
+      deletedAt: { not: null },
     },
-    data: { deletedAt: null }
+    data: { deletedAt: null },
   });
 
   revalidatePath("/dashboard");
@@ -46,16 +49,21 @@ export async function permanentlyDeleteBooking(bookingId: string) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
 
-  const booking = await prisma.booking.findUnique({
-    where: { 
+  const booking = await prisma.booking.findFirst({
+    where: {
       id: bookingId,
-      property: { hostId: session.user.id }
-    }
+      property: { hostId: session.user.id },
+    },
   });
 
-  if (!booking) throw new Error("Booking not found");
+  // Idempotent: second concurrent delete finds nothing — no throw (avoids Next.js digest errors)
+  if (!booking) {
+    revalidatePath("/dashboard");
+    revalidatePath("/dashboard/bookings");
+    revalidatePath("/dashboard/trash");
+    return { success: true };
+  }
 
-  // Optional: Delete associated PDF file
   if (booking.pdfUrl) {
     try {
       const pdfPath = path.join(process.cwd(), "public", "pdfs", booking.pdfUrl);
@@ -66,9 +74,11 @@ export async function permanentlyDeleteBooking(bookingId: string) {
   }
 
   await prisma.booking.delete({
-    where: { id: bookingId }
+    where: { id: bookingId },
   });
 
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/bookings");
   revalidatePath("/dashboard/trash");
   return { success: true };
 }

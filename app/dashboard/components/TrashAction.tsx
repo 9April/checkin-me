@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Trash2, RotateCcw, Trash } from 'lucide-react';
 import { softDeleteBooking, restoreBooking, permanentlyDeleteBooking } from '../trash/actions';
 
@@ -12,12 +12,15 @@ interface TrashActionProps {
 
 export default function TrashAction({ bookingId, mode = 'soft', onAction }: TrashActionProps) {
   const [isPending, setIsPending] = useState(false);
+  const busyRef = useRef(false);
 
   async function handleAction() {
     if (mode === 'permanent' && !confirm('Are you sure you want to permanently delete this submission? This cannot be undone.')) {
       return;
     }
 
+    if (busyRef.current) return;
+    busyRef.current = true;
     setIsPending(true);
     try {
       if (mode === 'soft') await softDeleteBooking(bookingId);
@@ -29,6 +32,7 @@ export default function TrashAction({ bookingId, mode = 'soft', onAction }: Tras
       console.error('Trash action failed:', error);
       alert('Failed to perform action. Please try again.');
     } finally {
+      busyRef.current = false;
       setIsPending(false);
     }
   }
