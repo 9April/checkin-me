@@ -1,7 +1,7 @@
 'use server';
 
-import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { getHostUserId } from "@/lib/session-host-id";
 import { revalidatePath } from "next/cache";
 import { Prisma } from "@prisma/client";
 import { unlink } from "fs/promises";
@@ -18,15 +18,15 @@ function isNotFound(e: unknown): boolean {
 }
 
 export async function softDeleteBooking(bookingId: string) {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  const hostId = await getHostUserId();
+  if (!hostId) throw new Error("Unauthorized");
 
   // findFirst + update by id: avoids updateMany quirks with relation + nullable filters in some Prisma/DB setups
   const row = await prisma.booking.findFirst({
     where: {
       id: bookingId,
       deletedAt: null,
-      property: { hostId: session.user.id },
+      property: { hostId },
     },
     select: { id: true },
   });
@@ -51,14 +51,14 @@ export async function softDeleteBooking(bookingId: string) {
 }
 
 export async function restoreBooking(bookingId: string) {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  const hostId = await getHostUserId();
+  if (!hostId) throw new Error("Unauthorized");
 
   const row = await prisma.booking.findFirst({
     where: {
       id: bookingId,
       deletedAt: { not: null },
-      property: { hostId: session.user.id },
+      property: { hostId },
     },
     select: { id: true },
   });
@@ -82,13 +82,13 @@ export async function restoreBooking(bookingId: string) {
 }
 
 export async function permanentlyDeleteBooking(bookingId: string) {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  const hostId = await getHostUserId();
+  if (!hostId) throw new Error("Unauthorized");
 
   const booking = await prisma.booking.findFirst({
     where: {
       id: bookingId,
-      property: { hostId: session.user.id },
+      property: { hostId },
     },
   });
 

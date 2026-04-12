@@ -1,5 +1,5 @@
-import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { getHostUserId } from "@/lib/session-host-id";
 import { redirect } from "next/navigation";
 import Link from 'next/link';
 import { 
@@ -14,23 +14,25 @@ import TrashAction from "../components/TrashAction";
 import { formatSubmittedAt } from "@/lib/format-submitted-at";
 
 export default async function BookingsPage() {
-  const session = await auth();
-  if (!session?.user?.id) {
+  const hostId = await getHostUserId();
+  if (!hostId) {
     redirect("/login");
   }
 
   const property = await prisma.property.findFirst({
-    where: { hostId: session.user.id }
+    where: { hostId },
   });
 
-  const bookings = await prisma.booking.findMany({
-    where: { 
-      propertyId: property?.id || '',
-      deletedAt: null
-    },
-    orderBy: { createdAt: 'desc' },
-    include: { travelers: true }
-  });
+  const bookings = property
+    ? await prisma.booking.findMany({
+        where: {
+          propertyId: property.id,
+          deletedAt: null,
+        },
+        orderBy: { createdAt: 'desc' },
+        include: { travelers: true },
+      })
+    : [];
 
   return (
     <div className="space-y-6">

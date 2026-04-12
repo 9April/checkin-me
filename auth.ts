@@ -32,4 +32,26 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
       },
     }),
   ],
+  callbacks: {
+    ...authConfig.callbacks,
+    async session({ session, token }) {
+      if (token.sub && session.user) {
+        session.user.id = token.sub;
+      }
+      if (!session.user?.email) return session;
+
+      const currentId = session.user.id;
+      if (!currentId || String(currentId).includes("@")) {
+        const user = await prisma.user.findUnique({
+          where: { email: session.user.email },
+          select: { id: true },
+        });
+        if (user?.id) {
+          session.user.id = user.id;
+        }
+      }
+
+      return session;
+    },
+  },
 });

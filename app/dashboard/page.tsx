@@ -1,5 +1,5 @@
-import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { getHostUserId } from "@/lib/session-host-id";
 import {
   attachSlugToNewProperty,
   publicCheckInPath,
@@ -18,14 +18,14 @@ import TrashAction from "./components/TrashAction";
 import { formatSubmittedAt } from "@/lib/format-submitted-at";
 
 export default async function DashboardPage() {
-  const session = await auth();
-  if (!session?.user?.id) {
+  const hostId = await getHostUserId();
+  if (!hostId) {
     redirect("/login");
   }
 
   // Verify the user exists in the database to avoid P2003 (FK constraint violation)
   const user = await prisma.user.findUnique({
-    where: { id: session.user.id }
+    where: { id: hostId }
   });
 
   if (!user) {
@@ -34,7 +34,7 @@ export default async function DashboardPage() {
   }
 
   let property = await prisma.property.findFirst({
-    where: { hostId: session.user.id }
+    where: { hostId }
   });
 
   // Auto-initialize a property if none exists
@@ -42,7 +42,7 @@ export default async function DashboardPage() {
     const created = await prisma.property.create({
       data: {
         name: "My Property",
-        hostId: session.user.id,
+        hostId,
         checkinTime: "15:00",
         checkoutTime: "11:00",
         houseRules: JSON.stringify([
@@ -58,9 +58,9 @@ export default async function DashboardPage() {
   }
 
   const bookings = await prisma.booking.findMany({
-    where: { 
-      propertyId: property?.id || '',
-      deletedAt: null
+    where: {
+      propertyId: property.id,
+      deletedAt: null,
     },
     orderBy: { createdAt: 'desc' },
     take: 5,
@@ -68,10 +68,10 @@ export default async function DashboardPage() {
   });
 
   const totalBookings = await prisma.booking.count({
-    where: { 
-      propertyId: property?.id || '',
-      deletedAt: null
-    }
+    where: {
+      propertyId: property.id,
+      deletedAt: null,
+    },
   });
 
   const stats = [
