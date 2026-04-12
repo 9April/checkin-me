@@ -1,23 +1,52 @@
 import { supabaseAdmin } from '@/lib/supabase';
+import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 
 export const dynamic = 'force-dynamic';
 
+/** PDFs we generate: `Booking-<cuid>.pdf` */
+function isAppBookingPdfName(name: string): boolean {
+  return /^Booking-[a-zA-Z0-9_-]+\.pdf$/i.test(name);
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ filename: string }> }
 ) {
-  // 1. Check authentication (only hosts can view these PDFs)
-  const session = await auth();
-  if (!session) {
-    return new NextResponse('Unauthorized', { status: 401 });
-  }
-
   try {
-    const { filename } = await params;
+    const { filename: raw } = await params;
+    const filename = decodeURIComponent(raw);
 
-    // Fetch the PDF from Supabase Storage using the ADMIN client (bypasses RLS)
+    if (!isAppBookingPdfName(filename) || filename.length > 240) {
+      return new NextResponse('Bad Request', { status: 400 });
+    }
+
+    const session = await auth();
+
+    if (!session?.user?.id) {
+      // Guest (success page / email link): allow only if this PDF belongs to a saved booking
+      const guestOk = await prisma.booking.findFirst({
+        where: { pdfUrl: filename, deletedAt: null },
+        select: { id: true },
+      });
+      if (!guestOk) {
+        return new NextResponse('Unauthorized', { status: 401 });
+      }
+    } else {
+      // Logged-in host: only PDFs for bookings on their property
+      const booking = await prisma.booking.findFirst({
+        where: { pdfUrl: filename, deletedAt: null },
+        select: { id: true, property: { select: { hostId: true } } },
+      });
+      if (!booking) {
+        return new NextResponse('Not Found', { status: 404 });
+      }
+      if (booking.property.hostId !== session.user.id) {
+        return new NextResponse('Forbidden', { status: 403 });
+      }
+    }
+
     const { data, error } = await supabaseAdmin.storage
       .from('checkin-me')
       .download(filename);
@@ -27,15 +56,13 @@ export async function GET(
       return new NextResponse('PDF not found in cloud storage', { status: 404 });
     }
 
-    // Capture the bytes
     const blob = await data.arrayBuffer();
 
-    // Return the PDF with correct headers for viewing/downloading
     return new NextResponse(blob, {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `inline; filename="${filename}"`,
-        'Cache-Control': 'private, max-age=3600',
+        'Cache-Control': 'private, max-age=300',
       },
     });
   } catch (error) {

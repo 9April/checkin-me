@@ -11,6 +11,7 @@ import {
   Printer
 } from 'lucide-react';
 import TrashAction from "../components/TrashAction";
+import { formatSubmittedAt } from "@/lib/format-submitted-at";
 
 export default async function BookingsPage() {
   const session = await auth();
@@ -61,7 +62,7 @@ export default async function BookingsPage() {
                   {booking.checkin} → {booking.checkout}
                 </div>
                 <div className="text-xs text-[#6B7280]">
-                  Submitted {new Date(booking.createdAt).toLocaleDateString()}
+                  Submitted {formatSubmittedAt(new Date(booking.createdAt))}
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">
@@ -136,8 +137,8 @@ export default async function BookingsPage() {
                       {booking.travelers.length} persons
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-xs text-[#6B7280]">
-                    {new Date(booking.createdAt).toLocaleDateString()}
+                  <td className="px-6 py-4 text-xs text-[#6B7280] whitespace-nowrap">
+                    {formatSubmittedAt(new Date(booking.createdAt))}
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-end gap-2">

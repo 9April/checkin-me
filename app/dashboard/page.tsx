@@ -15,6 +15,7 @@ import {
 import Link from 'next/link';
 import { redirect } from "next/navigation";
 import TrashAction from "./components/TrashAction";
+import { formatSubmittedAt } from "@/lib/format-submitted-at";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -145,6 +146,9 @@ export default async function DashboardPage() {
                   <span className="text-[#6B7280]">Stay </span>
                   {booking.checkin} → {booking.checkout}
                 </div>
+                <div className="text-xs text-[#6B7280]">
+                  Submitted {formatSubmittedAt(new Date(booking.createdAt))}
+                </div>
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="px-3 py-1 text-xs font-bold rounded-full bg-green-50 text-green-600 border border-green-100">
                     COMPLETED
@@ -200,6 +204,7 @@ export default async function DashboardPage() {
                 <th className="px-6 py-4">Guest</th>
                 <th className="px-6 py-4">Check-in / Out</th>
                 <th className="px-6 py-4">Travelers</th>
+                <th className="px-6 py-4">Submitted</th>
                 <th className="px-6 py-4">Status</th>
                 <th className="px-6 py-4">PDF</th>
               </tr>
@@ -216,6 +221,9 @@ export default async function DashboardPage() {
                   </td>
                   <td className="px-6 py-4 text-sm text-[#374151]">
                     {booking.travelers.length} persons
+                  </td>
+                  <td className="px-6 py-4 text-xs text-[#6B7280] whitespace-nowrap">
+                    {formatSubmittedAt(new Date(booking.createdAt))}
                   </td>
                   <td className="px-6 py-4">
                     <span className="px-3 py-1 text-xs font-bold rounded-full bg-green-50 text-green-600 border border-green-100">
@@ -262,7 +270,7 @@ export default async function DashboardPage() {
                 </tr>
               )) : (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-[#6B7280]">
+                  <td colSpan={6} className="px-6 py-12 text-center text-[#6B7280]">
                     No bookings found yet.
                     <div className="mt-2 text-sm">
                       Share your check-in link to get started!
