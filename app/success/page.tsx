@@ -21,10 +21,16 @@ export default async function Success({
   const emailStatusUnknown = !emailSent && !mailError && !!params.pdf;
 
   return (
-    <main className="p-8 max-w-xl mx-auto text-center space-y-6 text-[#222222] font-sans">
-      <h1 className="text-2xl font-semibold text-[#222222]">Check-in completed</h1>
-      <p className="text-[#717171]">
-        Your signed agreement has been generated. Tap the button below to download it.
+    <main className="min-h-screen bg-[#F7F7F7] font-sans text-[#222222] py-10 px-4 sm:px-6 flex flex-col items-center justify-start">
+      <div className="w-full max-w-lg bg-white rounded-3xl border border-[#E8E8E8] shadow-xl shadow-gray-300/20 p-8 sm:p-10 text-center space-y-6">
+      <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 mx-auto">
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+        </svg>
+      </div>
+      <h1 className="text-2xl sm:text-3xl font-semibold text-[#222222] tracking-tight">Check-in completed</h1>
+      <p className="text-[#717171] text-base leading-relaxed max-w-md mx-auto">
+        Your signed agreement is ready. Use the buttons below to view or save a copy.
       </p>
 
       {emailSent && (
@@ -129,9 +135,10 @@ export default async function Success({
         </a>
       </div>
 
-      <p className="text-sm text-gray-500">
+      <p className="text-sm text-[#717171]">
         You can close this page. A copy has been saved for the host.
       </p>
+      </div>
     </main>
   );
 }

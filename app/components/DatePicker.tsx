@@ -278,7 +278,7 @@ export default function DatePicker({
         }}
         disabled={disabled}
         className={`
-          w-full text-left flex items-center justify-between rounded-lg border px-4 py-3.5 md:px-6 md:py-5 bg-white font-medium text-base transition-shadow outline-none
+          w-full min-h-[3rem] md:min-h-[3.25rem] text-left flex items-center justify-between rounded-xl border px-4 md:px-5 bg-white font-medium text-base transition-shadow outline-none
           ${error ? 'border-red-500 bg-red-50/50 ring-1 ring-red-200' : 'border-[#B0B0B0] focus:border-[#222222] focus:ring-2 focus:ring-[#222222] focus:ring-offset-0'}
           ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}
         `}

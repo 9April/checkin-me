@@ -359,6 +359,12 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
       ? 'border-red-500 bg-red-50/50 ring-1 ring-red-200'
       : 'border-[#B0B0B0] focus:border-[#222222] focus:ring-2 focus:ring-[#222222] focus:ring-offset-0';
 
+  /** Unified web field system: aligned heights + consistent labels */
+  const lbl =
+    'block text-[11px] font-semibold uppercase tracking-[0.2em] text-[#222222] mb-2';
+  const inp =
+    'w-full min-h-[3rem] md:min-h-[3.25rem] rounded-xl px-4 md:px-5 bg-white text-[#222222] text-base outline-none transition-[box-shadow,border-color] placeholder:text-[#717171]';
+
   useEffect(() => {
     const resizeCanvas = () => {
       if (sigRef.current) {
@@ -538,13 +544,13 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
       <div
         className={`transition-all duration-300 ${
           isRulesOpen || isPrivacyOpen ? "blur-md grayscale-[0.2]" : ""
-        } ${phoneLayout ? "flex flex-1 min-h-0 min-w-0 flex-col w-full" : "max-w-2xl mx-auto"}`}
+        } ${phoneLayout ? "flex flex-1 min-h-0 min-w-0 flex-col w-full" : "max-w-3xl mx-auto w-full"}`}
       >
         <div
-          className={`bg-white shadow-2xl shadow-gray-200/50 overflow-hidden border border-gray-100 max-w-full ${
+          className={`bg-white shadow-xl shadow-gray-300/30 overflow-hidden border border-gray-200/80 max-w-full ${
             phoneLayout
               ? "flex flex-1 min-h-0 min-w-0 flex-col rounded-none border-x-0"
-              : "rounded-[2.5rem]"
+              : "rounded-3xl"
           }`}
         >
           {/* Header */}
@@ -609,29 +615,29 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
 
           <div
             className={`text-center bg-gradient-to-b from-[#F7F7F7] to-white ${
-              phoneLayout ? "checkin-px py-5" : "px-6 py-20 sm:px-12"
+              phoneLayout ? "checkin-px py-5" : "px-6 py-12 sm:py-16 sm:px-12"
             } ${phoneLayout && wizardStep !== 0 ? "hidden" : ""}`}
           >
             <span
-              className={`inline-block bg-[#DDDDDD] rounded-full font-bold uppercase text-[#222222] ${
+              className={`inline-block bg-[#EBEBEB] rounded-full font-bold uppercase text-[#222222] ${
                 phoneLayout
                   ? "px-3 py-1 text-[8px] tracking-[0.35em] mb-3"
-                  : "px-5 py-2 text-[10px] tracking-[0.4em] mb-8 animate-pulse"
+                  : "px-4 py-1.5 text-[10px] tracking-[0.35em] mb-5"
               }`}
             >
               {t.title}
             </span>
             <h1
-              className={`font-semibold text-[#222222] tracking-tight mb-3 sm:mb-6 leading-snug ${
-                phoneLayout ? "text-2xl sm:text-[26px]" : "text-4xl"
+              className={`font-semibold text-[#222222] tracking-tight mb-3 sm:mb-4 leading-snug ${
+                phoneLayout ? "text-2xl sm:text-[26px]" : "text-3xl sm:text-4xl"
               }`}
             >
               {property.formTitle || `${property.name}`}
             </h1>
             {property.formSubtitle && (
               <p
-                className={`text-[#717171] font-medium max-w-md mx-auto leading-relaxed tracking-tight opacity-80 ${
-                  phoneLayout ? "text-sm" : "text-lg"
+                className={`text-[#717171] font-normal max-w-lg mx-auto leading-relaxed ${
+                  phoneLayout ? "text-sm" : "text-base sm:text-lg"
                 }`}
               >
                 {property.formSubtitle}
@@ -644,7 +650,7 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
             className={
               phoneLayout
                 ? "flex flex-1 min-h-0 min-w-0 flex-col"
-                : "px-6 sm:px-12 pb-12 space-y-12"
+                : "px-6 sm:px-10 lg:px-12 pb-16 space-y-12 md:space-y-14"
             }
           >
             <div
@@ -657,8 +663,8 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
             >
               {Object.keys(validationErrors).length > 0 && (
                 <div
-                  className={`p-4 bg-red-50 border border-red-200 rounded-2xl flex items-center gap-3 animate-in slide-in-from-top-4 duration-500 ${
-                    phoneLayout ? "" : "mx-6 sm:mx-12 mb-12 p-5 rounded-3xl"
+                  className={`p-4 bg-red-50 border border-red-200 rounded-xl md:rounded-2xl flex items-center gap-3 animate-in slide-in-from-top-4 duration-500 ${
+                    phoneLayout ? "" : "mb-2"
                   }`}
                 >
                   <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white rounded-2xl flex items-center justify-center text-red-600 shadow-sm shrink-0">
@@ -675,57 +681,68 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
 
             <input type="hidden" name="totalTravelers" value={adults + kids} readOnly />
             <section
-              className={`space-y-6 md:space-y-10 ${showPersonal ? "" : "hidden md:block"}`}
+              className={`space-y-6 md:space-y-8 ${showPersonal ? "" : "hidden md:block"} ${!phoneLayout ? "md:rounded-2xl md:border md:border-[#EEEEEE] md:bg-[#FAFAFA] md:p-6 lg:p-8" : ""}`}
             >
-              <div className="flex items-center gap-4 mb-2">
-                <div className="w-12 h-0.5 bg-gradient-to-r from-transparent via-[#FF385C] to-transparent flex-1" />
-                <h2 className="text-sm font-bold text-[#222222] tracking-[0.3em] uppercase">{t.personalInfo}</h2>
-                <div className="w-12 h-0.5 bg-gradient-to-r from-[#FF385C] via-[#FF385C] to-transparent flex-1 opacity-20" />
+              <div className="flex items-center gap-4 mb-0 md:mb-1">
+                <div className="h-px min-w-[2rem] flex-1 bg-gradient-to-r from-transparent via-[#FF385C]/80 to-[#FF385C]/40" />
+                <h2 className="text-xs md:text-sm font-bold text-[#222222] tracking-[0.25em] uppercase text-center shrink-0">
+                  {t.personalInfo}
+                </h2>
+                <div className="h-px min-w-[2rem] flex-1 bg-gradient-to-l from-transparent via-[#FF385C]/80 to-[#FF385C]/40" />
               </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                <div className="space-y-2 md:space-y-3">
-                  <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#222222] ml-1">{t.fullName}</label>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 items-start">
+                <div className="flex flex-col min-w-0">
+                  <label className={lbl} htmlFor="guestName">
+                    {t.fullName}
+                  </label>
                   <input
+                    id="guestName"
                     name="guestName"
                     value={guestName}
                     onChange={(e) => setGuestName(e.target.value)}
                     placeholder={t.fullNamePlaceholder}
                     required
                     autoComplete="name"
-                    className={`w-full px-4 py-3.5 md:px-6 md:py-5 bg-white border rounded-lg outline-none transition-shadow font-normal text-[#222222] placeholder:text-[#717171] text-base ${fieldErr('guestName')}`}
+                    className={`${inp} border ${fieldErr('guestName')}`}
                   />
                 </div>
-                <div className="space-y-2 md:space-y-3">
-                  <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#222222] ml-1">{t.email}</label>
+                <div className="flex flex-col min-w-0">
+                  <label className={lbl} htmlFor="guestEmail">
+                    {t.email}
+                  </label>
                   <input
+                    id="guestEmail"
                     name="guestEmail"
                     type="email"
                     autoComplete="email"
                     placeholder={t.emailPlaceholder}
                     required
-                    className={`w-full px-4 py-3.5 md:px-6 md:py-5 bg-white border rounded-lg outline-none transition-shadow font-normal text-[#222222] placeholder:text-[#717171] text-base ${fieldErr('guestEmail')}`}
+                    className={`${inp} border ${fieldErr('guestEmail')}`}
                   />
                 </div>
-                
+
                 {property.showWhatsApp && (
-                  <div className="space-y-2 md:space-y-3 md:col-span-2">
-                    <label className="text-[10px] font-black uppercase tracking-[0.25em] text-gray-400 ml-1">{t.whatsapp}</label>
+                  <div className="flex flex-col min-w-0 md:col-span-2">
+                    <label className={lbl} htmlFor="whatsapp">
+                      {t.whatsapp}
+                    </label>
                     <div
-                      className={`flex rounded-lg border bg-white overflow-hidden transition-shadow focus-within:ring-2 focus-within:ring-offset-0 ${
+                      className={`flex rounded-xl border bg-white overflow-hidden items-stretch min-h-[3rem] md:min-h-[3.25rem] transition-shadow focus-within:ring-2 focus-within:ring-offset-0 ${
                         validationErrors['whatsapp']
                           ? 'border-red-500 ring-1 ring-red-200'
                           : 'border-[#B0B0B0] focus-within:border-[#222222] focus-within:ring-[#222222]'
                       }`}
                     >
                       <div
-                        className="flex items-center justify-center px-3 md:px-4 py-3.5 md:py-5 bg-[#F7F7F7] border-r border-[#DDDDDD] min-w-[3.25rem] md:min-w-[3.75rem] shrink-0 text-xl md:text-2xl leading-none select-none"
+                        className="flex items-center justify-center px-3 md:px-4 bg-[#F7F7F7] border-r border-[#DDDDDD] min-w-[3.25rem] md:min-w-[3.75rem] shrink-0 text-xl md:text-2xl leading-none select-none self-stretch"
                         title={whatsappParsed?.dialLabel ?? ''}
                         aria-hidden
                       >
                         {whatsappParsed?.flagEmoji ?? '📱'}
                       </div>
                       <input
+                        id="whatsapp"
                         name="whatsapp"
                         type="tel"
                         autoComplete="tel"
@@ -733,14 +750,14 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
                         placeholder={t.whatsappPlaceholder}
                         value={whatsappValue}
                         onChange={(e) => setWhatsappValue(e.target.value)}
-                        className="flex-1 min-w-0 px-4 py-3.5 md:px-6 md:py-5 bg-transparent border-0 outline-none font-normal text-[#222222] placeholder:text-[#717171] text-base rounded-none"
+                        className="flex-1 min-w-0 px-4 md:px-5 bg-transparent border-0 outline-none text-[#222222] placeholder:text-[#717171] text-base self-center py-2"
                       />
                     </div>
                   </div>
                 )}
 
-                <div className="space-y-2 md:space-y-3">
-                  <label className="text-[10px] font-black uppercase tracking-[0.25em] text-gray-400 ml-1">{t.checkinDates}</label>
+                <div className="flex flex-col min-w-0">
+                  <span className={lbl}>{t.checkinDates}</span>
                   <DatePicker
                     name="checkin"
                     endDateName="checkout"
@@ -749,34 +766,40 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
                     error={!!(validationErrors['checkin'] || validationErrors['checkout'])}
                   />
                 </div>
-                
-                <div className="space-y-2 md:space-y-3">
-                  <label className="text-[10px] font-black uppercase tracking-[0.25em] text-gray-400 ml-1">{t.estimatedArrival}</label>
+
+                <div className="flex flex-col min-w-0">
+                  <label className={lbl} htmlFor="checkinHour">
+                    {t.estimatedArrival}
+                  </label>
                   <div
-                    className={`rounded-lg border bg-white overflow-hidden transition-shadow focus-within:ring-2 focus-within:ring-offset-0 ${
+                    className={`flex items-center rounded-xl border bg-white min-h-[3rem] md:min-h-[3.25rem] px-4 md:px-5 transition-shadow focus-within:ring-2 focus-within:ring-offset-0 ${
                       validationErrors['checkinHour']
                         ? 'border-red-500 ring-1 ring-red-200'
                         : 'border-[#B0B0B0] focus-within:border-[#222222] focus-within:ring-[#222222]'
                     }`}
                   >
                     <input
+                      id="checkinHour"
                       name="checkinHour"
                       type="time"
                       required
-                      className="w-full min-h-[3.25rem] md:min-h-[3.75rem] px-4 py-3 md:px-6 md:py-4 bg-transparent border-0 outline-none font-semibold text-[#222222] text-base tabular-nums [color-scheme:light] [&::-webkit-datetime-edit-fields-wrapper]:p-0 [&::-webkit-calendar-picker-indicator]:opacity-100 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:ml-1"
+                      className="w-full flex-1 min-h-0 bg-transparent border-0 outline-none font-medium text-[#222222] text-base tabular-nums py-2 [color-scheme:light] [&::-webkit-calendar-picker-indicator]:opacity-90 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:ml-1"
                     />
                   </div>
                 </div>
               </div>
             </section>
 
-            <section className={`space-y-5 md:space-y-8 ${showTravelers ? "" : "hidden md:block"}`}>
-              <div className="flex items-center gap-4 mb-2">
-                <div className="w-1.5 h-10 rounded-full bg-[#FF385C]" />
-                <h2 className="text-lg md:text-2xl font-black text-gray-900 tracking-tighter uppercase">{t.numTravelers}</h2>
+            <section className={`space-y-6 md:space-y-8 ${showTravelers ? "" : "hidden md:block"} ${!phoneLayout ? "md:rounded-2xl md:border md:border-[#EEEEEE] md:bg-[#FAFAFA] md:p-6 lg:p-8" : ""}`}>
+              <div className="flex items-center gap-4">
+                <div className="h-px min-w-[2rem] flex-1 bg-gradient-to-r from-transparent via-[#FF385C]/80 to-[#FF385C]/40" />
+                <h2 className="text-xs md:text-sm font-bold text-[#222222] tracking-[0.25em] uppercase text-center shrink-0">
+                  {t.numTravelers}
+                </h2>
+                <div className="h-px min-w-[2rem] flex-1 bg-gradient-to-l from-transparent via-[#FF385C]/80 to-[#FF385C]/40" />
               </div>
-              
-              <div className="grid grid-cols-2 gap-3 md:gap-4">
+
+              <div className="grid grid-cols-2 gap-3 md:gap-6">
                 {[ {id: 'adults', label: t.adults, value: adults, set: setAdults, min: 1}, {id: 'kids', label: t.kids, value: kids, set: setKids, min: 0} ].map((group) => (
                   <div key={group.id} className="p-4 md:p-6 bg-[#F7F7F7] rounded-2xl md:rounded-3xl border border-[#DDDDDD] flex flex-col items-center gap-3 md:gap-4 shadow-sm hover:shadow-md transition-shadow duration-500">
                     <label className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.3em] text-[#222222] text-center">{group.label}</label>
@@ -791,24 +814,29 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
             </section>
 
             {travelers.map((traveler, index) => (
-              <section key={index} className={`space-y-4 md:space-y-6 pt-6 md:pt-8 border-t border-gray-50 ${showTravelers ? "" : "hidden md:block"}`}>
-                <div className="flex items-center justify-between mb-4">
-                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-0.5 bg-[#DDDDDD]/50" />
-                    <h2 className="text-sm font-bold text-[#222222] tracking-[0.3em] uppercase">
-                      {t.docInfo} - #{index + 1}
+              <section
+                key={index}
+                className={`space-y-6 md:space-y-8 pt-6 md:pt-8 border-t border-[#EBEBEB] ${showTravelers ? "" : "hidden md:block"} ${!phoneLayout ? "md:rounded-2xl md:border md:border-[#EEEEEE] md:bg-[#FAFAFA] md:p-6 lg:p-8 md:mt-4" : ""}`}
+              >
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="h-px w-8 shrink-0 bg-gradient-to-r from-[#FF385C] to-transparent md:hidden" />
+                    <h2 className="text-xs md:text-sm font-bold text-[#222222] tracking-[0.2em] uppercase truncate">
+                      {t.docInfo} — {index + 1}
                     </h2>
                   </div>
-                  <span className="px-5 py-2 bg-[#DDDDDD]/30 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] text-[#222222]">
+                  <span className="px-4 py-1.5 bg-white border border-[#E5E5E5] rounded-full text-[10px] font-bold uppercase tracking-widest text-[#444] shadow-sm">
                     {index < adults ? t.adult : t.kid}
                   </span>
                 </div>
 
                 <div className="space-y-6">
-                  {/* Traveler Name Field */}
-                  <div className="space-y-3">
-                    <label className="text-[10px] font-black uppercase tracking-[0.25em] text-gray-400 ml-1">{t.fullName}</label>
-                    <input 
+                  <div className="flex flex-col min-w-0">
+                    <label className={lbl} htmlFor={`traveler_${index}_name`}>
+                      {t.fullName}
+                    </label>
+                    <input
+                      id={`traveler_${index}_name`}
                       name={`traveler_${index}_name`}
                       value={index === 0 ? guestName : (otherTravelerNames[index] ?? '')}
                       onChange={(e) => {
@@ -817,16 +845,19 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
                         else setOtherTravelerNames((prev) => ({ ...prev, [index]: v }));
                       }}
                       placeholder={t.fullNamePlaceholder}
-                      required 
+                      required
                       autoComplete={index === 0 ? 'name' : 'off'}
-                      className={`w-full px-4 py-3.5 bg-white border rounded-lg outline-none transition-shadow font-normal text-[#222222] placeholder:text-[#717171] ${fieldErr(`traveler_${index}_name`)}`} 
+                      className={`${inp} border ${fieldErr(`traveler_${index}_name`)}`}
                     />
                   </div>
 
-                  <div className="space-y-3">
-                    <label className="text-[10px] font-black uppercase tracking-[0.25em] text-gray-400 ml-1">{t.countryOfIssue}</label>
+                  <div className="flex flex-col min-w-0">
+                    <label className={lbl} htmlFor={`traveler_${index}_country`}>
+                      {t.countryOfIssue}
+                    </label>
                     <div className="relative">
                       <select
+                        id={`traveler_${index}_country`}
                         name={`traveler_${index}_country`}
                         value={traveler.country}
                         onChange={(e) => {
@@ -844,7 +875,7 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
                           };
                           setTravelers(newTravelers);
                         }}
-                        className={`w-full px-4 py-3.5 bg-white border rounded-lg outline-none transition-shadow font-medium text-[#222222] appearance-none ${fieldErr(`traveler_${index}_country`)}`}
+                        className={`${inp} cursor-pointer border appearance-none pr-10 font-medium ${fieldErr(`traveler_${index}_country`)}`}
                       >
                         <option value="">{t.selectCountry}</option>
                         <option value="MA">{t.morocco}</option>
@@ -854,7 +885,7 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
                             : t.otherCountry}
                         </option>
                       </select>
-                      <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                      <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7"/></svg>
                       </div>
                     </div>
@@ -911,18 +942,23 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
                     )}
                   </div>
 
-                  <div className="space-y-3">
-                    <label className="text-[10px] font-black uppercase tracking-[0.25em] text-gray-400 ml-1">
+                  <div className="flex flex-col min-w-0">
+                    <label className={lbl} htmlFor={`traveler_${index}_idNumber`}>
                       {(traveler.country === 'OTHER' || traveler.country === '' || traveler.noCIN) ? t.passportNumber : t.cinNumber}
                     </label>
-                    <input name={`traveler_${index}_idNumber`} required className={`w-full px-4 py-3.5 bg-white border rounded-lg outline-none transition-shadow font-normal text-[#222222] placeholder:text-[#717171] ${fieldErr(`traveler_${index}_idNumber`)}`} />
+                    <input
+                      id={`traveler_${index}_idNumber`}
+                      name={`traveler_${index}_idNumber`}
+                      required
+                      className={`${inp} border ${fieldErr(`traveler_${index}_idNumber`)}`}
+                    />
                   </div>
                 </div>
               </section>
             ))}
 
-            <section className={`space-y-5 md:space-y-8 pt-6 md:pt-8 border-t border-gray-50 ${showFinish ? "" : "hidden md:block"}`}>
-               <div className="p-5 md:p-8 bg-gray-900 rounded-2xl md:rounded-[2.5rem] text-white space-y-4 md:space-y-6 shadow-2xl shadow-gray-200">
+            <section className={`space-y-6 md:space-y-8 pt-6 md:pt-10 border-t border-[#EBEBEB] ${showFinish ? "" : "hidden md:block"} ${!phoneLayout ? "md:rounded-2xl md:border md:border-[#EEEEEE] md:bg-[#FAFAFA] md:p-6 lg:p-8 md:mt-2" : ""}`}>
+               <div className="p-5 md:p-8 bg-[#1a1a1a] rounded-2xl md:rounded-3xl text-white space-y-4 md:space-y-6 shadow-lg shadow-gray-400/20">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-white/10 rounded-2xl flex items-center justify-center text-blue-400">
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
@@ -972,10 +1008,13 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
                </div>
             </section>
 
-            <section className={`space-y-5 md:space-y-8 pt-6 md:pt-8 border-t border-[#DDDDDD]/30 ${showFinish ? "" : "hidden md:block"}`}>
+            <section className={`space-y-6 md:space-y-8 pt-6 md:pt-10 border-t border-[#EBEBEB] ${showFinish ? "" : "hidden md:block"}`}>
               <div className="flex items-center gap-4">
-                <div className="w-12 h-0.5 bg-[#DDDDDD]/50" />
-                <h2 className="text-sm font-bold text-[#222222] tracking-[0.3em] uppercase">{t.signatureTitle}</h2>
+                <div className="h-px min-w-[2rem] flex-1 bg-gradient-to-r from-transparent via-[#FF385C]/80 to-[#FF385C]/40" />
+                <h2 className="text-xs md:text-sm font-bold text-[#222222] tracking-[0.25em] uppercase text-center shrink-0">
+                  {t.signatureTitle}
+                </h2>
+                <div className="h-px min-w-[2rem] flex-1 bg-gradient-to-l from-transparent via-[#FF385C]/80 to-[#FF385C]/40" />
               </div>
               
               <div
@@ -1018,7 +1057,7 @@ export default function CheckInForm({ property }: { property: PropertyData }) {
             <button 
               type="submit" 
               disabled={isLoading} 
-              className={`w-full text-white font-bold rounded-2xl md:rounded-3xl shadow-2xl transition-all duration-700 hover:scale-[1.01] active:scale-95 disabled:grayscale flex items-center justify-center gap-3 md:gap-4 uppercase tracking-[0.2em] md:tracking-[0.3em] bg-gradient-to-r from-[#FF385C] to-[#E31C5F] relative overflow-hidden group shadow-[#FF385C]/20 py-5 text-base md:py-8 md:text-xl ${phoneLayout ? "hidden" : ""}`}
+              className={`w-full mt-4 text-white font-bold rounded-xl md:rounded-2xl shadow-lg shadow-[#FF385C]/25 transition-all duration-300 hover:brightness-105 active:scale-[0.99] disabled:opacity-60 disabled:grayscale flex items-center justify-center gap-3 md:gap-4 uppercase tracking-[0.2em] md:tracking-[0.25em] bg-gradient-to-r from-[#FF385C] to-[#E31C5F] relative overflow-hidden group py-4 text-base md:py-5 md:text-lg ${phoneLayout ? "hidden" : ""}`}
             >
               <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 skew-x-12" />
               {isLoading && <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin" />}
