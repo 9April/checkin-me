@@ -21,6 +21,54 @@ function escapeHtml(s: string): string {
     .replace(/"/g, '&quot;');
 }
 
+function guessContentTypeFromFilename(filename: string): string {
+  const ext = (filename.split('.').pop() || '').toLowerCase();
+  if (ext === 'pdf') return 'application/pdf';
+  if (ext === 'png') return 'image/png';
+  if (ext === 'webp') return 'image/webp';
+  if (ext === 'jpg' || ext === 'jpeg') return 'image/jpeg';
+  if (ext === 'heic') return 'image/heic';
+  return 'application/octet-stream';
+}
+
+async function downloadStorageObjectAsAttachment(opts: {
+  bucket: string;
+  objectName: string;
+  filename?: string;
+  maxBytes?: number;
+}): Promise<
+  | { ok: true; attachment: { filename: string; content: Buffer; contentType?: string } }
+  | { ok: false; reason: string }
+> {
+  const maxBytes = opts.maxBytes ?? 8 * 1024 * 1024; // 8MB per attachment safety
+  try {
+    const { data, error } = await supabaseAdmin.storage
+      .from(opts.bucket)
+      .download(opts.objectName);
+    if (error || !data) {
+      return { ok: false, reason: error?.message || 'download failed' };
+    }
+    const buf = Buffer.from(await data.arrayBuffer());
+    if (buf.length > maxBytes) {
+      return {
+        ok: false,
+        reason: `attachment too large (${buf.length} bytes)`,
+      };
+    }
+    const filename = opts.filename || opts.objectName.split('/').pop() || opts.objectName;
+    return {
+      ok: true,
+      attachment: {
+        filename,
+        content: buf,
+        contentType: guessContentTypeFromFilename(filename),
+      },
+    };
+  } catch (e: any) {
+    return { ok: false, reason: e?.message || String(e) };
+  }
+}
+
 /** Sends check-in PDF (or text-only if PDF missing) to guest and property admin. */
 async function sendCheckInEmails(opts: {
   guestEmail: string;
@@ -29,8 +77,28 @@ async function sendCheckInEmails(opts: {
   propertyName: string;
   checkin: string;
   checkout: string;
+  checkinHour?: string;
+  whatsapp?: string;
+  totalTravelers?: number;
+  travelers?: Array<{
+    name: string;
+    country: string;
+    idNumber: string;
+    type: string;
+    idFiles: string[];
+  }>;
   pdfAttachment?: PdfAttachment;
   pdfFailedNote?: string;
+  guestAttachments?: Array<{
+    filename: string;
+    content: Buffer;
+    contentType?: string;
+  }>;
+  adminAttachments?: Array<{
+    filename: string;
+    content: Buffer;
+    contentType?: string;
+  }>;
   lang: Lang;
 }): Promise<{ mailError: string }> {
   const tm = getCheckinEmailTemplates(opts.lang);
@@ -44,32 +112,130 @@ async function sendCheckInEmails(opts: {
     : '';
   const attachmentLine = opts.pdfAttachment ? tm.guestAttachmentLine : '';
   const guestBody = `${tm.guestDear(opts.guestName)}\n\n${tm.guestThanks(opts.propertyName)}${attachmentLine}${pdfNote}\n\n${tm.guestLookForward}\n\n${tm.guestBestRegards(opts.propertyName)}`;
-  const guestBodyHtml = `<!DOCTYPE html><html><body style="font-family:system-ui,-apple-system,sans-serif;line-height:1.6;color:#222;max-width:560px">
-<p>${escapeHtml(tm.guestDear(opts.guestName))}</p>
-<p>${tm.guestThanksHtml(escapeHtml(opts.propertyName))}</p>
-${opts.pdfAttachment ? `<p>${tm.guestHtmlAttachment}</p>` : ''}
-${opts.pdfFailedNote ? `<p><em>${escapeHtml(opts.pdfFailedNote)}</em></p>` : ''}
-<p>${escapeHtml(tm.guestLookForward)}</p>
-<p>${escapeHtml(tm.guestBestRegards(opts.propertyName)).replace(/\n/g, '<br/>')}</p>
+  const guestBodyHtml = `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#f6f7fb">
+<div style="max-width:640px;margin:0 auto;padding:24px">
+  <div style="background:#fff;border:1px solid #eee;border-radius:16px;overflow:hidden">
+    <div style="padding:18px 20px;background:linear-gradient(135deg,#111827,#374151);color:#fff">
+      <div style="font-size:14px;opacity:.9">Checkin-Me</div>
+      <div style="font-size:18px;font-weight:700;margin-top:6px">${escapeHtml(opts.propertyName)}</div>
+    </div>
+    <div style="padding:20px;font-family:system-ui,-apple-system,sans-serif;line-height:1.55;color:#111827">
+      <p style="margin:0 0 12px">${escapeHtml(tm.guestDear(opts.guestName))}</p>
+      <p style="margin:0 0 12px">${tm.guestThanksHtml(escapeHtml(opts.propertyName))}</p>
+      ${opts.pdfAttachment ? `<div style="margin:14px 0;padding:12px 14px;border:1px solid #e5e7eb;border-radius:12px;background:#f9fafb"><strong>${tm.guestHtmlAttachment}</strong></div>` : ''}
+      ${opts.pdfFailedNote ? `<p style="margin:12px 0"><em>${escapeHtml(opts.pdfFailedNote)}</em></p>` : ''}
+      <p style="margin:12px 0 0">${escapeHtml(tm.guestLookForward)}</p>
+      <p style="margin:16px 0 0">${escapeHtml(tm.guestBestRegards(opts.propertyName)).replace(/\n/g, '<br/>')}</p>
+    </div>
+  </div>
+  <div style="text-align:center;font-family:system-ui,-apple-system,sans-serif;color:#6b7280;font-size:12px;margin-top:12px">
+    This message was sent by Checkin-Me.
+  </div>
+</div>
 </body></html>`;
   const adminAttachmentLine = opts.pdfAttachment
     ? '\n\n' + tm.adminAttachment
     : '';
-  const adminBody = `${tm.adminBodyIntro}${adminAttachmentLine}${pdfNote}\n\n${tm.adminProperty} ${opts.propertyName}\n${tm.adminGuest} ${opts.guestName}\n${tm.adminEmailLabel} ${guest || tm.adminNotProvided}\n${tm.adminDates} ${opts.checkin} — ${opts.checkout}\n`;
-  const adminBodyHtml = `<!DOCTYPE html><html><body style="font-family:system-ui,-apple-system,sans-serif;line-height:1.6;color:#222">
-<p>${tm.adminBodyIntro}</p>
-${opts.pdfAttachment ? `<p>${tm.adminAttachment}</p>` : ''}
-${opts.pdfFailedNote ? `<p><em>${escapeHtml(opts.pdfFailedNote)}</em></p>` : ''}
-<p><strong>${tm.adminProperty}</strong> ${escapeHtml(opts.propertyName)}<br/>
-<strong>${tm.adminGuest}</strong> ${escapeHtml(opts.guestName)}<br/>
-<strong>${tm.adminEmailLabel}</strong> ${escapeHtml(guest || tm.adminNotProvided)}<br/>
-<strong>${tm.adminDates}</strong> ${escapeHtml(opts.checkin)} → ${escapeHtml(opts.checkout)}</p>
+  const adminDocsLine =
+    opts.adminAttachments && opts.adminAttachments.length > 0
+      ? '\n\n' + tm.adminExtraDocumentsAttached
+      : '';
+  const adminBody = `${tm.adminBodyIntro}${adminAttachmentLine}${adminDocsLine}${pdfNote}\n\n${tm.adminProperty} ${opts.propertyName}\n${tm.adminGuest} ${opts.guestName}\n${tm.adminEmailLabel} ${guest || tm.adminNotProvided}\n${tm.adminDates} ${opts.checkin} — ${opts.checkout}\n${
+    opts.checkinHour ? `Check-in time: ${opts.checkinHour}\n` : ''
+  }${opts.whatsapp ? `WhatsApp: ${opts.whatsapp}\n` : ''}${
+    typeof opts.totalTravelers === 'number'
+      ? `Travelers: ${opts.totalTravelers}\n`
+      : ''
+  }`;
+
+  const travelerRowsHtml =
+    (opts.travelers || [])
+      .map((t, idx) => {
+        const doc = (t.type || '').toLowerCase() === 'passport' ? 'Passport' : 'ID';
+        const fileCount = Array.isArray(t.idFiles) ? t.idFiles.length : 0;
+        return `<tr>
+  <td style="padding:10px 12px;border-top:1px solid #eef2f7">${idx + 1}</td>
+  <td style="padding:10px 12px;border-top:1px solid #eef2f7"><strong>${escapeHtml(t.name || '')}</strong></td>
+  <td style="padding:10px 12px;border-top:1px solid #eef2f7">${escapeHtml(t.country || '')}</td>
+  <td style="padding:10px 12px;border-top:1px solid #eef2f7">${escapeHtml(t.idNumber || '')}</td>
+  <td style="padding:10px 12px;border-top:1px solid #eef2f7">${escapeHtml(doc)}</td>
+  <td style="padding:10px 12px;border-top:1px solid #eef2f7">${fileCount}</td>
+</tr>`;
+      })
+      .join('') || '';
+
+  const adminBodyHtml = `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#f6f7fb">
+<div style="max-width:760px;margin:0 auto;padding:24px">
+  <div style="background:#fff;border:1px solid #eee;border-radius:16px;overflow:hidden">
+    <div style="padding:18px 20px;background:linear-gradient(135deg,#0f172a,#334155);color:#fff">
+      <div style="font-size:14px;opacity:.9">New check-in submission</div>
+      <div style="font-size:18px;font-weight:700;margin-top:6px">${escapeHtml(opts.propertyName)}</div>
+    </div>
+    <div style="padding:20px;font-family:system-ui,-apple-system,sans-serif;line-height:1.55;color:#111827">
+      <p style="margin:0 0 12px">${escapeHtml(tm.adminBodyIntro)}</p>
+      <div style="display:grid;grid-template-columns:1fr;gap:12px">
+        <div style="padding:14px;border:1px solid #e5e7eb;border-radius:12px;background:#f9fafb">
+          <div style="font-size:13px;color:#6b7280;margin-bottom:8px">Summary</div>
+          <div style="font-size:14px">
+            <div><strong>${escapeHtml(tm.adminGuest)}</strong> ${escapeHtml(opts.guestName)}</div>
+            <div><strong>${escapeHtml(tm.adminEmailLabel)}</strong> ${escapeHtml(guest || tm.adminNotProvided)}</div>
+            <div><strong>${escapeHtml(tm.adminDates)}</strong> ${escapeHtml(opts.checkin)} → ${escapeHtml(opts.checkout)}</div>
+            ${opts.checkinHour ? `<div><strong>Check-in time:</strong> ${escapeHtml(opts.checkinHour)}</div>` : ''}
+            ${opts.whatsapp ? `<div><strong>WhatsApp:</strong> ${escapeHtml(opts.whatsapp)}</div>` : ''}
+            ${typeof opts.totalTravelers === 'number' ? `<div><strong>Travelers:</strong> ${opts.totalTravelers}</div>` : ''}
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          ${opts.pdfAttachment ? `<span style="display:inline-block;padding:8px 10px;border-radius:999px;background:#ecfeff;border:1px solid #a5f3fc;color:#0e7490;font-size:12px;font-weight:700">${escapeHtml(tm.adminAttachment)}</span>` : ''}
+          ${opts.adminAttachments && opts.adminAttachments.length > 0 ? `<span style="display:inline-block;padding:8px 10px;border-radius:999px;background:#fefce8;border:1px solid #fde68a;color:#92400e;font-size:12px;font-weight:700">${escapeHtml(tm.adminExtraDocumentsAttached)}</span>` : ''}
+          ${opts.pdfFailedNote ? `<span style="display:inline-block;padding:8px 10px;border-radius:999px;background:#fff1f2;border:1px solid #fecdd3;color:#9f1239;font-size:12px;font-weight:700">${escapeHtml(opts.pdfFailedNote)}</span>` : ''}
+        </div>
+        ${
+          travelerRowsHtml
+            ? `<div style="padding:0;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden">
+                <div style="padding:12px 14px;background:#f9fafb;border-bottom:1px solid #e5e7eb">
+                  <strong>Travelers</strong>
+                </div>
+                <table style="width:100%;border-collapse:collapse;font-size:13px">
+                  <thead>
+                    <tr style="background:#ffffff">
+                      <th align="left" style="padding:10px 12px;color:#6b7280;font-weight:700;font-size:12px">#</th>
+                      <th align="left" style="padding:10px 12px;color:#6b7280;font-weight:700;font-size:12px">Name</th>
+                      <th align="left" style="padding:10px 12px;color:#6b7280;font-weight:700;font-size:12px">Country</th>
+                      <th align="left" style="padding:10px 12px;color:#6b7280;font-weight:700;font-size:12px">ID number</th>
+                      <th align="left" style="padding:10px 12px;color:#6b7280;font-weight:700;font-size:12px">Doc</th>
+                      <th align="left" style="padding:10px 12px;color:#6b7280;font-weight:700;font-size:12px">Images</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${travelerRowsHtml}
+                  </tbody>
+                </table>
+              </div>`
+            : ''
+        }
+      </div>
+    </div>
+  </div>
+  <div style="text-align:center;font-family:system-ui,-apple-system,sans-serif;color:#6b7280;font-size:12px;margin-top:12px">
+    This message was sent by Checkin-Me.
+  </div>
+</div>
 </body></html>`;
 
   const guestSubject = tm.guestSubject(opts.propertyName);
   const adminSubject = tm.adminSubject(opts.guestName, opts.propertyName);
 
-  const attach = opts.pdfAttachment ? [opts.pdfAttachment] : undefined;
+  const guestAttach =
+    (opts.guestAttachments && opts.guestAttachments.length > 0
+      ? opts.guestAttachments
+      : undefined) ||
+    (opts.pdfAttachment ? [opts.pdfAttachment] : undefined);
+  const adminAttach =
+    (opts.adminAttachments && opts.adminAttachments.length > 0
+      ? opts.adminAttachments
+      : undefined) ||
+    (opts.pdfAttachment ? [opts.pdfAttachment] : undefined);
 
   const tasks: Promise<{ success: boolean; error?: string }>[] = [];
 
@@ -79,13 +245,17 @@ ${opts.pdfFailedNote ? `<p><em>${escapeHtml(opts.pdfFailedNote)}</em></p>` : ''}
     guest.toLowerCase() === admin.toLowerCase();
 
   if (same) {
+    const mergedAttachments = [
+      ...(guestAttach || []),
+      ...(adminAttach || []),
+    ];
     tasks.push(
       sendEmail({
         to: guest,
         subject: tm.sameSubject(opts.guestName, opts.propertyName),
         text: `${guestBody}${tm.sameAdminSeparator}${adminBody}`,
         html: `${guestBodyHtml}<hr/><p><strong>${escapeHtml(tm.sameAdminCopyHtml)}</strong></p>${adminBodyHtml}`,
-        attachments: attach,
+        attachments: mergedAttachments.length > 0 ? mergedAttachments : undefined,
       })
     );
   } else {
@@ -96,7 +266,7 @@ ${opts.pdfFailedNote ? `<p><em>${escapeHtml(opts.pdfFailedNote)}</em></p>` : ''}
           subject: guestSubject,
           text: guestBody,
           html: guestBodyHtml,
-          attachments: attach,
+          attachments: guestAttach,
         })
       );
     }
@@ -107,6 +277,7 @@ ${opts.pdfFailedNote ? `<p><em>${escapeHtml(opts.pdfFailedNote)}</em></p>` : ''}
           subject: adminSubject,
           text: adminBody,
           html: adminBodyHtml,
+          attachments: adminAttach,
           replyTo: guest || undefined,
         })
       );
@@ -415,6 +586,36 @@ export async function executeSaveBooking(
         contentType: 'application/pdf',
       };
 
+      // Attach ID document images for admin email (passport / CIN front/back).
+      // Note: fetched from Storage as buffers so Nodemailer can attach them.
+      const idDocKeys = [...new Set(idFiles)].filter(Boolean);
+      const idDocDownloads = await Promise.all(
+        idDocKeys.slice(0, 12).map(async (objectName) => {
+          const prettyFilename = (() => {
+            // Example keys: `${timestamp}_traveler_0_passport.jpg`
+            const base = objectName.split('/').pop() || objectName;
+            return base.replace(/^\d+_/, ''); // drop timestamp prefix if present
+          })();
+          const res = await downloadStorageObjectAsAttachment({
+            bucket: 'checkin-me',
+            objectName,
+            filename: prettyFilename,
+          });
+          if (!res.ok) {
+            console.warn('Email attachment download skipped:', objectName, res.reason);
+            return null;
+          }
+          return res.attachment;
+        })
+      );
+      const idDocAttachments = idDocDownloads.filter(Boolean) as Array<{
+        filename: string;
+        content: Buffer;
+        contentType?: string;
+      }>;
+
+      const adminAttachments = [pdfAttachment, ...idDocAttachments];
+
       const { mailError } = await sendCheckInEmails({
         guestEmail,
         guestName,
@@ -423,6 +624,12 @@ export async function executeSaveBooking(
         checkin,
         checkout,
         pdfAttachment,
+        guestAttachments: [pdfAttachment],
+        adminAttachments,
+        checkinHour,
+        whatsapp,
+        totalTravelers,
+        travelers: travelersData,
         lang,
       });
 

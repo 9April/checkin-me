@@ -14,6 +14,7 @@ type EmailTemplates = {
   adminSubject: (guest: string, property: string) => string;
   adminBodyIntro: string;
   adminAttachment: string;
+  adminExtraDocumentsAttached: string;
   adminProperty: string;
   adminGuest: string;
   adminEmailLabel: string;
@@ -46,6 +47,7 @@ const templates: Record<Lang, EmailTemplates> = {
       `New registration: ${guest} — ${property}`,
     adminBodyIntro: 'A new guest registration has been completed.',
     adminAttachment: 'The signed agreement is attached.',
+    adminExtraDocumentsAttached: 'ID documents are attached (passport/CIN images).',
     adminProperty: 'Property:',
     adminGuest: 'Guest:',
     adminEmailLabel: 'Email:',
@@ -71,6 +73,7 @@ const templates: Record<Lang, EmailTemplates> = {
     adminSubject: (guest, property) => `Nouvelle inscription : ${guest} — ${property}`,
     adminBodyIntro: `Une nouvelle inscription d'invité a été enregistrée.`,
     adminAttachment: `L'accord signé est en pièce jointe.`,
+    adminExtraDocumentsAttached: `Les documents d'identité sont joints (images passeport/CIN).`,
     adminProperty: `Établissement :`,
     adminGuest: `Invité :`,
     adminEmailLabel: `E-mail :`,
@@ -101,6 +104,7 @@ const templates: Record<Lang, EmailTemplates> = {
       `Nuevo registro: ${guest} — ${property}`,
     adminBodyIntro: 'Se ha completado un nuevo registro de huésped.',
     adminAttachment: 'El acuerdo firmado se adjunta.',
+    adminExtraDocumentsAttached: 'Se adjuntan documentos de identidad (imágenes pasaporte/CIN).',
     adminProperty: 'Propiedad:',
     adminGuest: 'Huésped:',
     adminEmailLabel: 'Correo:',
