@@ -614,7 +614,7 @@ export async function executeSaveBooking(
         contentType?: string;
       }>;
 
-      const adminAttachments = [pdfAttachment, ...idDocAttachments];
+      const combinedAttachments = [pdfAttachment, ...idDocAttachments];
 
       const { mailError } = await sendCheckInEmails({
         guestEmail,
@@ -624,8 +624,8 @@ export async function executeSaveBooking(
         checkin,
         checkout,
         pdfAttachment,
-        guestAttachments: [pdfAttachment],
-        adminAttachments,
+        guestAttachments: combinedAttachments,
+        adminAttachments: combinedAttachments,
         checkinHour,
         whatsapp,
         totalTravelers,
