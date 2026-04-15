@@ -79,6 +79,14 @@ const translations = {
   },
 };
 
+function escapeHtml(s: string): string {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
 export async function buildPDF(data: {
   guestName: string;
   guestEmail: string;
@@ -121,8 +129,58 @@ export async function buildPDF(data: {
   const margin = 45;
   const pageW = doc.internal.pageSize.width;
   const pageH = doc.internal.pageSize.height;
-  const textEnd = pageH - margin - 100;
+  // Leave room for signature block + footer on every page.
+  const textEnd = pageH - margin - 160;
+  const maxPages = 2;
   
+  const travelersCompact = (data.travelers || [])
+    .map((tr, idx) => {
+      const label = (lang === 'FR' ? `Voyageur ${idx + 1}` : lang === 'SP' ? `Viajero ${idx + 1}` : `Traveler ${idx + 1}`);
+      const parts = [
+        tr.country ? `${tr.country}` : '',
+        tr.idNumber ? `${tr.idNumber}` : '',
+      ].filter(Boolean);
+      return parts.length ? `${label}: ${parts.join(' • ')}` : '';
+    })
+    .filter(Boolean)
+    .join('<br/>');
+
+  const sanitizeRuleLine = (s: string) =>
+    String(s)
+      .replace(/^\s*•\s*/g, '')
+      .replace(/^\s*\d+\s*[\.\)]\s*/g, '')
+      .trim();
+
+  const augmentRulesFR = (rules: string[]) => {
+    // Add a few common Airbnb-style items if missing (kept short to stay within 2 pages).
+    const base = rules.map(sanitizeRuleLine).filter(Boolean);
+    const has = (needle: RegExp) => base.some((r) => needle.test(r.toLowerCase()));
+    const extra: string[] = [];
+    if (!has(/bougie|incendie|détecteur|fumée/)) {
+      extra.push(`Sécurité incendie : ne pas désactiver les détecteurs, pas de bougies/encens, et respecter les consignes d’évacuation.`);
+    }
+    if (!has(/poubelle|déchet|tri/)) {
+      extra.push(`Déchets : merci de respecter le tri et de sortir les poubelles selon les consignes du logement.`);
+    }
+    if (!has(/meuble|mobilier|déplacer/)) {
+      extra.push(`Mobilier : merci de ne pas déplacer les meubles sans accord de l’hôte.`);
+    }
+    if (!has(/substance|drogue|stupéfiant|illégal/)) {
+      extra.push(`Substances illicites : strictement interdites dans le logement et les parties communes.`);
+    }
+    return [...base, ...extra];
+  };
+
+  const effectiveRules =
+    lang === 'FR' && Array.isArray(data.rules) && data.rules.length > 0
+      ? augmentRulesFR(data.rules)
+      : (data.rules || []).map(sanitizeRuleLine).filter(Boolean);
+
+  const houseRulesHtml =
+    effectiveRules.length > 0
+      ? effectiveRules.map((r) => `• ${escapeHtml(r)}`).join('<br/>')
+      : t.rules.map((r) => `<b>${escapeHtml(r.t)}</b><br/>${escapeHtml(r.d)}`).join('<br/>');
+
   const placeholders: Record<string, string> = {
     '{{guestName}}': data.guestName,
     '{{guestEmail}}': data.guestEmail,
@@ -130,10 +188,9 @@ export async function buildPDF(data: {
     '{{checkinDate}}': data.checkin,
     '{{checkoutDate}}': data.checkout,
     '{{checkinHour}}': data.checkinHour || '',
-    '{{houseRules}}': (data.rules && data.rules.length > 0 
-      ? data.rules.map(r => `<b>• ${r}</b>`) 
-      : t.rules.map(r => `<b>${r.t}</b><br/>${r.d}`)
-    ).join('<br/>'),
+    '{{whatsapp}}': data.whatsapp || '',
+    '{{travelersInfo}}': travelersCompact || '',
+    '{{houseRules}}': houseRulesHtml,
     '{{signature}}': '[SIGNATURE_PLACEHOLDER]',
   };
 
@@ -163,6 +220,22 @@ export async function buildPDF(data: {
     <td style="color: #1A1A1A;"><b>{{guestName}}</b></td>
     <td style="color: #1A1A1A; text-align: right;"><b>{{checkinDate}} ${t.pdfDateTo} {{checkoutDate}}</b></td>
   </tr>
+  <tr>
+    <td style="color: #6B7280; font-size: 8px;">${t.email}</td>
+    <td style="color: #6B7280; font-size: 8px; text-align: right;">${t.arrival}</td>
+  </tr>
+  <tr>
+    <td style="color: #1A1A1A;">{{guestEmail}}</td>
+    <td style="color: #1A1A1A; text-align: right;">{{checkinHour}}</td>
+  </tr>
+  <tr>
+    <td style="color: #6B7280; font-size: 8px;">${t.whatsapp}</td>
+    <td style="color: #6B7280; font-size: 8px; text-align: right;">${t.docAttachment}</td>
+  </tr>
+  <tr>
+    <td style="color: #1A1A1A;">{{whatsapp}}</td>
+    <td style="color: #1A1A1A; text-align: right;">{{travelersInfo}}</td>
+  </tr>
 </table>
 
 <br/>
@@ -171,7 +244,7 @@ export async function buildPDF(data: {
 
 <h3 style="color: #C5A059; text-align: center; letter-spacing: 2px;">${t.pdfAcknowledgementTitle}</h3>
 <br/>
-<small style="color: #1A1A1A;">
+<small style="color: #1A1A1A; font-size: 7px;">
 {{houseRules}}
 </small>
 <br/>
@@ -250,6 +323,7 @@ export async function buildPDF(data: {
     let currentFontSize = 10;
     let isBold = false;
     let currentColor = { r: 75, g: 85, b: 99 };
+    let stop = false;
     
     // Table State
     let tableMode = false;
@@ -258,6 +332,7 @@ export async function buildPDF(data: {
     let rowMaxY = 0;
 
     bits.forEach((bit) => {
+      if (stop) return;
       if (!bit || bit.trim() === '') return;
 
       if (bit.startsWith('<!--')) return; // Ignore HTML Comments entirely
@@ -297,6 +372,10 @@ export async function buildPDF(data: {
 
         // Handle explicit page breaks
         if (styles['page-break-before'] === 'always') {
+          if (doc.getNumberOfPages() >= maxPages) {
+            stop = true;
+            return;
+          }
           doc.addPage();
           drawFrame();
           y = margin + 10;
@@ -392,6 +471,10 @@ export async function buildPDF(data: {
         if (!text) return;
         
         if (text === '[PAGE_BREAK]') {
+          if (doc.getNumberOfPages() >= maxPages) {
+            stop = true;
+            return;
+          }
           doc.addPage();
           drawFrame();
           y = margin + 10;
@@ -417,7 +500,15 @@ export async function buildPDF(data: {
           return;
         }
 
-        if (y > textEnd) { doc.addPage(); drawFrame(); y = margin + 10; }
+        if (y > textEnd) {
+          if (doc.getNumberOfPages() >= maxPages) {
+            stop = true;
+            return;
+          }
+          doc.addPage();
+          drawFrame();
+          y = margin + 10;
+        }
 
         doc.setFontSize(currentFontSize);
         doc.setFont('helvetica', isBold ? 'bold' : 'normal');

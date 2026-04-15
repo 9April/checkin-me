@@ -53,8 +53,8 @@ export function resolveHouseRulesForLang(
     if (Array.isArray(parsed)) {
       const lines = parsed.filter((x): x is string => typeof x === 'string');
       if (lines.length === 0) return getBuiltinHouseRulesLines(lang);
-      if (lang === 'EN') return lines;
-      return getBuiltinHouseRulesLines(lang);
+      // Legacy format: single-language array. Use it for any language selection.
+      return lines;
     }
     if (parsed && typeof parsed === 'object') {
       const o = parsed as Record<string, unknown>;
