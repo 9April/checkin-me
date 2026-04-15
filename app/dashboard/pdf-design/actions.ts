@@ -32,13 +32,8 @@ import { buildPDF } from '@/lib/pdf';
 import { resolveHouseRulesForLang } from '@/lib/house-rules';
 
 export async function generatePdfPreview(propertyName: string, template: string, houseRules: string, footer: string, logoUrl?: string | null) {
-  let rulesArr = resolveHouseRulesForLang(houseRules, 'EN');
+  const rulesArr = resolveHouseRulesForLang(houseRules, 'FR');
 
-  if (rulesArr.length === 0) {
-    rulesArr = ["No smoking inside", "No parties allowed", "Respect the neighbors"];
-  }
-
-  
   let logoB64 = '';
   if (logoUrl) {
     try {
@@ -68,7 +63,7 @@ export async function generatePdfPreview(propertyName: string, template: string,
     rules: rulesArr,
     signature: '',
     idImages: [],
-    lang: 'EN',
+    lang: 'FR',
   });
 
   return `data:application/pdf;base64,${Buffer.from(pdfBuffer).toString('base64')}`;

@@ -375,14 +375,36 @@ export async function executeSaveBooking(
       return name;
     };
 
-    const uploadTasks: Promise<{ key: string; name: string }>[] = [];
+    const uploadTasks: Promise<{ key: string; name: string; buffer: Buffer }>[] = [];
+    const imageBuffers: Record<string, Buffer> = {};
 
     const queueUpload = (file: File, prefix: string) => {
-      const fileName = `${timestamp}_${prefix}.${file.name.split('.').pop()}`;
-      const task = saveToCloud(file, fileName).then((name) => ({
-        key: prefix,
-        name,
-      }));
+      const fileName = `${timestamp}_${prefix}.${file.name.split('.').pop() || 'jpg'}`;
+      const task = (async () => {
+        const bytes = await file.arrayBuffer();
+        const buffer = Buffer.from(bytes);
+        
+        // Check if service key is missing
+        if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+          throw new Error('SUPABASE_SERVICE_ROLE_KEY is missing');
+        }
+
+        const { error } = await supabaseAdmin.storage
+          .from('checkin-me')
+          .upload(fileName, buffer, {
+            contentType: file.type || 'image/jpeg',
+            upsert: true,
+          });
+        
+        if (error) {
+          console.error(`Supabase Upload Error for ${fileName}:`, error);
+          throw new Error(`Upload failed for ${prefix}: ${error.message}`);
+        }
+
+        imageBuffers[fileName] = buffer;
+        return { key: prefix, name: fileName, buffer };
+      })();
+      
       uploadTasks.push(task);
       return fileName;
     };
@@ -491,22 +513,13 @@ export async function executeSaveBooking(
 
     let pdfBytes: any;
     try {
-      const imagesB64 = await Promise.all(
-        idFiles.map(async (f) => {
-          try {
-            const { data, error } = await supabaseAdmin.storage
-              .from('checkin-me')
-              .download(f);
-            if (error || !data) throw new Error(`Download failed`);
-            const buf = Buffer.from(await data.arrayBuffer());
-            const ext = f.split('.').pop();
-            const mime = ext === 'png' ? 'image/png' : 'image/jpeg';
-            return `data:${mime};base64,${buf.toString('base64')}`;
-          } catch (e) {
-            return null;
-          }
-        })
-      ).then((res) => res.filter((img) => img !== null) as string[]);
+      const imagesB64 = idFiles.map((f) => {
+        const buf = imageBuffers[f];
+        if (!buf) return null;
+        const ext = f.split('.').pop() || 'jpg';
+        const mime = ext === 'png' ? 'image/png' : 'image/jpeg';
+        return `data:${mime};base64,${buf.toString('base64')}`;
+      }).filter((img): img is string => img !== null);
 
       pdfBytes = await buildPDF({
         guestName,
@@ -655,10 +668,10 @@ export async function executeSaveBooking(
       });
     }
   } catch (e: any) {
-    console.error('executeSaveBooking error:', e);
+    console.error('executeSaveBooking full error stack:', e);
     return jsonSafeResult({
       success: false,
-      error: e.message || 'Submission failed',
+      error: `Submission failed: ${e.message || 'Internal error'}`,
     });
   }
 }
