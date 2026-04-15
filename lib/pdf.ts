@@ -182,10 +182,28 @@ export async function buildPDF(data: {
       ? augmentRulesFR(data.rules)
       : (data.rules || []).map(sanitizeRuleLine).filter(Boolean);
 
-  const houseRulesHtml =
-    effectiveRules.length > 0
-      ? effectiveRules.map((r) => `• ${escapeHtml(r)}`).join('<br/>')
-      : t.rules.map((r) => `• <b>${escapeHtml(r.t)}</b> : ${escapeHtml(r.d)}`).join('<br/>');
+  const toBullets = (lines: string[]) =>
+    lines.map((r) => `• ${escapeHtml(r)}`).join('<br/>');
+
+  const builtinLines = t.rules.map((r) => `${r.t}: ${r.d}`);
+  const finalRuleLines =
+    effectiveRules.length > 0 ? effectiveRules : builtinLines;
+
+  // Two-column rules: needed to fit all rules into 2 pages.
+  const mid = Math.ceil(finalRuleLines.length / 2);
+  const left = finalRuleLines.slice(0, mid);
+  const right = finalRuleLines.slice(mid);
+  const houseRulesHtml = `
+<table style="width: 100%;">
+  <tr>
+    <td style="vertical-align: top; width: 50%; font-size: 6px; color: #1A1A1A;">
+      ${toBullets(left)}
+    </td>
+    <td style="vertical-align: top; width: 50%; font-size: 6px; color: #1A1A1A;">
+      ${toBullets(right)}
+    </td>
+  </tr>
+</table>`;
 
   const placeholders: Record<string, string> = {
     '{{guestName}}': data.guestName,
@@ -250,7 +268,7 @@ export async function buildPDF(data: {
 
 <h3 style="color: #C5A059; text-align: center; letter-spacing: 2px;">${t.pdfAcknowledgementTitle}</h3>
 <br/>
-<small style="color: #1A1A1A; font-size: 7px;">
+<small style="color: #1A1A1A; font-size: 6px;">
 {{houseRules}}
 </small>
 <br/>
@@ -329,7 +347,6 @@ export async function buildPDF(data: {
     let currentFontSize = 10;
     let isBold = false;
     let currentColor = { r: 75, g: 85, b: 99 };
-    let stop = false;
     
     // Table State
     let tableMode = false;
@@ -338,7 +355,6 @@ export async function buildPDF(data: {
     let rowMaxY = 0;
 
     bits.forEach((bit) => {
-      if (stop) return;
       if (!bit || bit.trim() === '') return;
 
       if (bit.startsWith('<!--')) return; // Ignore HTML Comments entirely
@@ -378,13 +394,11 @@ export async function buildPDF(data: {
 
         // Handle explicit page breaks
         if (styles['page-break-before'] === 'always') {
-          if (doc.getNumberOfPages() >= maxPages) {
-            stop = true;
-            return;
+          if (doc.getNumberOfPages() < maxPages) {
+            doc.addPage();
+            drawFrame();
+            y = margin + 10;
           }
-          doc.addPage();
-          drawFrame();
-          y = margin + 10;
         }
 
         // Push state for NON-self-closing tags
@@ -400,6 +414,13 @@ export async function buildPDF(data: {
         if (styles['color']) {
           const c = hexToRgb(styles['color']);
           currentColor = c;
+        }
+        if (styles['font-size']) {
+          const raw = styles['font-size'];
+          const n = parseFloat(raw.replace('px', '').replace('pt', ''));
+          if (!Number.isNaN(n) && n > 0) {
+            currentFontSize = Math.max(5, Math.min(24, n));
+          }
         }
 
         switch(tagName) {
@@ -459,7 +480,8 @@ export async function buildPDF(data: {
             isBold = true;
             break;
           case 'small':
-            currentFontSize = 8;
+            // Keep legal/rules text compact by default.
+            currentFontSize = Math.min(currentFontSize, 7);
             break;
           case 'hr':
             setDrawColor(rgb); // Use Gold for lines
@@ -468,7 +490,8 @@ export async function buildPDF(data: {
             y += 10;
             break;
           case 'br':
-            y += 12;
+            // Scale vertical spacing with font size to fit within 2 pages.
+            y += Math.max(5, currentFontSize * 0.9);
             break;
         }
       } else {
@@ -477,13 +500,11 @@ export async function buildPDF(data: {
         if (!text) return;
         
         if (text === '[PAGE_BREAK]') {
-          if (doc.getNumberOfPages() >= maxPages) {
-            stop = true;
-            return;
+          if (doc.getNumberOfPages() < maxPages) {
+            doc.addPage();
+            drawFrame();
+            y = margin + 10;
           }
-          doc.addPage();
-          drawFrame();
-          y = margin + 10;
           return;
         }
 
@@ -506,11 +527,7 @@ export async function buildPDF(data: {
           return;
         }
 
-        if (y > textEnd) {
-          if (doc.getNumberOfPages() >= maxPages) {
-            stop = true;
-            return;
-          }
+        if (y > textEnd && doc.getNumberOfPages() < maxPages) {
           doc.addPage();
           drawFrame();
           y = margin + 10;
@@ -544,7 +561,7 @@ export async function buildPDF(data: {
           }
           
           doc.text(l, x, y, { align: currentAlign });
-          y += (currentFontSize * 1.4);
+          y += (currentFontSize <= 8 ? currentFontSize * 1.15 : currentFontSize * 1.35);
         });
         
         if (tableMode && y > rowMaxY) {
