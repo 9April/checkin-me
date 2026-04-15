@@ -14,53 +14,91 @@ interface PdfEditorProps {
 }
 
 const DEFAULT_PDF_TEMPLATE = `
-<div style="text-align: center;">
-  <h3 style="color: #6B7280; font-size: 10px; font-weight: normal; letter-spacing: 2px; text-transform: uppercase; margin: 0; padding: 0;">GUEST STAY AGREEMENT</h3>
-  <h1 style="color: #111827; margin: 5px 0; padding: 0; font-size: 20px;">{{propertyName}}</h1>
-</div>
+<table style="width: 100%;">
+  <tr>
+    <td style="text-align: center;">
+      <h3 style="color: #6B7280; font-size: 10px; font-weight: normal; letter-spacing: 2px; text-transform: uppercase;">GUEST STAY AGREEMENT</h3>
+      <h1 style="color: #111827; font-size: 20px;">{{propertyName}}</h1>
+    </td>
+  </tr>
+</table>
 
 <hr style="color: #E5E7EB; height: 0.5px;"/>
 
-<div style="font-size: 9px; color: #374151;">
-  <p><b>GUEST:</b> {{guestName}} | <b>EMAIL:</b> {{guestEmail}}</p>
-  <p><b>STAY PERIOD:</b> {{checkinDate}} — {{checkoutDate}}</p>
-</div>
+<table style="width: 100%;">
+  <tr>
+    <td style="width: 50%; font-size: 9px; color: #374151;">
+      <b>GUEST:</b> {{guestName}}
+    </td>
+    <td style="width: 50%; text-align: right; font-size: 9px; color: #374151;">
+      <b>EMAIL:</b> {{guestEmail}}
+    </td>
+  </tr>
+  <tr>
+    <td style="width: 100%; font-size: 9px; color: #374151;" colspan="2">
+      <b>STAY PERIOD:</b> {{checkinDate}} — {{checkoutDate}}
+    </td>
+  </tr>
+</table>
 
 <hr style="color: #E5E7EB; height: 0.5px;"/>
 
 <br/>
 
-<div style="text-align: center;">
-  <h3 style="color: #111827; font-size: 12px; margin-bottom: 5px;">Règlement de Séjour / House Rules</h3>
-</div>
+<table style="width: 100%;">
+  <tr>
+    <td style="text-align: center;">
+      <h3 style="color: #111827; font-size: 12px;">Règlement de Séjour / House Rules</h3>
+    </td>
+  </tr>
+</table>
 
-<div style="font-size: 8px; color: #4B5563;">
-  {{houseRules}}
-</div>
+<table style="width: 100%;">
+  <tr>
+    <td style="font-size: 8px; color: #4B5563;">
+      {{houseRules}}
+    </td>
+  </tr>
+</table>
 
 <br/>
 <hr style="color: #E5E7EB; height: 0.5px;"/>
+
+<table style="width: 100%;">
+  <tr>
+    <td style="text-align: center;">
+      <h3 style="color: #111827; font-size: 12px;">ACKNOWLEDGEMENT AND CONDITIONS</h3>
+      <br/>
+      <p style="color: #111827; font-style: italic; font-size: 10px; font-weight: bold;">
+        "I confirm that I have read the house rules and I agree to respect them entirely during my stay."
+      </p>
+    </td>
+  </tr>
+</table>
+
 <br/>
 
-<div style="text-align: center;">
-  <h3 style="color: #111827; font-size: 12px; margin-bottom: 10px;">ACKNOWLEDGEMENT AND CONDITIONS</h3>
-  <p style="color: #111827; font-style: italic; font-size: 10px; font-weight: bold; margin-bottom: 15px;">
-    "I confirm that I have read the house rules and I agree to respect them entirely during my stay."
-  </p>
-</div>
-
-<div style="font-size: 9px; color: #111827;">
-  <p><b>Date of Arrival:</b> {{checkinDate}}</p>
-  <p><b>Estimated Arrival Time:</b> ____________________</p>
-</div>
+<table style="width: 100%;">
+  <tr>
+    <td style="font-size: 9px; color: #111827;">
+      <b>Date of Arrival:</b> {{checkinDate}}
+    </td>
+  </tr>
+  <tr>
+    <td style="font-size: 9px; color: #111827;">
+      <b>Estimated Arrival Time:</b> ____________________
+    </td>
+  </tr>
+  <tr>
+    <td style="font-size: 9px; color: #111827;">
+      <br/>
+      <b>Signature:</b>
+    </td>
+  </tr>
+</table>
 
 <br/>
-
-<div style="font-size: 9px; color: #111827;">
-  <p><b>Signature:</b></p>
-  <!-- SIGNATURE ENGINE BLOCK (Automatically placed here) -->
-  {{signature}}
-</div>
+{{signature}}
 `;
 
 export default function PdfEditor({ propertyId, propertyName, houseRules, initialTemplate, initialFooter, logoUrl }: PdfEditorProps) {
@@ -72,53 +110,91 @@ export default function PdfEditor({ propertyId, propertyName, houseRules, initia
   };
 
   const generateTemplate = (text: string) => `
-<div style="text-align: center;">
-  <h3 style="color: #6B7280; font-size: 10px; font-weight: normal; letter-spacing: 2px; text-transform: uppercase; margin: 0; padding: 0;">GUEST STAY AGREEMENT</h3>
-  <h1 style="color: #111827; margin: 5px 0; padding: 0; font-size: 20px;">{{propertyName}}</h1>
-</div>
+<table style="width: 100%;">
+  <tr>
+    <td style="text-align: center;">
+      <h3 style="color: #6B7280; font-size: 10px; font-weight: normal; letter-spacing: 2px; text-transform: uppercase;">GUEST STAY AGREEMENT</h3>
+      <h1 style="color: #111827; font-size: 20px;">{{propertyName}}</h1>
+    </td>
+  </tr>
+</table>
 
 <hr style="color: #E5E7EB; height: 0.5px;"/>
 
-<div style="font-size: 9px; color: #374151;">
-  <p><b>GUEST:</b> {{guestName}} | <b>EMAIL:</b> {{guestEmail}}</p>
-  <p><b>STAY PERIOD:</b> {{checkinDate}} — {{checkoutDate}}</p>
-</div>
+<table style="width: 100%;">
+  <tr>
+    <td style="width: 50%; font-size: 9px; color: #374151;">
+      <b>GUEST:</b> {{guestName}}
+    </td>
+    <td style="width: 50%; text-align: right; font-size: 9px; color: #374151;">
+      <b>EMAIL:</b> {{guestEmail}}
+    </td>
+  </tr>
+  <tr>
+    <td style="width: 100%; font-size: 9px; color: #374151;" colspan="2">
+      <b>STAY PERIOD:</b> {{checkinDate}} — {{checkoutDate}}
+    </td>
+  </tr>
+</table>
 
 <hr style="color: #E5E7EB; height: 0.5px;"/>
 
 <br/>
 
-<div style="text-align: center;">
-  <h3 style="color: #111827; font-size: 12px; margin-bottom: 5px;">Règlement de Séjour / House Rules</h3>
-</div>
+<table style="width: 100%;">
+  <tr>
+    <td style="text-align: center;">
+      <h3 style="color: #111827; font-size: 12px;">Règlement de Séjour / House Rules</h3>
+    </td>
+  </tr>
+</table>
 
-<div style="font-size: 8px; color: #4B5563;">
-  {{houseRules}}
-</div>
+<table style="width: 100%;">
+  <tr>
+    <td style="font-size: 8px; color: #4B5563;">
+      {{houseRules}}
+    </td>
+  </tr>
+</table>
 
 <br/>
 <hr style="color: #E5E7EB; height: 0.5px;"/>
+
+<table style="width: 100%;">
+  <tr>
+    <td style="text-align: center;">
+      <h3 style="color: #111827; font-size: 12px;">ACKNOWLEDGEMENT AND CONDITIONS</h3>
+      <br/>
+      <p style="color: #111827; font-style: italic; font-size: 10px; font-weight: bold;">
+        "${text}"
+      </p>
+    </td>
+  </tr>
+</table>
+
 <br/>
 
-<div style="text-align: center;">
-  <h3 style="color: #111827; font-size: 12px; margin-bottom: 10px;">ACKNOWLEDGEMENT AND CONDITIONS</h3>
-  <p style="color: #111827; font-style: italic; font-size: 10px; font-weight: bold; margin-bottom: 15px;">
-    "${text}"
-  </p>
-</div>
-
-<div style="font-size: 9px; color: #111827;">
-  <p><b>Date of Arrival:</b> {{checkinDate}}</p>
-  <p><b>Estimated Arrival Time:</b> ____________________</p>
-</div>
+<table style="width: 100%;">
+  <tr>
+    <td style="font-size: 9px; color: #111827;">
+      <b>Date of Arrival:</b> {{checkinDate}}
+    </td>
+  </tr>
+  <tr>
+    <td style="font-size: 9px; color: #111827;">
+      <b>Estimated Arrival Time:</b> ____________________
+    </td>
+  </tr>
+  <tr>
+    <td style="font-size: 9px; color: #111827;">
+      <br/>
+      <b>Signature:</b>
+    </td>
+  </tr>
+</table>
 
 <br/>
-
-<div style="font-size: 9px; color: #111827;">
-  <p><b>Signature:</b></p>
-  <!-- SIGNATURE ENGINE BLOCK (Automatically placed here) -->
-  {{signature}}
-</div>
+{{signature}}
 `;
 
   const [agreementText, setAgreementText] = useState(extractAgreement(initialTemplate || ""));
