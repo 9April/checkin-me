@@ -270,7 +270,6 @@ export async function buildPDF(data: {
 </div>
 `;
   }
-  }
   
   Object.entries(placeholders).forEach(([tag, val]) => {
     template = template.split(tag).join(val || '');
