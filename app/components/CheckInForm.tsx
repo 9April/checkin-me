@@ -1430,8 +1430,8 @@ export default function CheckInForm({
                ) : (
                  rulesList.map((rule: string, i: number) => (
                    <div key={i} className="flex gap-3 sm:gap-4 p-4 sm:p-6 bg-gray-50 rounded-2xl sm:rounded-[2rem] border border-gray-100 items-start">
-                     <span className="w-10 h-10 bg-white rounded-2xl flex items-center justify-center text-red-500 font-black shrink-0 shadow-lg text-xs leading-none">{(i+1).toString().padStart(2, '0')}</span>
-                     <p className="text-gray-700 font-black text-sm leading-relaxed tracking-tight">{rule}</p>
+                     <div className="w-8 h-8 bg-white rounded-xl flex items-center justify-center text-red-500 font-black shrink-0 shadow-sm text-lg">•</div>
+                     <p className="text-gray-700 font-medium text-sm leading-relaxed tracking-tight">{rule}</p>
                    </div>
                  ))
                )}

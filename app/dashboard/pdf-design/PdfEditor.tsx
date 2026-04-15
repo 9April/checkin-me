@@ -14,42 +14,63 @@ interface PdfEditorProps {
 }
 
 const DEFAULT_PDF_TEMPLATE = `
-<h1 style="text-align: center; color: #C5A059;">{{propertyName}}</h1>
-<p style="text-align: center; color: #B08D43;"><b>GUEST STAY AGREEMENT</b></p>
-<hr/>
-<br/>
-
-<table>
+<table style="width: 100%; border-bottom: 0.5px solid #C5A059; padding-bottom: 20px;">
   <tr>
-    <td style="color: #6B7280;"><b>PRIMARY GUEST</b></td>
-    <td style="color: #6B7280;"><b>STAY PERIOD</b></td>
-  </tr>
-  <tr>
-    <td style="color: #1A1A1A;"><b>{{guestName}}</b></td>
-    <td style="color: #1A1A1A;"><b>{{checkinDate}} to {{checkoutDate}}</b></td>
+    <td style="width: 80px; vertical-align: middle;">
+      <!-- LOGO AREA -->
+    </td>
+    <td style="padding-left: 20px; vertical-align: middle;">
+      <h1 style="color: #C5A059; margin: 0; padding: 0; line-height: 1;">{{propertyName}}</h1>
+      <h3 style="color: #4B5563; margin: 0; padding: 0; font-size: 10px; font-weight: normal; letter-spacing: 1px;">GUEST STAY AGREEMENT</h3>
+    </td>
   </tr>
 </table>
 
 <br/>
-<hr/>
+
+<table style="width: 100%;">
+  <tr>
+    <td style="color: #6B7280; font-size: 8px;">GUEST</td>
+    <td style="color: #6B7280; font-size: 8px; text-align: right;">STAY PERIOD</td>
+  </tr>
+  <tr>
+    <td style="color: #1A1A1A;"><b>{{guestName}}</b></td>
+    <td style="color: #1A1A1A; text-align: right;"><b>{{checkinDate}} to {{checkoutDate}}</b></td>
+  </tr>
+</table>
+
+<br/>
+<hr style="color: #C5A059; height: 0.5px;"/>
 <br/>
 
-<h3 style="color: #C5A059;">PROPERTY RULES & CONDITIONS</h3>
-<p>{{houseRules}}</p>
+<h3 style="color: #C5A059; text-align: center; letter-spacing: 2px;">ACKNOWLEDGEMENT AND CONDITIONS</h3>
+<br/>
+<small style="color: #1A1A1A; font-size: 7px;">
+{{houseRules}}
+</small>
+<br/>
+<p style="text-align: center; color: #1A1A1A; font-style: italic;">
+  I confirm that I have read the house rules and I agree to respect them entirely during my stay.
+</p>
 
-[PAGE_BREAK]
+<br/><br/>
 
-<h3 style="color: #C5A059;">GUEST ACKNOWLEDGEMENT</h3>
-<p>I confirm that I have read the house rules and I agree to respect them entirely during my stay at <b>{{propertyName}}</b>.</p>
+<table style="width: 100%; border-top: 0.5px solid #E5E7EB; padding-top: 20px;">
+  <tr>
+    <td style="color: #6B7280; font-size: 8px;">DATE OF ARRIVAL:</td>
+  </tr>
+  <tr>
+    <td style="color: #1A1A1A;"><b>{{checkinDate}}</b></td>
+  </tr>
+</table>
 
 <br/>
-<br/>
-<p style="text-align: right; color: #B08D43;"><b>GUEST SIGNATURE</b></p>
+<!-- SIGNATURE ENGINE BLOCK -->
 {{signature}}
 `;
 
 export default function PdfEditor({ propertyId, propertyName, houseRules, initialTemplate, initialFooter, logoUrl }: PdfEditorProps) {
-  const defaultAgreement = "I confirm that I have read and agree to respect the rules during my stay.";
+  const defaultAgreement = "I confirm that I have read the house rules and I agree to respect them entirely during my stay.";
   
   const extractAgreement = (html: string) => {
     const match = html.match(/<!-- AGREEMENT_TEXT_START -->([\s\S]*?)<!-- AGREEMENT_TEXT_END -->/);
@@ -88,9 +109,9 @@ export default function PdfEditor({ propertyId, propertyName, houseRules, initia
 
 <h3 style="color: #C5A059; text-align: center; letter-spacing: 2px;">ACKNOWLEDGEMENT AND CONDITIONS</h3>
 <br/>
-<small style="color: #4B5563;">
+<div style="font-size: 7px; color: #1A1A1A;">
 {{houseRules}}
-</small>
+</div>
 <br/>
 <p style="text-align: center; color: #1A1A1A; font-style: italic;">
   <!-- AGREEMENT_TEXT_START -->

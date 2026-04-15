@@ -33,7 +33,7 @@ const translations = {
     pdfGuestStayAgreement: 'CONTRAT DE SÉJOUR',
     pdfGuestLabel: 'VOYAGEUR',
     pdfStayPeriodLabel: 'PÉRIODE DE SÉJOUR',
-    pdfAcknowledgementTitle: 'ACCORD ET CONDITIONS',
+    pdfAcknowledgementTitle: 'RECONNAISSANCE ET CONDITIONS',
     pdfDateOfArrivalLabel: 'DATE D’ARRIVÉE :',
     pdfDateTo: 'au',
     pdfFooterDefault: '© 2026 • Enregistrement numérique sécurisé',
@@ -168,6 +168,12 @@ export async function buildPDF(data: {
     if (!has(/substance|drogue|stupéfiant|illégal/)) {
       extra.push(`Substances illicites : strictement interdites dans le logement et les parties communes.`);
     }
+    if (!has(/fuite|eau|climatisation|dysfonctionnement/)) {
+      extra.push(`Climatisation et Eau : signaler immédiatement toute fuite d'eau ou dysfonctionnement majeur.`);
+    }
+    if (!has(/respect|communication|personnel|staff/)) {
+      extra.push(`Communication : maintenir une communication respectueuse avec l'hôte et le personnel.`);
+    }
     return [...base, ...extra];
   };
 
@@ -179,7 +185,7 @@ export async function buildPDF(data: {
   const houseRulesHtml =
     effectiveRules.length > 0
       ? effectiveRules.map((r) => `• ${escapeHtml(r)}`).join('<br/>')
-      : t.rules.map((r) => `<b>${escapeHtml(r.t)}</b><br/>${escapeHtml(r.d)}`).join('<br/>');
+      : t.rules.map((r) => `• <b>${escapeHtml(r.t)}</b> : ${escapeHtml(r.d)}`).join('<br/>');
 
   const placeholders: Record<string, string> = {
     '{{guestName}}': data.guestName,
