@@ -221,80 +221,55 @@ export async function buildPDF(data: {
   let template = data.pdfTemplate || '';
   if (!template || template.trim() === '') {
      template = `
-<table style="width: 100%; padding-bottom: 25px;">
-  <tr>
-    <td style="width: 80px; vertical-align: middle;">
-      <!-- LOGO AREA (Automatically placed top-left) -->
-    </td>
-    <td style="padding-left: 25px; vertical-align: middle;">
-      <h1 style="color: #111827; margin: 0; padding: 0; line-height: 1.1; font-size: 26px;">{{propertyName}}</h1>
-      <h3 style="color: #6B7280; margin: 0; padding-top: 5px; font-size: 9px; font-weight: normal; letter-spacing: 2px; text-transform: uppercase;">${t.pdfGuestStayAgreement}</h3>
-    </td>
-  </tr>
-</table>
+<div style="text-align: center;">
+  <h3 style="color: #6B7280; font-size: 10px; font-weight: normal; letter-spacing: 2px; text-transform: uppercase; margin: 0; padding: 0;">${t.pdfGuestStayAgreement}</h3>
+  <h1 style="color: #111827; margin: 5px 0; padding: 0; font-size: 20px;">{{propertyName}}</h1>
+</div>
 
+<hr style="color: #E5E7EB; height: 0.5px;"/>
+
+<div style="font-size: 9px; color: #374151;">
+  <p><b>${t.pdfGuestLabel.toUpperCase()}:</b> {{guestName}} | <b>${t.email.toUpperCase()}:</b> {{guestEmail}}</p>
+  <p><b>${t.pdfStayPeriodLabel.toUpperCase()}:</b> {{checkinDate}} — {{checkoutDate}}</p>
+</div>
+
+<hr style="color: #E5E7EB; height: 0.5px;"/>
+
+<br/>
+
+<div style="text-align: center;">
+  <h3 style="color: #111827; font-size: 12px; margin-bottom: 5px;">Règlement de Séjour / House Rules</h3>
+</div>
+
+<div style="font-size: 8px; color: #4B5563;">
+  {{houseRules}}
+</div>
+
+<br/>
 <hr style="color: #E5E7EB; height: 0.5px;"/>
 <br/>
 
-<table style="width: 100%; border-collapse: collapse;">
-  <tr>
-    <td style="width: 50%; padding-bottom: 12px;">
-      <p style="color: #9CA3AF; font-size: 7px; text-transform: uppercase; margin-bottom: 2px; font-weight: bold;">${t.pdfGuestLabel}</p>
-      <p style="color: #111827; font-size: 11px;"><b>{{guestName}}</b></p>
-      <p style="color: #6B7280; font-size: 9px;">{{guestEmail}}</p>
-    </td>
-    <td style="width: 50%; text-align: right; padding-bottom: 12px;">
-      <p style="color: #9CA3AF; font-size: 7px; text-transform: uppercase; margin-bottom: 2px; font-weight: bold;">${t.pdfStayPeriodLabel}</p>
-      <p style="color: #111827; font-size: 11px;"><b>{{checkinDate}} ${t.pdfDateTo} {{checkoutDate}}</b></p>
-      <p style="color: #6B7280; font-size: 9px;">${t.arrival}: {{checkinHour}}</p>
-    </td>
-  </tr>
-  <tr>
-    <td style="width: 50%;">
-      <p style="color: #9CA3AF; font-size: 7px; text-transform: uppercase; margin-bottom: 2px; font-weight: bold;">${t.whatsapp}</p>
-      <p style="color: #111827; font-size: 9px;">{{whatsapp}}</p>
-    </td>
-    <td style="width: 50%; text-align: right;">
-      <p style="color: #9CA3AF; font-size: 7px; text-transform: uppercase; margin-bottom: 2px; font-weight: bold;">${t.docAttachment}</p>
-      <p style="color: #111827; font-size: 8px;">{{travelersInfo}}</p>
-    </td>
-  </tr>
-</table>
-
-<br/>
-<br/>
-
-<div style="background-color: #F9FAFB; padding: 20px; border-radius: 12px; border: 0.5px solid #E5E7EB;">
-  <h3 style="color: #111827; text-align: center; letter-spacing: 1px; font-size: 12px; margin-bottom: 10px;">${t.pdfAcknowledgementTitle}</h3>
-  <div style="font-size: 8px; color: #4B5563;">
-    {{houseRules}}
-  </div>
-  <br/>
-  <p style="text-align: center; color: #111827; font-style: italic; font-size: 10px; font-weight: bold;">
+<div style="text-align: center;">
+  <h3 style="color: #111827; font-size: 12px; margin-bottom: 10px;">${t.pdfAcknowledgementTitle}</h3>
+  <p style="color: #111827; font-style: italic; font-size: 10px; font-weight: bold; margin-bottom: 15px;">
     "${t.accordText}"
   </p>
 </div>
 
-<br/>
-<br/>
-
-<table style="width: 100%;">
-  <tr>
-    <td style="width: 50%;">
-       <p style="color: #9CA3AF; font-size: 7px; text-transform: uppercase; margin-bottom: 4px; font-weight: bold;">${t.date}</p>
-       <p style="color: #111827; font-size: 10px;">{{checkinDate}}</p>
-    </td>
-    <td style="width: 50%; text-align: right;">
-       <p style="color: #9CA3AF; font-size: 7px; text-transform: uppercase; margin-bottom: 4px; font-weight: bold;">${t.arrival}</p>
-       <p style="color: #111827; font-size: 10px;">{{checkinHour}}</p>
-    </td>
-  </tr>
-</table>
+<div style="font-size: 9px; color: #111827;">
+  <p><b>${t.pdfDateOfArrivalLabel}</b> {{checkinDate}}</p>
+  <p><b>${t.arrival}:</b> ____________________</p>
+</div>
 
 <br/>
-<!-- SIGNATURE ENGINE BLOCK (Automatically placed here) -->
-{{signature}}
+
+<div style="font-size: 9px; color: #111827;">
+  <p><b>${t.signature}:</b></p>
+  <!-- SIGNATURE ENGINE BLOCK (Automatically placed here) -->
+  {{signature}}
+</div>
 `;
+  }
   }
   
   Object.entries(placeholders).forEach(([tag, val]) => {
