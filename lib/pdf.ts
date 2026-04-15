@@ -130,8 +130,8 @@ export async function buildPDF(data: {
   const pageW = doc.internal.pageSize.width;
   const pageH = doc.internal.pageSize.height;
   // Leave room for signature block + footer on every page.
-  const textEnd = pageH - margin - 160;
-  const maxPages = 2;
+  const textEnd = pageH - margin - 150;
+  const maxPages = 5;
   
   const travelersCompact = (data.travelers || [])
     .map((tr, idx) => {
@@ -285,11 +285,15 @@ export async function buildPDF(data: {
        <p style="color: #111827; font-size: 10px;">{{checkinDate}}</p>
     </td>
     <td style="width: 50%; text-align: right;">
-       <!-- SIGNATURE ENGINE BLOCK (Automatically placed here) -->
-       {{signature}}
+       <p style="color: #9CA3AF; font-size: 7px; text-transform: uppercase; margin-bottom: 4px; font-weight: bold;">${t.arrival}</p>
+       <p style="color: #111827; font-size: 10px;">{{checkinHour}}</p>
     </td>
   </tr>
 </table>
+
+<br/>
+<!-- SIGNATURE ENGINE BLOCK (Automatically placed here) -->
+{{signature}}
 `;
   }
   
@@ -509,20 +513,33 @@ export async function buildPDF(data: {
         }
 
         if (text === '[SIGNATURE_PLACEHOLDER]') {
+          // If less than 120pt space, jump to new page
+          if (y + 120 > pageH - margin && doc.getNumberOfPages() < maxPages) {
+            doc.addPage();
+            drawFrame();
+            y = margin + 10;
+          }
+
           const sigAreaY = y;
+          const boxW = pageW - margin * 2;
+          
           setFillColor({r: 253, g: 252, b: 249});
-          doc.roundedRect(margin, sigAreaY, pageW - margin * 2, 80, 10, 10, 'F');
+          doc.roundedRect(margin, sigAreaY, boxW, 80, 10, 10, 'F');
           setDrawColor(rgb);
-          doc.rect(margin, sigAreaY, pageW - margin * 2, 80, 'S');
+          doc.rect(margin, sigAreaY, boxW, 80, 'S');
 
           if (data.signature) {
-            const sig = data.signature.replace(/^data:image\/png;base64,/, '');
-            doc.addImage(sig, 'PNG', margin + (pageW / 2) - 100, sigAreaY + 10, 200, 60, undefined, 'MEDIUM'); 
+            try {
+              const sig = data.signature.replace(/^data:image\/png;base64,/, '');
+              doc.addImage(sig, 'PNG', margin + (boxW / 2) - 100, sigAreaY + 10, 200, 60, undefined, 'MEDIUM'); 
+            } catch (e) {
+              console.error("Signature Image Error:", e);
+            }
           }
           setColor(rgb);
           doc.setFontSize(8);
           doc.setFont('helvetica', 'bold');
-          doc.text(t.signature.toUpperCase(), margin + (pageW / 2), sigAreaY + 72, { align: 'center' });
+          doc.text(t.signature.toUpperCase(), margin + (boxW / 2), sigAreaY + 72, { align: 'center' });
           y += 100;
           return;
         }

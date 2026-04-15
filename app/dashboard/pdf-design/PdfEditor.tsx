@@ -67,11 +67,15 @@ const DEFAULT_PDF_TEMPLATE = `
        <p style="color: #111827; font-size: 10px;">{{checkinDate}}</p>
     </td>
     <td style="width: 50%; text-align: right;">
-       <!-- SIGNATURE ENGINE BLOCK -->
-       {{signature}}
+       <p style="color: #9CA3AF; font-size: 7px; text-transform: uppercase; margin-bottom: 4px; font-weight: bold;">ESTIMATED ARRIVAL:</p>
+       <p style="color: #111827; font-size: 10px;">{{checkinHour}}</p>
     </td>
   </tr>
 </table>
+
+<br/>
+<!-- SIGNATURE ENGINE BLOCK (Automatically placed here) -->
+{{signature}}
 `;
 
 export default function PdfEditor({ propertyId, propertyName, houseRules, initialTemplate, initialFooter, logoUrl }: PdfEditorProps) {
@@ -136,11 +140,15 @@ export default function PdfEditor({ propertyId, propertyName, houseRules, initia
        <p style="color: #111827; font-size: 10px;">{{checkinDate}}</p>
     </td>
     <td style="width: 50%; text-align: right;">
-       <!-- SIGNATURE ENGINE BLOCK (Automatically placed here) -->
-       {{signature}}
+       <p style="color: #9CA3AF; font-size: 7px; text-transform: uppercase; margin-bottom: 4px; font-weight: bold;">ESTIMATED ARRIVAL:</p>
+       <p style="color: #111827; font-size: 10px;">{{checkinHour}}</p>
     </td>
   </tr>
 </table>
+
+<br/>
+<!-- SIGNATURE ENGINE BLOCK (Automatically placed here) -->
+{{signature}}
 `;
 
   const [agreementText, setAgreementText] = useState(extractAgreement(initialTemplate || ""));
