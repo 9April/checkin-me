@@ -750,9 +750,7 @@ export default function CheckInForm({
       const message =
         looksFlakyTransport && likelyInAppBrowser
           ? t.submissionNetworkError
-          : raw && !looksFlakyTransport
-            ? raw
-            : t.errorOccurred;
+          : raw || t.errorOccurred;
       alert(`Submission failed: ${message}`);
       setIsLoading(false);
     }

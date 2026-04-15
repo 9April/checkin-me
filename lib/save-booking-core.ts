@@ -482,9 +482,11 @@ export async function executeSaveBooking(
     }
 
     console.log(`--- Starting parallel upload of ${uploadTasks.length} files ---`);
+    console.time('UploadFiles');
     await Promise.all(uploadTasks);
-    console.log(`--- All uploads completed successfully ---`);
+    console.timeEnd('UploadFiles');
 
+    console.time('PrismaCreate');
     const booking = await prisma.booking.create({
       data: {
         guestName,
@@ -507,13 +509,14 @@ export async function executeSaveBooking(
         },
       },
     });
+    console.timeEnd('PrismaCreate');
 
     const rules = resolveHouseRulesForLang(property.houseRules, lang);
-
     const idFiles = travelersData.flatMap((t) => t.idFiles);
 
     let pdfBytes: any;
     try {
+      console.time('BuildPDF');
       const imagesB64 = idFiles.map((f) => {
         const buf = imageBuffers[f];
         if (!buf) return null;
@@ -544,6 +547,7 @@ export async function executeSaveBooking(
         checkinHour,
         whatsapp,
       });
+      console.timeEnd('BuildPDF');
     } catch (pdfErr) {
       console.error('PDF Crash Protection:', pdfErr);
       const adminEmail =
@@ -570,12 +574,14 @@ export async function executeSaveBooking(
     }
 
     pdfName = `Booking-${booking.id}.pdf`;
+    console.time('UploadPDF');
     const { error: pdfUploadError } = await supabaseAdmin.storage
       .from('checkin-me')
       .upload(pdfName, Buffer.from(pdfBytes), {
         contentType: 'application/pdf',
         upsert: true,
       });
+    console.timeEnd('UploadPDF');
 
     /** Only persist pdfUrl when the object exists — otherwise /api/pdf returns Storage 400 and guests see errors. */
     const pdfStoredInCloud = !pdfUploadError;
@@ -592,6 +598,7 @@ export async function executeSaveBooking(
     }
 
     try {
+      console.time('SendEmails');
       const adminEmail =
         property.adminEmail?.trim() || property.host?.email?.trim() || null;
       const pdfAttachment: PdfAttachment = {
@@ -646,6 +653,7 @@ export async function executeSaveBooking(
         travelers: travelersData,
         lang,
       });
+      console.timeEnd('SendEmails');
 
       const q = new URLSearchParams();
       if (pdfStoredInCloud) q.set('pdf', pdfName);
