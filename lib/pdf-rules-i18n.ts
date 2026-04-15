@@ -40,6 +40,10 @@ export const PDF_RULES_BY_LANG: Record<
     { t: '14. Économie d’énergie', d: 'Merci d’éteindre les lumières, la climatisation et les appareils lorsque vous ne les utilisez pas.' },
     { t: '15. Assistance', d: 'En cas de problème, veuillez contacter l’hôte avant de tenter toute réparation.' },
     { t: '16. Sécurité', d: 'Les voyageurs doivent respecter les consignes de sécurité et ne pas utiliser d’équipements dangereux.' },
+    { t: '17. Sécurité incendie', d: 'Ne pas désactiver les détecteurs de fumée. Bougies/encens interdits. Respecter les consignes d’évacuation.' },
+    { t: '18. Déchets', d: 'Merci de respecter le tri et de sortir les poubelles selon les consignes du logement.' },
+    { t: '19. Mobilier', d: 'Merci de ne pas déplacer les meubles sans accord préalable de l’hôte.' },
+    { t: '20. Substances illicites', d: 'Les substances illicites sont strictement interdites dans le logement et les parties communes.' },
   ],
   SP: [
     { t: '1. Llegada / Salida', d: 'La hora de entrada es a partir de las 15:00. La hora de salida es antes de las 11:00 salvo acuerdo previo.' },
