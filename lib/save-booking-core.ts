@@ -474,7 +474,8 @@ export async function executeSaveBooking(
           });
         if (error)
           throw new Error(`Signature Upload Error: ${error.message}`);
-        return { key: 'signature', name: sigFileName };
+        imageBuffers[sigFileName] = sigBuffer;
+        return { key: 'signature', name: sigFileName, buffer: sigBuffer };
       })();
       uploadTasks.push(task);
       signatureName = sigFileName;
