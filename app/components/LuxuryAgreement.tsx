@@ -3,9 +3,9 @@
 import React from 'react';
 import { 
   Clock, 
-  Volume2, 
+  Users, 
   ShieldCheck, 
-  Leaf
+  Sparkles
 } from 'lucide-react';
 
 interface LuxuryAgreementProps {
@@ -24,7 +24,7 @@ interface LuxuryAgreementProps {
   rules: string[];
 }
 
-export default function LuxuryAgreement({ property, booking, rules }: LuxuryAgreementProps) {
+export default function LuxuryAgreement({ property, booking }: LuxuryAgreementProps) {
   return (
     <div className="a4-container bg-stay-bg text-stay-text font-sans selection:bg-stay-accent selection:text-white p-12 box-border flex flex-col gap-16 max-w-screen-md mx-auto min-h-screen sm:min-h-[297mm]">
       {/* Header */}
@@ -39,15 +39,17 @@ export default function LuxuryAgreement({ property, booking, rules }: LuxuryAgre
 
       {/* Information Bar - Clearly Separated Containers */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-0 border-t border-b border-stay-accent/20 py-10">
-        <div className="flex flex-col items-center md:border-r border-stay-accent/20 px-4">
+        <div className="flex flex-col items-center md:border-r border-stay-accent/20 px-4 min-w-0">
           <p className="text-[10px] uppercase tracking-widest opacity-40 mb-3">Guest Name</p>
-          <p className="font-serif text-xl text-center leading-tight">{booking.guestName}</p>
+          <p className="font-serif text-xl text-center leading-tight truncate w-full">{booking.guestName}</p>
         </div>
-        <div className="flex flex-col items-center md:border-r border-stay-accent/20 px-4">
+        <div className="flex flex-col items-center md:border-r border-stay-accent/20 px-4 min-w-0">
           <p className="text-[10px] uppercase tracking-widest opacity-40 mb-3">Email Address</p>
-          <p className="font-serif text-xl text-center break-all leading-tight">{booking.guestEmail}</p>
+          <p className="font-serif text-lg text-center leading-tight truncate w-full" title={booking.guestEmail}>
+            {booking.guestEmail}
+          </p>
         </div>
-        <div className="flex flex-col items-center px-4">
+        <div className="flex flex-col items-center px-4 min-w-0">
           <p className="text-[10px] uppercase tracking-widest opacity-40 mb-3">Stay Period</p>
           <p className="font-serif text-xl text-center leading-tight whitespace-nowrap">
             {booking.checkin} — {booking.checkout}
@@ -67,46 +69,46 @@ export default function LuxuryAgreement({ property, booking, rules }: LuxuryAgre
             <div className="flex flex-col gap-2">
               <h3 className="text-xs uppercase tracking-[0.2em] font-bold text-stay-accent">Logistics</h3>
               <p className="text-[13px] leading-relaxed opacity-70">
-                Check-in is from 15:00 and Check-out is strictly by 11:00 to allow for editorial-standard preparation.
+                L'arrivée est prévue à partir de 15:00 et le départ doit impérativement être effectué avant 11:00.
               </p>
             </div>
           </div>
 
-          {/* Conduct */}
+          {/* Occupants & accès */}
           <div className="flex gap-5">
             <div className="shrink-0 w-10 h-10 rounded-full border border-stay-accent/30 flex items-center justify-center text-stay-accent">
-              <Volume2 size={18} />
+              <Users size={18} />
             </div>
             <div className="flex flex-col gap-2">
-              <h3 className="text-xs uppercase tracking-[0.2em] font-bold text-stay-accent">Conduct</h3>
+              <h3 className="text-xs uppercase tracking-[0.2em] font-bold text-stay-accent">Occupants & accès</h3>
               <p className="text-[13px] leading-relaxed opacity-70">
-                Quiet hours are observed between 22:00–08:00. This is a strictly non-smoking property (including balconies).
+                Le logement est strictement réservé aux personnes mentionnées. Toute personne supplémentaire doit être déclarée à l'hôte.
               </p>
             </div>
           </div>
 
-          {/* Safety */}
+          {/* Responsabilité & Propreté */}
+          <div className="flex gap-5">
+            <div className="shrink-0 w-10 h-10 rounded-full border border-stay-accent/30 flex items-center justify-center text-stay-accent">
+              <Sparkles size={18} />
+            </div>
+            <div className="flex flex-col gap-2">
+              <h3 className="text-xs uppercase tracking-[0.2em] font-bold text-stay-accent">Responsabilité & Propreté</h3>
+              <p className="text-[13px] leading-relaxed opacity-70">
+                Prendre soin du logement et le restituer en bon état. Tout dommage causé devra être signalé immédiatement.
+              </p>
+            </div>
+          </div>
+
+          {/* Accès & conformité */}
           <div className="flex gap-5">
             <div className="shrink-0 w-10 h-10 rounded-full border border-stay-accent/30 flex items-center justify-center text-stay-accent">
               <ShieldCheck size={18} />
             </div>
             <div className="flex flex-col gap-2">
-              <h3 className="text-xs uppercase tracking-[0.2em] font-bold text-stay-accent">Safety</h3>
+              <h3 className="text-xs uppercase tracking-[0.2em] font-bold text-stay-accent">Accès & conformité</h3>
               <p className="text-[13px] leading-relaxed opacity-70">
-                The fireplace is decorative only. No candles, incense, or open flames allowed for our shared safety.
-              </p>
-            </div>
-          </div>
-
-          {/* Care */}
-          <div className="flex gap-5">
-            <div className="shrink-0 w-10 h-10 rounded-full border border-stay-accent/30 flex items-center justify-center text-stay-accent">
-              <Leaf size={18} />
-            </div>
-            <div className="flex flex-col gap-2">
-              <h3 className="text-xs uppercase tracking-[0.2em] font-bold text-stay-accent">Care</h3>
-              <p className="text-[13px] leading-relaxed opacity-70">
-                Please do not move furniture. Be eco-responsible by ensuring Lights and AC are turned off when out.
+                Les clés sont confiées aux voyageurs ; leur perte entraîne des frais. Toute activité illégale entraînera l'annulation du séjour.
               </p>
             </div>
           </div>
@@ -117,7 +119,7 @@ export default function LuxuryAgreement({ property, booking, rules }: LuxuryAgre
       <section className="mt-auto flex flex-col gap-12">
         <div className="text-center max-w-xl mx-auto">
           <p className="font-serif text-lg italic leading-relaxed opacity-90 border-b border-stay-accent/10 pb-6 mb-6">
-            I confirm that I have read the house rules and I agree to respect them entirely during my stay.
+            Je confirme avoir pris connaissance du règlement intérieur et m'engage à le respecter durant mon séjour.
           </p>
         </div>
 

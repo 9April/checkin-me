@@ -156,35 +156,21 @@ export default async function DashboardPage() {
                   <span className="text-xs text-[#6B7280]">{booking.travelers.length} travelers</span>
                 </div>
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-2 pt-1">
-                  {booking.pdfUrl ? (
-                    <>
-                      <Link
-                        href={`/api/pdf/${encodeURIComponent(booking.pdfUrl)}`}
-                        target="_blank"
-                        className="text-[#EF4444] hover:underline text-sm font-bold"
-                      >
-                        View PDF
-                      </Link>
-                      <Link
-                        href={`/api/pdf/${encodeURIComponent(booking.pdfUrl)}`}
-                        target="_blank"
-                        className="text-gray-600 hover:text-gray-900 text-sm inline-flex items-center gap-1"
-                        title="Print PDF"
-                      >
-                        <Printer size={16} />
-                        Print
-                      </Link>
-                      <a
-                        href={`/api/pdf/${encodeURIComponent(booking.pdfUrl)}?download=1`}
-                        download={booking.pdfUrl}
-                        className="text-gray-500 hover:text-gray-700 text-sm font-medium"
-                      >
-                        Download
-                      </a>
-                    </>
-                  ) : (
-                    <span className="text-[#9CA3AF] text-sm italic">No PDF</span>
-                  )}
+                  <Link
+                    href={`/agreement/${booking.id}`}
+                    className="text-[#EF4444] hover:underline text-sm font-bold flex items-center gap-1"
+                  >
+                    View Agreement
+                  </Link>
+                  <Link
+                    href={`/agreement/${booking.id}`}
+                    target="_blank"
+                    className="text-gray-600 hover:text-gray-900 text-sm inline-flex items-center gap-1"
+                    title="Print Agreement"
+                  >
+                    <Printer size={16} />
+                    Print
+                  </Link>
                   <TrashAction bookingId={booking.id} mode="soft" />
                 </div>
               </div>
@@ -232,36 +218,23 @@ export default async function DashboardPage() {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      {booking.pdfUrl ? (
-                        <>
-                          <Link
-                            href={`/api/pdf/${encodeURIComponent(booking.pdfUrl)}`}
-                            target="_blank"
-                            className="text-[#EF4444] hover:underline text-sm font-bold"
-                          >
-                            View
-                          </Link>
-                          <span className="text-gray-300">|</span>
-                          <Link
-                            href={`/api/pdf/${encodeURIComponent(booking.pdfUrl)}`}
-                            target="_blank"
-                            className="text-gray-600 hover:text-gray-900"
-                            title="Print PDF"
-                          >
-                            <Printer size={16} />
-                          </Link>
-                          <span className="text-gray-300">|</span>
-                          <a
-                            href={`/api/pdf/${encodeURIComponent(booking.pdfUrl)}?download=1`}
-                            download={booking.pdfUrl}
-                            className="text-gray-500 hover:text-gray-700 text-sm font-medium"
-                          >
-                            Download
-                          </a>
-                        </>
-                      ) : (
-                        <span className="text-[#9CA3AF] text-sm italic mr-4">No PDF</span>
-                      )}
+                      <Link
+                        href={`/agreement/${booking.id}`}
+                        target="_blank"
+                        className="text-[#EF4444] hover:underline text-sm font-bold"
+                      >
+                        Agreement
+                      </Link>
+                      <span className="text-gray-300">|</span>
+                      <Link
+                        href={`/agreement/${booking.id}`}
+                        target="_blank"
+                        className="text-gray-600 hover:text-gray-900 flex items-center gap-1"
+                        title="Print Agreement"
+                      >
+                        <Printer size={16} />
+                        <span className="text-xs">Print</span>
+                      </Link>
                       <div className="border-l border-gray-100 pl-3">
                         <TrashAction bookingId={booking.id} mode="soft" />
                       </div>

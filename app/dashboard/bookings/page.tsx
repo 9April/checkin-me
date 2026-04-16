@@ -72,25 +72,20 @@ export default async function BookingsPage() {
                   </span>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 pt-1">
-                  {booking.pdfUrl ? (
-                    <>
-                      <Link
-                        href={`/api/pdf/${encodeURIComponent(booking.pdfUrl)}`}
-                        target="_blank"
-                        className="text-sm font-bold text-blue-600"
-                      >
-                        Open PDF
-                      </Link>
-                      <Link href={`/api/pdf/${encodeURIComponent(booking.pdfUrl)}`} target="_blank" className="text-sm text-gray-600 inline-flex items-center gap-1">
-                        <Printer size={16} /> Print
-                      </Link>
-                      <a href={`/api/pdf/${encodeURIComponent(booking.pdfUrl)}?download=1`} download={booking.pdfUrl} className="text-sm text-gray-500">
-                        Download
-                      </a>
-                    </>
-                  ) : (
-                    <span className="text-xs italic text-gray-400">PDF missing</span>
-                  )}
+                  <Link
+                    href={`/agreement/${booking.id}`}
+                    target="_blank"
+                    className="text-sm font-bold text-blue-600 flex items-center gap-1"
+                  >
+                    View Agreement
+                  </Link>
+                  <Link 
+                    href={`/agreement/${booking.id}`} 
+                    target="_blank" 
+                    className="text-sm text-gray-600 inline-flex items-center gap-1"
+                  >
+                    <Printer size={16} /> Print
+                  </Link>
                   <TrashAction bookingId={booking.id} mode="soft" />
                 </div>
               </div>
@@ -143,37 +138,25 @@ export default async function BookingsPage() {
                     {formatSubmittedAt(new Date(booking.createdAt))}
                   </td>
                   <td className="px-6 py-4">
-                    <div className="flex items-center justify-end gap-2">
-                      {booking.pdfUrl ? (
-                         <>
-                          <Link
-                            href={`/api/pdf/${encodeURIComponent(booking.pdfUrl)}`}
-                            target="_blank"
-                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                            title='View PDF'
-                          >
-                            <ExternalLink size={18} />
-                          </Link>
-                          <Link
-                            href={`/api/pdf/${encodeURIComponent(booking.pdfUrl)}`}
-                            target="_blank"
-                            className="p-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
-                            title='Print PDF'
-                          >
-                            <Printer size={18} />
-                          </Link>
-                          <a
-                            href={`/api/pdf/${encodeURIComponent(booking.pdfUrl)}?download=1`}
-                            download={booking.pdfUrl}
-                            className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors border-r pr-2 py-2"
-                            title="Download PDF"
-                          >
-                            <Download size={18} />
-                          </a>
-                         </>
-                      ) : (
-                        <span className="text-xs italic text-gray-400 mr-2">PDF Missing</span>
-                      )}
+                    <div className="flex items-center justify-end gap-2 text-sm font-medium">
+                      <Link
+                        href={`/agreement/${booking.id}`}
+                        target="_blank"
+                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors flex items-center gap-1"
+                        title='View Agreement'
+                      >
+                        <ExternalLink size={18} />
+                        Agreement
+                      </Link>
+                      <Link
+                        href={`/agreement/${booking.id}`}
+                        target="_blank"
+                        className="p-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors flex items-center gap-1"
+                        title='Print Agreement'
+                      >
+                        <Printer size={18} />
+                        Print
+                      </Link>
                       <TrashAction bookingId={booking.id} mode="soft" />
                     </div>
                   </td>
