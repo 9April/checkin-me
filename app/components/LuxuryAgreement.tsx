@@ -72,41 +72,41 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
       `}</style>
       
       {/* Top Content Group */}
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-10">
         {/* Header */}
-        <header className="text-center py-4 whitespace-nowrap">
-          <h1 className="font-serif text-4xl tracking-[0.2em] uppercase mb-4 text-[#1A1A1A] text-center whitespace-nowrap">
+        <header className="text-center py-6 whitespace-nowrap">
+          <h1 className="font-serif text-5xl tracking-[0.2em] uppercase mb-4 text-[#1A1A1A] text-center whitespace-nowrap">
             {property.name || "MAMOUNIA 08"}
           </h1>
-          <p className="font-sans text-[10px] tracking-[0.4em] uppercase opacity-50 text-[#A8987E] text-center whitespace-nowrap">
+          <p className="font-sans text-xs tracking-[0.4em] uppercase opacity-50 text-[#A8987E] text-center whitespace-nowrap">
             Guest Stay Agreement
           </p>
         </header>
 
         {/* Information Bar */}
-        <section className="agreement-info-bar grid grid-cols-3 gap-0 border-t border-b border-[#A8987E]/20 py-4">
-          <div className="info-bar-item flex flex-col items-center border-r border-[#A8987E]/20 px-4 min-w-0">
-            <p className="text-[9px] uppercase tracking-widest opacity-40 mb-2">Guest Name</p>
-            <p className="font-serif text-[10pt] text-center leading-tight truncate w-full">{booking.guestName}</p>
+        <section className="agreement-info-bar grid grid-cols-3 gap-0 border-t border-b border-[#A8987E]/20 py-8">
+          <div className="info-bar-item flex flex-col items-center border-r border-[#A8987E]/20 px-6 min-w-0">
+            <p className="text-[10px] uppercase tracking-widest opacity-40 mb-3">Guest Name</p>
+            <p className="font-serif text-[12pt] text-center leading-tight truncate w-full">{booking.guestName}</p>
           </div>
-          <div className="info-bar-item flex flex-col items-center border-r border-[#A8987E]/20 px-4 min-w-0">
-            <p className="text-[9px] uppercase tracking-widest opacity-40 mb-2">Email Address</p>
-            <p className="font-serif text-[10pt] text-center leading-tight w-full truncate">
+          <div className="info-bar-item flex flex-col items-center border-r border-[#A8987E]/20 px-6 min-w-0">
+            <p className="text-[10px] uppercase tracking-widest opacity-40 mb-3">Email Address</p>
+            <p className="font-serif text-[12pt] text-center leading-tight w-full truncate">
               {booking.guestEmail}
             </p>
           </div>
-          <div className="info-bar-item flex flex-col items-center px-4 min-w-0">
-            <p className="text-[9px] uppercase tracking-widest opacity-40 mb-2">Stay Period</p>
-            <p className="font-serif text-[10pt] text-center leading-tight whitespace-nowrap">
+          <div className="info-bar-item flex flex-col items-center px-6 min-w-0">
+            <p className="text-[10px] uppercase tracking-widest opacity-40 mb-3">Stay Period</p>
+            <p className="font-serif text-[12pt] text-center leading-tight whitespace-nowrap">
               {formatDate(booking.checkin)} — {formatDate(booking.checkout)}
             </p>
           </div>
         </section>
 
         {/* House Etiquette & Rules */}
-        <section className="agreement-house-etiquette flex flex-col gap-4 break-inside-avoid">
-          <h2 className="font-serif text-xl text-center italic opacity-80 decoration-[#A8987E]/20 underline underline-offset-8 mb-4">House Etiquette</h2>
-          <div className="house-etiquette-grid grid grid-cols-2 gap-x-8 gap-y-6">
+        <section className="agreement-house-etiquette flex flex-col gap-8 break-inside-avoid">
+          <h2 className="font-serif text-2xl text-center italic opacity-80 decoration-[#A8987E]/20 underline underline-offset-8 mb-4">House Etiquette</h2>
+          <div className="house-etiquette-grid grid grid-cols-2 gap-x-12 gap-y-10">
             {/* Logistics */}
             <div className="etiquette-item flex gap-5">
               <div className="shrink-0 w-10 h-10 rounded-full border border-[#A8987E]/30 flex items-center justify-center text-[#A8987E]">
@@ -163,26 +163,26 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
       </div>
 
       {/* Pinned Bottom Content Group (Signature & Footer) */}
-      <div className="agreement-pinned-bottom flex flex-col gap-4 pt-4 w-full">
+      <div className="agreement-pinned-bottom flex flex-col gap-10 pt-12 w-full">
         {/* Confirmation & Signature Section */}
-        <section className="agreement-signature-row flex flex-col gap-4">
+        <section className="agreement-signature-row flex flex-col gap-10">
           <div className="text-center max-w-xl mx-auto">
-            <p className="font-serif text-[13px] italic leading-relaxed opacity-90 border-b border-[#A8987E]/10 pb-4">
+            <p className="font-serif text-lg italic leading-relaxed opacity-90 border-b border-[#A8987E]/10 pb-6">
               Je confirme avoir pris connaissance du règlement intérieur et m'engage à le respecter durant mon séjour.
             </p>
           </div>
 
-          <div className="signature-grid grid grid-cols-3 gap-6 items-end">
+          <div className="signature-grid grid grid-cols-3 gap-10 items-end">
             <div className="signature-field border-b border-[#A8987E]/40 pb-3">
-              <p className="text-[9px] uppercase tracking-widest opacity-40 mb-2">Date of Arrival</p>
-              <p className="font-serif text-[10pt] leading-none">{formatDate(booking.checkin)}</p>
+              <p className="text-[10px] uppercase tracking-widest opacity-40 mb-2">Date of Arrival</p>
+              <p className="font-serif text-[12pt] leading-none">{formatDate(booking.checkin)}</p>
             </div>
             <div className="signature-field border-b border-[#A8987E]/40 pb-3">
-              <p className="text-[9px] uppercase tracking-widest opacity-40 mb-2">Estimated Arrival</p>
-              <p className="font-serif text-[10pt] leading-none">{booking.checkinHour || "—"}</p>
+              <p className="text-[10px] uppercase tracking-widest opacity-40 mb-2">Estimated Arrival</p>
+              <p className="font-serif text-[12pt] leading-none">{booking.checkinHour || "—"}</p>
             </div>
-            <div className="signature-field border-b border-[#A8987E]/40 pb-3 relative min-h-[50px] flex flex-col justify-end">
-              <p className="text-[9px] uppercase tracking-widest opacity-40 mb-2 absolute top-0 left-0">Signature</p>
+            <div className="signature-field border-b border-[#A8987E]/40 pb-3 relative min-h-[60px] flex flex-col justify-end">
+              <p className="text-[10px] uppercase tracking-widest opacity-40 mb-2 absolute top-0 left-0">Signature</p>
               {booking.signature ? (
                 <img 
                   src={booking.signature} 
