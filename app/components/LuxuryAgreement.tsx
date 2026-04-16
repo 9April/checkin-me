@@ -57,9 +57,9 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
           #print-area {
             width: 100% !important;
             max-width: 210mm !important;
-            height: 100vh !important;
-            min-height: 100vh !important;
-            max-height: 100vh !important;
+            height: 297mm !important;
+            min-height: 297mm !important;
+            max-height: 297mm !important;
             margin: 0 !important;
             overflow: hidden !important;
             padding-bottom: 5mm !important;
