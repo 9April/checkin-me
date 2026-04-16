@@ -45,35 +45,36 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
       <style>{`
         @media print {
           @page { 
-            size: A4 portrait; 
+            size: auto; 
             margin: 0mm !important; 
           }
           html, body {
             width: 100% !important;
             margin: 0 !important; 
             padding: 0 !important; 
+            min-height: 0 !important; /* Prevent ghost pages */
+            height: auto !important;
             -webkit-print-color-adjust: exact !important; 
             print-color-adjust: exact !important; 
-            -webkit-text-size-adjust: 100% !important;
-            text-size-adjust: 100% !important;
           }
           #print-area {
-            width: 210mm !important;
+            width: 90% !important; /* Flexible centering */
             max-width: 210mm !important;
-            height: 297mm !important;
+            height: auto !important;
+            max-height: 280mm !important; /* Stay away from the 2nd page spill-over zone */
             margin: 0 auto !important;
             overflow: hidden !important;
             padding-bottom: 5mm !important;
-            transform: scale(0.82) !important;
-            -webkit-transform: scale(0.82) !important;
+            transform: scale(0.85) !important; /* Slightly more breathe room */
+            -webkit-transform: scale(0.85) !important;
             transform-origin: top center !important;
             -webkit-transform-origin: top center !important;
           }
           /* Compress gaps aggressively during print */
-          .flex-col { gap: 1rem !important; }
-          .gap-10 { gap: 1rem !important; }
-          .py-8 { padding-top: 1rem !important; padding-bottom: 1rem !important; }
-          .pt-12 { padding-top: 1rem !important; }
+          .flex-col { gap: 0.75rem !important; }
+          .gap-10 { gap: 0.75rem !important; }
+          .py-8 { padding-top: 0.75rem !important; padding-bottom: 0.75rem !important; }
+          .pt-12 { padding-top: 0.75rem !important; }
           
           .break-inside-avoid {
             break-inside: avoid !important;
