@@ -44,16 +44,21 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
     <div id="print-area" className="a4-container bg-[#FCFBF9] text-[#1A1A1A] font-sans selection:bg-[#A8987E] selection:text-white box-border flex flex-col justify-between mx-auto h-full min-h-[100svh] sm:min-h-[297mm]">
       <style>{`
         @media print {
-          @page { size: auto; margin: 0mm; }
-          body { 
+          @page { size: A4 portrait; margin: 0; }
+          html, body {
+            width: 210mm !important;
+            height: 297mm !important;
             margin: 0 !important; 
             padding: 0 !important; 
             -webkit-print-color-adjust: exact !important; 
             print-color-adjust: exact !important; 
           }
           #print-area {
-            width: 210mm !important;
-            height: 297mm !important;
+            width: 100% !important;
+            max-width: 210mm !important;
+            height: 100% !important;
+            max-height: 297mm !important;
+            margin: 0 !important;
             overflow: hidden !important;
             page-break-after: avoid !important;
           }
