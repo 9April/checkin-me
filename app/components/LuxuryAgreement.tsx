@@ -57,12 +57,12 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
           #print-area {
             width: 100% !important;
             max-width: 210mm !important;
-            margin: 0 !important;
             height: 100vh !important;
             min-height: 100vh !important;
             max-height: 100vh !important;
-            padding-bottom: 5mm !important; /* Ensure tight bottom bound during print */
-            overflow: hidden !important;    /* Forcibly stop the second page */
+            margin: 0 !important;
+            overflow: hidden !important;
+            padding-bottom: 5mm !important;
           }
           .break-inside-avoid {
             break-inside: avoid !important;
