@@ -33,6 +33,10 @@ export default async function AgreementPage({ params }: PageProps) {
   const propertyData = {
     name: booking.property.name,
     logoUrl: booking.property.logoUrl,
+    ruleLogistics: booking.property.ruleLogistics,
+    ruleOccupants: booking.property.ruleOccupants,
+    ruleResponsibility: booking.property.ruleResponsibility,
+    ruleSecurity: booking.property.ruleSecurity,
   };
 
   // The signature is stored in Supabase and served via our proxy API
@@ -66,17 +70,30 @@ export default async function AgreementPage({ params }: PageProps) {
       {/* The Printable Document */}
       <div className="w-full max-w-screen-md bg-white overflow-hidden">
         <LuxuryAgreement 
-          property={propertyData} 
+          property={propertyData as any} 
           booking={bookingData} 
-          rules={rules} 
         />
       </div>
 
       <style dangerouslySetInnerHTML={{ __html: `
         @media print {
-          body { margin: 0; padding: 0; background: white !important; }
+          body { 
+            margin: 0 !important; 
+            padding: 0 !important; 
+            background: white !important; 
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
           .no-print { display: none !important; }
-          div { box-shadow: none !important; border-radius: 0 !important; }
+          .a4-container { 
+            width: 210mm !important; 
+            height: 297mm !important; 
+            margin: 0 auto !important;
+            padding: 48px !important; /* 3rem */
+            box-shadow: none !important; 
+            border: none !important;
+          }
+          div { box-shadow: none !important; border-radius: 0 !important; overflow: visible !important; }
         }
         @page {
           size: A4;

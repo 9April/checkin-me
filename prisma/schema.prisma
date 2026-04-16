@@ -73,6 +73,10 @@ model Property {
   requireIdPhotos Boolean   @default(true)
   pdfTemplate     String?
   pdfFooter       String?
+  ruleLogistics   String?
+  ruleOccupants   String?
+  ruleResponsibility String?
+  ruleSecurity    String?
   slug            String?   @unique
   bookings        Booking[]
   host            User      @relation(fields: [hostId], references: [id], onDelete: Cascade)

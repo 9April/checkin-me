@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Save, Info, ListTodo, Clock, CheckCircle, AlertCircle, X, Palette, Layout } from 'lucide-react';
+import { Save, Info, ListTodo, Clock, CheckCircle, AlertCircle, X, Palette, Layout, Users, ShieldCheck, Sparkles } from 'lucide-react';
 import { updateProperty } from './actions';
 
 interface PropertySettingsFormProps {
@@ -12,6 +12,10 @@ interface PropertySettingsFormProps {
     checkinTime: string;
     checkoutTime: string;
     houseRules?: string | null;
+    ruleLogistics?: string | null;
+    ruleOccupants?: string | null;
+    ruleResponsibility?: string | null;
+    ruleSecurity?: string | null;
     privacyPolicy?: string | null;
     formTitle?: string | null;
     formSubtitle?: string | null;
@@ -27,6 +31,12 @@ export default function PropertySettingsForm({ property, initialRules }: Propert
   const [isSaving, setIsSaving] = useState(false);
   const [status, setStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
   const [primaryColor, setPrimaryColor] = useState(property.primaryColor || '#FF385C');
+
+  // Multi-Slot House Rules Management
+  const [logistics, setLogistics] = useState(property.ruleLogistics || "L'arrivée est prévue à partir de 15:00 et le départ doit impérativement être effectué avant 11:00.");
+  const [occupants, setOccupants] = useState(property.ruleOccupants || "Le logement est strictement réservé aux personnes mentionnées. Toute personne supplémentaire doit être déclarée à l'hôte.");
+  const [responsibility, setResponsibility] = useState(property.ruleResponsibility || "Prendre soin du logement et le restituer en bon état. Tout dommage causé devra être signalé immédiatement.");
+  const [security, setSecurity] = useState(property.ruleSecurity || "Les clés sont confiées aux voyageurs ; leur perte entraîne des frais. Toute activité illégale entraînera l'annulation du séjour.");
 
   async function handleSubmit(formData: FormData) {
     const name = formData.get('name') as string;
@@ -254,23 +264,77 @@ export default function PropertySettingsForm({ property, initialRules }: Propert
         </div>
       </div>
 
-      {/* House Rules Section */}
+      {/* Luxury Agreement: House Rules Categories */}
       <section className="bg-white rounded-3xl border border-[#E5E7EB] shadow-sm overflow-hidden text-black">
         <div className="p-6 border-b border-[#E5E7EB] flex items-center gap-3">
           <div className="w-10 h-10 bg-purple-50 text-purple-500 rounded-xl flex items-center justify-center">
             <ListTodo size={20} />
           </div>
-          <h2 className="text-lg font-bold">House Rules</h2>
+          <h2 className="text-lg font-bold">House Etiquette (Luxury Agreement)</h2>
         </div>
-        <div className="p-8 space-y-4">
-          <textarea 
-            name="houseRules"
-            defaultValue={initialRules}
-            rows={10}
-            className="w-full px-5 py-4 bg-[#F9FAFB] border border-[#E5E7EB] rounded-2xl focus:ring-2 focus:ring-[#EF4444] outline-none transition-all font-mono text-sm leading-relaxed"
-            placeholder="Enter each rule on a new line..."
-          />
-          <p className="text-xs text-[#6B7280]">Enter each rule on a new line. These will appear in the guest agreement.</p>
+        <div className="p-8 space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-3">
+              <label className="flex items-center gap-2 text-sm font-bold text-[#374151]">
+                <Clock size={16} className="text-gray-400" />
+                Logistics
+              </label>
+              <textarea 
+                name="ruleLogistics"
+                value={logistics}
+                onChange={(e) => setLogistics(e.target.value)}
+                rows={4}
+                className="w-full px-5 py-4 bg-[#F9FAFB] border border-[#E5E7EB] rounded-2xl focus:ring-2 focus:ring-[#EF4444] outline-none transition-all text-sm leading-relaxed"
+                placeholder="e.g. Check-in/out times..."
+              />
+            </div>
+
+            <div className="space-y-3">
+              <label className="flex items-center gap-2 text-sm font-bold text-[#374151]">
+                <Users size={16} className="text-gray-400" />
+                Occupants & accès
+              </label>
+              <textarea 
+                name="ruleOccupants"
+                value={occupants}
+                onChange={(e) => setOccupants(e.target.value)}
+                rows={4}
+                className="w-full px-5 py-4 bg-[#F9FAFB] border border-[#E5E7EB] rounded-2xl focus:ring-2 focus:ring-[#EF4444] outline-none transition-all text-sm leading-relaxed"
+                placeholder="e.g. Visitors policy..."
+              />
+            </div>
+
+            <div className="space-y-3">
+              <label className="flex items-center gap-2 text-sm font-bold text-[#374151]">
+                <Sparkles size={16} className="text-gray-400" />
+                Responsabilité & Propreté
+              </label>
+              <textarea 
+                name="ruleResponsibility"
+                value={responsibility}
+                onChange={(e) => setResponsibility(e.target.value)}
+                rows={4}
+                className="w-full px-5 py-4 bg-[#F9FAFB] border border-[#E5E7EB] rounded-2xl focus:ring-2 focus:ring-[#EF4444] outline-none transition-all text-sm leading-relaxed"
+                placeholder="e.g. Damage reporting..."
+              />
+            </div>
+
+            <div className="space-y-3">
+              <label className="flex items-center gap-2 text-sm font-bold text-[#374151]">
+                <ShieldCheck size={16} className="text-gray-400" />
+                Accès & conformité
+              </label>
+              <textarea 
+                name="ruleSecurity"
+                value={security}
+                onChange={(e) => setSecurity(e.target.value)}
+                rows={4}
+                className="w-full px-5 py-4 bg-[#F9FAFB] border border-[#E5E7EB] rounded-2xl focus:ring-2 focus:ring-[#EF4444] outline-none transition-all text-sm leading-relaxed"
+                placeholder="e.g. Keys and legality..."
+              />
+            </div>
+          </div>
+          <p className="text-xs text-[#6B7280]">These four categories populate the "House Etiquette" grid in your luxury stay agreement. Respect the design by keeping descriptions concise.</p>
         </div>
       </section>
 

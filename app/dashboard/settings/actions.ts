@@ -25,16 +25,10 @@ export async function updateProperty(formData: FormData) {
   const requireSelfie = formData.get('requireSelfie') === 'true';
   const requireIdPhotos = formData.get('requireIdPhotos') === 'true';
 
-  // Validate house rules is valid JSON array of strings
-  let houseRules = houseRulesRaw;
-  try {
-     if (!houseRulesRaw.startsWith('[')) {
-       const list = houseRulesRaw.split('\n').map(s => s.trim()).filter(s => s.length > 0);
-       houseRules = JSON.stringify(list);
-     }
-  } catch (e) {
-    console.error("Failed to parse house rules", e);
-  }
+  const ruleLogistics = formData.get('ruleLogistics') as string;
+  const ruleOccupants = formData.get('ruleOccupants') as string;
+  const ruleResponsibility = formData.get('ruleResponsibility') as string;
+  const ruleSecurity = formData.get('ruleSecurity') as string;
 
   try {
     const newSlug = await reserveUniquePropertySlug(prisma, name, propertyId);
@@ -49,7 +43,11 @@ export async function updateProperty(formData: FormData) {
         slug: newSlug,
         adminEmail,
         privacyPolicy,
-        houseRules,
+        // legacy houseRules is kept but we transition to categories
+        ruleLogistics,
+        ruleOccupants,
+        ruleResponsibility,
+        ruleSecurity,
         checkinTime,
         checkoutTime,
         formTitle,
