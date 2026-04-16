@@ -81,13 +81,13 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
           }
         }
         
-        /* Universal Layout Logic: Treat the 210mm canvas as the ONLY source of truth. */
+        /* True Scale Engine: Mathematically fits the 210mm Desktop layout to any mobile screen width */
         @media screen and (max-width: 1024px) {
           #print-area {
-            /* Scale precisely based on common phone screen widths relative to 210mm (794px) */
-            zoom: 0.44; 
-            -webkit-zoom: 0.44;
-            transform-origin: top center;
+            /* 210mm is approximately 794px. We scale based on actual viewport width. */
+            transform-origin: top center !important;
+            transform: scale(calc(100vw / 210mm)) !important;
+            -webkit-transform: scale(calc(100vw / 210mm)) !important;
             margin: 0 auto !important;
           }
         }

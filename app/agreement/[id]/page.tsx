@@ -92,8 +92,8 @@ export default async function AgreementPage({ params }: PageProps) {
         }}
       />
 
-      {/* The Printable Document - Locked to 210mm Width for Universal Parity */}
-      <div className="w-[210mm] bg-white overflow-hidden print:w-auto print:max-w-none print:overflow-visible">
+      {/* The Printable Document - True Scale Engine Container */}
+      <div className="w-full max-w-[210mm] bg-white overflow-hidden print:w-auto print:max-w-none print:overflow-visible">
         <LuxuryAgreement 
           property={propertyData as any} 
           booking={bookingData} 
