@@ -42,7 +42,7 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
   const security = property.ruleSecurity || "Les clés sont confiées aux voyageurs ; leur perte entraîne des frais. Toute activité illégale entraînera l'annulation du séjour.";
 
   return (
-    <div id="print-area" className="a4-container bg-white text-[#1A1A1A] font-sans selection:bg-[#A8987E] selection:text-white box-border flex flex-col justify-between print:justify-start mx-auto h-full min-h-[100svh] sm:min-h-[297mm]">
+    <div id="print-area" className="a4-container bg-white text-[#1A1A1A] font-sans selection:bg-[#A8987E] selection:text-white box-border flex flex-col justify-between mx-auto h-full min-h-[100svh] sm:min-h-[297mm]">
       <style>{`
         @media print {
           @page { 
@@ -51,40 +51,49 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
           }
           html, body {
             width: 100% !important;
-            height: 100vh !important; /* Force to exactly one page height */
+            height: 100vh !important;
             margin: 0 !important; 
             padding: 0 !important; 
-            overflow: hidden !important; /* Kill any ghost second page */
+            overflow: hidden !important;
             min-height: 0 !important;
             -webkit-print-color-adjust: exact !important; 
             print-color-adjust: exact !important; 
           }
           #print-area {
-            width: 90% !important; 
+            width: 210mm !important;
             max-width: 210mm !important;
-            height: 297mm !important; /* Standard A4 height */
+            height: 297mm !important;
             margin: 0 auto !important;
             float: none !important;
             overflow: hidden !important;
             padding-bottom: 0 !important;
-            transform: scale(0.85) !important;
-            -webkit-transform: scale(0.85) !important;
+            transform: scale(0.82) !important; /* Scale exactly to fit A4 paper logic */
+            -webkit-transform: scale(0.82) !important;
             transform-origin: top center !important;
             -webkit-transform-origin: top center !important;
           }
-          /* Eliminate all systemic headers/footers */
-          header.no-print, footer.no-print { display: none !important; }
           
-          /* Compress gaps aggressively during print */
-          .flex-col { gap: 0.5rem !important; }
-          .gap-10 { gap: 0.5rem !important; }
-          .py-8 { padding-top: 0.5rem !important; padding-bottom: 0.5rem !important; }
-          .agreement-info-bar { grid-template-columns: 1fr 1.6fr 0.8fr !important; }
-          .pt-12 { padding-top: 0.5rem !important; }
+          .no-print { display: none !important; }
           
           .break-inside-avoid {
             break-inside: avoid !important;
             page-break-inside: avoid !important;
+          }
+        }
+        
+        /* Mobile Screen Scaling: Force the desktop layout to fit on mobile viewports without wrapping */
+        @media screen and (max-width: 768px) {
+          #print-area {
+            transform: scale(0.45); /* Scale down the 210mm container to fit a small phone screen */
+            transform-origin: top center;
+            margin-top: -25%; /* Pull up to avoid gap caused by scaling */
+            margin-bottom: -150%; /* Adjust bottom margin for scale artifacts */
+          }
+          .a4-container {
+            width: 210mm !important;
+            min-width: 210mm !important;
+            height: 297mm !important;
+            max-height: 297mm !important;
           }
         }
       `}</style>
