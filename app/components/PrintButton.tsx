@@ -18,6 +18,7 @@ export default function PrintButton({
   const [isGenerating, setIsGenerating] = useState(false);
 
   const handleAction = async () => {
+    console.log('[PrintButton] Action triggered, mode:', mode);
     setIsGenerating(true);
     try {
       const filename = `Agreement_${guestName.replace(/\s+/g, '_')}.pdf`;

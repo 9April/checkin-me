@@ -205,7 +205,7 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
                     src={booking.signature} 
                     alt="Guest Signature" 
                     crossOrigin="anonymous"
-                    className="h-12 w-auto object-contain grayscale pointer-events-none brightness-75 mix-blend-multiply" 
+                    className="h-12 w-auto object-contain pointer-events-none" 
                   />
                 ) : (
                   <div className="h-8 border-b border-[#1A1A1A]/10 border-dashed" />
