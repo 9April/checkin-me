@@ -67,7 +67,7 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
             float: none !important;
             overflow: hidden !important;
             padding-bottom: 0 !important;
-            transform: scale(0.82) !important; /* Scale exactly to fit A4 paper logic */
+            transform: scale(0.82) !important;
             -webkit-transform: scale(0.82) !important;
             transform-origin: top center !important;
             -webkit-transform-origin: top center !important;
@@ -81,19 +81,17 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
           }
         }
         
-        /* Mobile Screen Scaling: Force the desktop layout to fit on mobile viewports without wrapping */
+        /* Mobile Screen Version: Force Desktop-fidelity on mobile screen using zoom (no scroll artifacts) */
         @media screen and (max-width: 768px) {
           #print-area {
-            transform: scale(0.45); /* Scale down the 210mm container to fit a small phone screen */
-            transform-origin: top center;
-            margin-top: -25%; /* Pull up to avoid gap caused by scaling */
-            margin-bottom: -150%; /* Adjust bottom margin for scale artifacts */
-          }
-          .a4-container {
             width: 210mm !important;
             min-width: 210mm !important;
             height: 297mm !important;
             max-height: 297mm !important;
+            margin: 0 auto !important;
+            zoom: 0.43; /* Mathematically fits 210mm width into iPhone screens cleanly */
+            -moz-transform: scale(0.43);
+            -moz-transform-origin: top center;
           }
         }
       `}</style>
