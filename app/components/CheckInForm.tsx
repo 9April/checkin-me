@@ -1,5 +1,6 @@
 "use client";
 import { useState, useRef, useEffect, useMemo, useCallback, type CSSProperties } from "react";
+import { Clock, Users, Sparkles, ShieldCheck } from "lucide-react";
 import Link from 'next/link';
 import SignaturePad from 'react-signature-canvas';
 import { saveBooking } from '../actions';
@@ -429,6 +430,10 @@ interface PropertyData {
   requireIdPhotos: boolean;
   /** Raw policy from DB; language resolved in the form from guest UI language. */
   privacyPolicy?: string | null;
+  ruleLogistics?: string | null;
+  ruleOccupants?: string | null;
+  ruleResponsibility?: string | null;
+  ruleSecurity?: string | null;
 }
 
 export default function CheckInForm({
@@ -1423,16 +1428,59 @@ export default function CheckInForm({
               </button>
             </div>
             <div className="p-4 sm:p-10 flex-1 overflow-y-auto checkin-app-scroll space-y-4 sm:space-y-6 touch-pan-y overscroll-y-contain">
-               {rulesList.length === 0 ? (
-                 <p className="text-gray-700 font-semibold text-sm leading-relaxed px-2">{t.houseRulesFallback}</p>
-               ) : (
-                 rulesList.map((rule: string, i: number) => (
-                   <div key={i} className="flex gap-3 sm:gap-4 p-4 sm:p-6 bg-gray-50 rounded-2xl sm:rounded-[2rem] border border-gray-100 items-start">
-                     <div className="w-8 h-8 bg-white rounded-xl flex items-center justify-center text-red-500 font-black shrink-0 shadow-sm text-lg">•</div>
-                     <p className="text-gray-700 font-medium text-sm leading-relaxed tracking-tight">{rule}</p>
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-8 mt-2">
+                 {/* Logistics */}
+                 <div className="flex gap-5 p-5 bg-gray-50/80 rounded-3xl border border-gray-100/50 hover:shadow-md transition-shadow">
+                   <div className="shrink-0 w-12 h-12 rounded-full border border-[var(--primary-color)]/20 flex items-center justify-center text-[var(--primary-color)] bg-white shadow-sm">
+                     <Clock size={20} className="opacity-80" />
                    </div>
-                 ))
-               )}
+                   <div className="flex flex-col gap-1.5">
+                     <h3 className="text-[11px] uppercase tracking-[0.2em] font-bold text-[#222222]">Logistics</h3>
+                     <p className="text-[13px] leading-relaxed text-gray-600">
+                       {property.ruleLogistics || "L'arrivée est prévue à partir de 15:00 et le départ doit impérativement être effectué avant 11:00."}
+                     </p>
+                   </div>
+                 </div>
+
+                 {/* Occupants & accès */}
+                 <div className="flex gap-5 p-5 bg-gray-50/80 rounded-3xl border border-gray-100/50 hover:shadow-md transition-shadow">
+                   <div className="shrink-0 w-12 h-12 rounded-full border border-[var(--primary-color)]/20 flex items-center justify-center text-[var(--primary-color)] bg-white shadow-sm">
+                     <Users size={20} className="opacity-80" />
+                   </div>
+                   <div className="flex flex-col gap-1.5">
+                     <h3 className="text-[11px] uppercase tracking-[0.2em] font-bold text-[#222222]">Occupants & accès</h3>
+                     <p className="text-[13px] leading-relaxed text-gray-600">
+                       {property.ruleOccupants || "Le logement est strictement réservé aux personnes mentionnées. Toute personne supplémentaire doit être déclarée à l'hôte."}
+                     </p>
+                   </div>
+                 </div>
+
+                 {/* Responsabilité & Propreté */}
+                 <div className="flex gap-5 p-5 bg-gray-50/80 rounded-3xl border border-gray-100/50 hover:shadow-md transition-shadow">
+                   <div className="shrink-0 w-12 h-12 rounded-full border border-[var(--primary-color)]/20 flex items-center justify-center text-[var(--primary-color)] bg-white shadow-sm">
+                     <Sparkles size={20} className="opacity-80" />
+                   </div>
+                   <div className="flex flex-col gap-1.5">
+                     <h3 className="text-[11px] uppercase tracking-[0.2em] font-bold text-[#222222]">Responsabilité & Propreté</h3>
+                     <p className="text-[13px] leading-relaxed text-gray-600">
+                       {property.ruleResponsibility || "Prendre soin du logement et le restituer en bon état. Tout dommage causé devra être signalé immédiatement."}
+                     </p>
+                   </div>
+                 </div>
+
+                 {/* Accès & conformité */}
+                 <div className="flex gap-5 p-5 bg-gray-50/80 rounded-3xl border border-gray-100/50 hover:shadow-md transition-shadow">
+                   <div className="shrink-0 w-12 h-12 rounded-full border border-[var(--primary-color)]/20 flex items-center justify-center text-[var(--primary-color)] bg-white shadow-sm">
+                     <ShieldCheck size={20} className="opacity-80" />
+                   </div>
+                   <div className="flex flex-col gap-1.5">
+                     <h3 className="text-[11px] uppercase tracking-[0.2em] font-bold text-[#222222]">Accès & conformité</h3>
+                     <p className="text-[13px] leading-relaxed text-gray-600">
+                       {property.ruleSecurity || "Les clés sont confiées aux voyageurs ; leur perte entraîne des frais. Toute activité illégale entraînera l'annulation du séjour."}
+                     </p>
+                   </div>
+                 </div>
+               </div>
             </div>
             <div className="shrink-0 border-t border-[#EEEEEE] bg-white px-4 py-3 pb-safe sm:px-8 sm:py-4 sm:pb-8">
               <button

@@ -92,7 +92,7 @@ export default async function AgreementPage({ params }: PageProps) {
         @media print {
           @page {
             size: A4;
-            margin: 20mm;
+            margin: 0;
           }
           body { 
             margin: 0 !important; 
@@ -103,20 +103,22 @@ export default async function AgreementPage({ params }: PageProps) {
           }
           .no-print { display: none !important; }
           
-          /* Force Physical A4 dimensions */
+          /* Forced Zero-Margin A4 Frame */
           .a4-container { 
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: space-between !important;
             width: 210mm !important; 
-            min-height: 297mm !important; 
+            height: 297mm !important; 
             margin: 0 !important;
-            padding: 0 !important; /* Managed by @page margin */
+            padding: 20mm !important; /* Internal safety margin */
+            box-sizing: border-box !important;
             box-shadow: none !important; 
             border: none !important;
             background: #FCFBF9 !important;
-            display: flex !important;
-            flex-direction: column !important;
+            overflow: hidden !important;
           }
 
-          /* Replace Grid with Flex/Block for print stability */
           .agreement-info-bar {
             display: flex !important;
             flex-direction: row !important;
@@ -134,17 +136,20 @@ export default async function AgreementPage({ params }: PageProps) {
             border-right: none !important;
           }
 
+          .agreement-house-etiquette {
+            page-break-inside: avoid !important;
+          }
           .house-etiquette-grid {
             display: block !important;
             grid-template-columns: none !important;
           }
           .etiquette-item {
             display: flex !important;
-            margin-bottom: 2rem !important;
+            margin-bottom: 1rem !important;
             page-break-inside: avoid !important;
           }
 
-          .agreement-signature-row {
+          .agreement-pinned-bottom {
             margin-top: auto !important;
             page-break-inside: avoid !important;
           }
@@ -161,8 +166,7 @@ export default async function AgreementPage({ params }: PageProps) {
             border-bottom: 1px solid rgba(168, 152, 126, 0.4) !important;
           }
 
-          /* General spacing/text fixes for print */
-          h1 { font-size: 3.5rem !important; }
+          h1 { font-size: 32pt !important; }
           p, div { overflow: visible !important; }
         }
       `}} />

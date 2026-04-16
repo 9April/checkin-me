@@ -47,6 +47,10 @@ export default async function PropertyCheckInPage({
         requireSelfie: property.requireSelfie,
         requireIdPhotos: property.requireIdPhotos,
         privacyPolicy: property.privacyPolicy,
+        ruleLogistics: property.ruleLogistics,
+        ruleOccupants: property.ruleOccupants,
+        ruleResponsibility: property.ruleResponsibility,
+        ruleSecurity: property.ruleSecurity,
       }}
     />
   );
