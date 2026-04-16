@@ -324,14 +324,31 @@ select.input option {
 /* Web-view responsive support for the agreement */
 .a4-container {
   box-sizing: border-box;
-  width: 100%;
-  max-width: 210mm; /* A4 width */
-  height: 297mm; /* Strict A4 height */
-  min-height: 297mm;
-  max-height: 297mm;
-  padding: 10mm; /* Reduced padding to fit 1 page */
+  width: 210mm;
+  height: 297mm;
   background: #ffffff;
   margin: 0 auto;
   position: relative;
-  overflow: hidden; /* Ensure it visually stays exactly 1 page */
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
+
+/* Mobile scaling engine wrapper */
+.a4-wrapper {
+  width: 100%;
+  overflow: visible;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 0;
+  margin: 0;
+}
+
+@media screen and (max-width: 210mm) {
+  .a4-wrapper {
+    overflow-x: auto;
+    padding: 1rem 0;
+  }
+}
+

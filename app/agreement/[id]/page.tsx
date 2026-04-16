@@ -93,7 +93,7 @@ export default async function AgreementPage({ params }: PageProps) {
       />
 
       {/* The Printable Document - Hybrid Responsive/Fixed Container */}
-      <div className="w-full max-w-screen-md bg-white overflow-hidden print:w-auto print:max-w-none print:overflow-visible">
+      <div className="w-full max-w-[210mm] bg-white overflow-hidden print:w-auto print:max-w-none print:overflow-visible">
         <LuxuryAgreement 
           property={propertyData as any} 
           booking={bookingData} 

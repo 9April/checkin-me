@@ -28,6 +28,25 @@ interface LuxuryAgreementProps {
 }
 
 export default function LuxuryAgreement({ property, booking }: LuxuryAgreementProps) {
+  const [scale, setScale] = React.useState(1);
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
+  // Scaling logic to fit 210mm width into mobile viewport
+  React.useEffect(() => {
+    const handleResize = () => {
+      const width = window.innerWidth;
+      const targetWidth = 210 * 3.7795275591; // 210mm in pixels (approx)
+      if (width < targetWidth + 40) {
+        setScale((width - 40) / targetWidth);
+      } else {
+        setScale(1);
+      }
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   // Helper to format YYYY-MM-DD -> DD-MM-YYYY
   const formatDate = (dateStr: string) => {
     if (!dateStr || !dateStr.includes('-')) return dateStr;
@@ -42,190 +61,149 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
   const security = property.ruleSecurity || "Les clés sont confiées aux voyageurs ; leur perte entraîne des frais. Toute activité illégale entraînera l'annulation du séjour.";
 
   return (
-    <div id="print-area" className="a4-container bg-white text-[#1A1A1A] font-sans selection:bg-[#A8987E] selection:text-white box-border flex flex-col justify-between mx-auto w-full max-w-4xl print:w-[210mm] print:h-[297mm] print:min-h-[297mm]">
-      <style>{`
-        @media print {
-          @page { 
-            size: auto; 
-            margin: 0mm !important; 
+    <div className="a4-wrapper no-scrollbar">
+      <div 
+        id="print-area" 
+        ref={containerRef}
+        style={{ 
+          transform: `scale(${scale})`, 
+          transformOrigin: 'top center',
+          margin: scale < 1 ? '0 auto' : '0 auto'
+        }}
+        className="a4-container bg-white text-[#1A1A1A] font-sans box-border p-[10mm] shadow-2xl print:shadow-none print:transform-none print:m-0 print:p-[10mm]"
+      >
+        <style>{`
+          @media print {
+            @page { 
+              size: A4; 
+              margin: 0; 
+            }
+            html, body {
+              margin: 0 !important;
+              padding: 0 !important;
+              height: 297mm !important;
+              overflow: hidden !important;
+            }
+            .no-print { display: none !important; }
+            #print-area {
+              transform: none !important;
+              margin: 0 !important;
+              width: 210mm !important;
+              height: 297mm !important;
+              padding: 10mm !important;
+              position: absolute !important;
+              top: 0 !important;
+              left: 0 !important;
+            }
+            /* Compact spacing for print to ensure 1 page */
+            .print-compact-gap { gap: 1.5rem !important; }
+            .print-compact-py { padding-top: 1rem !important; padding-bottom: 1rem !important; }
+            .print-text-sz { font-size: 11pt !important; }
           }
-          html, body {
-            width: 100% !important;
-            height: 100vh !important;
-            margin: 0 !important; 
-            padding: 0 !important; 
-            overflow: hidden !important;
-            min-height: 0 !important;
-            -webkit-print-color-adjust: exact !important; 
-            print-color-adjust: exact !important; 
-          }
-          #print-area {
-            width: 210mm !important;
-            max-width: 210mm !important;
-            height: 297mm !important;
-            margin: 0 auto !important;
-            float: none !important;
-            overflow: hidden !important;
-            padding-bottom: 0 !important;
-            transform: scale(0.82) !important;
-            -webkit-transform: scale(0.82) !important;
-            transform-origin: top center !important;
-            -webkit-transform-origin: top center !important;
-            display: flex !important;
-            flex-direction: column !important;
-            justify-content: space-between !important;
-          }
-          
-          .no-print { display: none !important; }
-          
-          .break-inside-avoid {
-            break-inside: avoid !important;
-            page-break-inside: avoid !important;
-          }
-          
-          /* Forced Desktop Gaps for Print */
-          .flex-col { gap: 2.5rem !important; }
-          .gap-10 { gap: 2.5rem !important; }
-          .py-8 { padding-top: 2rem !important; padding-bottom: 2rem !important; }
-          .pt-12 { padding-top: 3rem !important; }
-          .agreement-info-bar { grid-template-columns: 1fr 1.6fr 0.8fr !important; }
-          .house-etiquette-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
-          .signature-grid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
-        }
-      `}</style>
-      
-      {/* Top Content Group */}
-      <div className="flex flex-col gap-6 sm:gap-10">
-        {/* Header */}
-        <header className="text-center py-4 sm:py-6 whitespace-nowrap">
-          <h1 className="font-serif text-5xl tracking-[0.2em] uppercase mb-4 text-[#1A1A1A] text-center whitespace-nowrap">
-            {property.name || "MAMOUNIA 08"}
-          </h1>
-          <p className="font-sans text-xs tracking-[0.4em] uppercase opacity-50 text-[#A8987E] text-center whitespace-nowrap">
-            Guest Stay Agreement
-          </p>
-        </header>
+        `}</style>
+        
+        <div className="flex flex-col h-full justify-between print-compact-gap">
+          {/* Top Content Group */}
+          <div className="flex flex-col gap-5 sm:gap-7 print-compact-gap">
+            {/* Header */}
+            <header className="text-center py-2 sm:py-4">
+              <h1 className="font-serif text-4xl sm:text-5xl tracking-[0.2em] uppercase mb-2 sm:mb-3 text-[#1A1A1A] whitespace-nowrap overflow-hidden text-ellipsis">
+                {property.name || "MAMOUNIA 08"}
+              </h1>
+              <p className="font-sans text-[9px] sm:text-xs tracking-[0.4em] uppercase opacity-50 text-[#A8987E]">
+                Guest Stay Agreement
+              </p>
+            </header>
 
-        {/* Information Bar */}
-        <section className="agreement-info-bar grid grid-cols-1 sm:grid grid-cols-[1fr_1.6fr_0.8fr] gap-4 sm:gap-0 border-t border-b border-[#A8987E]/20 py-6 sm:py-8">
-          <div className="info-bar-item flex flex-col items-center border-r border-[#A8987E]/20 px-6 min-w-0">
-            <p className="text-[10px] uppercase tracking-widest opacity-40 mb-3">Guest Name</p>
-            <p className="font-serif text-[12pt] text-center leading-tight truncate w-full">{booking.guestName}</p>
-          </div>
-          <div className="info-bar-item flex flex-col items-center border-b sm:border-b-0 sm:border-r border-[#A8987E]/20 pb-4 sm:pb-0 px-6 min-w-0">
-            <p className="text-[10px] uppercase tracking-widest opacity-40 mb-3">Email Address</p>
-            <p className="font-serif text-[12pt] text-center leading-tight w-full truncate">
-              {booking.guestEmail}
-            </p>
-          </div>
-          <div className="info-bar-item flex flex-col items-center px-6 min-w-0">
-            <p className="text-[10px] uppercase tracking-widest opacity-40 mb-3">Stay Period</p>
-            <p className="font-serif text-[12pt] text-center leading-tight whitespace-nowrap">
-              {formatDate(booking.checkin)} — {formatDate(booking.checkout)}
-            </p>
-          </div>
-        </section>
-
-        {/* House Etiquette & Rules */}
-        <section className="agreement-house-etiquette flex flex-col gap-6 sm:gap-8 break-inside-avoid">
-          <h2 className="font-serif text-xl sm:text-2xl text-center italic opacity-80 decoration-[#A8987E]/20 underline underline-offset-8 mb-4">House Etiquette</h2>
-          <div className="house-etiquette-grid grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-6 sm:gap-y-10">
-            {/* Logistics */}
-            <div className="etiquette-item flex gap-5">
-              <div className="shrink-0 w-10 h-10 rounded-full border border-[#A8987E]/30 flex items-center justify-center text-[#A8987E]">
-                <Clock size={18} />
+            {/* Information Bar */}
+            <section className="grid grid-cols-[1fr_1.6fr_0.8fr] border-t border-b border-[#A8987E]/20 py-4 sm:py-6">
+              <div className="flex flex-col items-center border-r border-[#A8987E]/20 px-3 min-w-0">
+                <p className="text-[8px] uppercase tracking-widest opacity-40 mb-1 lg:mb-2">Guest Name</p>
+                <p className="font-serif text-[11pt] sm:text-[12pt] text-center leading-tight truncate w-full font-medium">{booking.guestName}</p>
               </div>
-              <div className="flex flex-col gap-2">
-                <h3 className="text-xs uppercase tracking-[0.2em] font-bold text-[#A8987E]">Logistics</h3>
-                <p className="text-[13px] leading-relaxed opacity-70">
-                  {logistics}
+              <div className="flex flex-col items-center border-r border-[#A8987E]/20 px-3 min-w-0">
+                <p className="text-[8px] uppercase tracking-widest opacity-40 mb-1 lg:mb-2">Email Address</p>
+                <p className="font-serif text-[11pt] sm:text-[12pt] text-center leading-tight w-full truncate font-medium">
+                  {booking.guestEmail}
                 </p>
               </div>
-            </div>
-
-            {/* Occupants & accès */}
-            <div className="etiquette-item flex gap-5">
-              <div className="shrink-0 w-10 h-10 rounded-full border border-[#A8987E]/30 flex items-center justify-center text-[#A8987E]">
-                <Users size={18} />
-              </div>
-              <div className="flex flex-col gap-2">
-                <h3 className="text-xs uppercase tracking-[0.2em] font-bold text-[#A8987E]">Occupants & accès</h3>
-                <p className="text-[13px] leading-relaxed opacity-70">
-                  {occupants}
+              <div className="flex flex-col items-center px-3 min-w-0">
+                <p className="text-[8px] uppercase tracking-widest opacity-40 mb-1 lg:mb-2">Stay Period</p>
+                <p className="font-serif text-[11pt] sm:text-[12pt] text-center leading-tight whitespace-nowrap font-medium">
+                  {formatDate(booking.checkin)} — {formatDate(booking.checkout)}
                 </p>
               </div>
-            </div>
+            </section>
 
-            {/* Responsabilité & Propreté */}
-            <div className="etiquette-item flex gap-5">
-              <div className="shrink-0 w-10 h-10 rounded-full border border-[#A8987E]/30 flex items-center justify-center text-[#A8987E]">
-                <Sparkles size={18} />
+            {/* House Etiquette & Rules */}
+            <section className="flex flex-col gap-4 sm:gap-6">
+              <h2 className="font-serif text-lg sm:text-xl text-center italic opacity-80 decoration-[#A8987E]/20 underline underline-offset-8 mb-2">House Etiquette</h2>
+              <div className="grid grid-cols-2 gap-x-8 gap-y-5 sm:gap-y-7">
+                {[
+                  { icon: <Clock size={16} />, title: "Logistics", text: logistics },
+                  { icon: <Users size={16} />, title: "Occupants & accès", text: occupants },
+                  { icon: <Sparkles size={16} />, title: "Responsabilité", text: responsibility },
+                  { icon: <ShieldCheck size={16} />, title: "Sécurité", text: security }
+                ].map((item, i) => (
+                  <div key={i} className="flex gap-4 items-start">
+                    <div className="shrink-0 w-8 h-8 rounded-full border border-[#A8987E]/30 flex items-center justify-center text-[#A8987E]">
+                      {item.icon}
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <h3 className="text-[10px] uppercase tracking-[0.15em] font-bold text-[#A8987E]">{item.title}</h3>
+                      <p className="text-[11px] sm:text-[12px] leading-relaxed opacity-75 line-clamp-4">
+                        {item.text}
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <div className="flex flex-col gap-2">
-                <h3 className="text-xs uppercase tracking-[0.2em] font-bold text-[#A8987E]">Responsabilité & Propreté</h3>
-                <p className="text-[13px] leading-relaxed opacity-70">
-                  {responsibility}
-                </p>
-              </div>
-            </div>
-
-            {/* Accès & conformité */}
-            <div className="etiquette-item flex gap-5">
-              <div className="shrink-0 w-10 h-10 rounded-full border border-[#A8987E]/30 flex items-center justify-center text-[#A8987E]">
-                <ShieldCheck size={18} />
-              </div>
-              <div className="flex flex-col gap-2">
-                <h3 className="text-xs uppercase tracking-[0.2em] font-bold text-[#A8987E]">Accès & conformité</h3>
-                <p className="text-[13px] leading-relaxed opacity-70">
-                  {security}
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-      </div>
-
-      {/* Pinned Bottom Content Group (Signature & Footer) */}
-      <div className="agreement-pinned-bottom flex flex-col gap-6 sm:gap-10 pt-8 sm:pt-12 w-full break-inside-avoid">
-        {/* Confirmation & Signature Section */}
-        <section className="agreement-signature-row flex flex-col gap-6 sm:gap-10 break-inside-avoid">
-          <div className="text-center max-w-xl mx-auto">
-            <p className="font-serif text-lg italic leading-relaxed opacity-90 border-b border-[#A8987E]/10 pb-6">
-              Je confirme avoir pris connaissance du règlement intérieur et m'engage à le respecter durant mon séjour.
-            </p>
+            </section>
           </div>
 
-          <div className="signature-grid grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-10 items-end break-inside-avoid">
-            <div className="signature-field border-b border-[#A8987E]/40 pb-3 break-inside-avoid">
-              <p className="text-[10px] uppercase tracking-widest opacity-40 mb-2">Date of Arrival</p>
-              <p className="font-serif text-[12pt] leading-none">{formatDate(booking.checkin)}</p>
+          {/* Pinned Bottom Content Group (Signature & Footer) */}
+          <div className="flex flex-col gap-5 sm:gap-8 pt-4 border-t border-[#A8987E]/10">
+            {/* Confirmation Section */}
+            <div className="text-center max-w-lg mx-auto mb-2">
+              <p className="font-serif text-[14px] sm:text-[16px] italic leading-relaxed opacity-90">
+                Je confirme avoir pris connaissance du règlement intérieur et m'engage à le respecter durant mon séjour.
+              </p>
             </div>
-            <div className="signature-field border-b border-[#A8987E]/40 pb-3 break-inside-avoid">
-              <p className="text-[10px] uppercase tracking-widest opacity-40 mb-2">Estimated Arrival</p>
-              <p className="font-serif text-[12pt] leading-none">{booking.checkinHour || "—"}</p>
-            </div>
-            <div className="signature-field border-b border-[#A8987E]/40 pb-3 relative min-h-[60px] flex flex-col justify-end break-inside-avoid">
-              <p className="text-[10px] uppercase tracking-widest opacity-40 mb-2 absolute top-0 left-0">Signature</p>
-              {booking.signature ? (
-                <img 
-                  src={booking.signature} 
-                  alt="Guest Signature" 
-                  className="h-16 w-auto object-contain pointer-events-none grayscale brightness-50" 
-                />
-              ) : (
-                <div className="h-12 border-b border-[#1A1A1A]/10 border-dashed" />
-              )}
-            </div>
-          </div>
-        </section>
 
-        {/* Footer */}
-        <footer className="pt-4 border-t border-[#1A1A1A]/5 text-center">
-          <p className="text-[9px] uppercase tracking-[0.3em] opacity-40">
-            2026 {property.name || "Mamounia 08"} | Secure Digital Registration
-          </p>
-        </footer>
+            <div className="grid grid-cols-3 gap-6 items-end">
+              <div className="border-b border-[#A8987E]/40 pb-2">
+                <p className="text-[8px] uppercase tracking-widest opacity-40 mb-1">Date of Arrival</p>
+                <p className="font-serif text-[11pt] leading-tight font-medium">{formatDate(booking.checkin)}</p>
+              </div>
+              <div className="border-b border-[#A8987E]/40 pb-2">
+                <p className="text-[8px] uppercase tracking-widest opacity-40 mb-1">Estimated Arrival</p>
+                <p className="font-serif text-[11pt] leading-tight font-medium">{booking.checkinHour || "—"}</p>
+              </div>
+              <div className="border-b border-[#A8987E]/40 pb-2 relative min-h-[50px] flex flex-col justify-end">
+                <p className="text-[8px] uppercase tracking-widest opacity-40 mb-1 absolute top-0 left-0">Signature</p>
+                {booking.signature ? (
+                  <img 
+                    src={booking.signature} 
+                    alt="Guest Signature" 
+                    className="h-12 w-auto object-contain grayscale pointer-events-none brightness-75 mix-blend-multiply" 
+                  />
+                ) : (
+                  <div className="h-8 border-b border-[#1A1A1A]/10 border-dashed" />
+                )}
+              </div>
+            </div>
+
+            {/* Footer */}
+            <footer className="pt-2 text-center">
+              <p className="text-[8px] uppercase tracking-[0.3em] opacity-40">
+                2026 {property.name || "Mamounia 08"} | Secure Digital Registration
+              </p>
+            </footer>
+          </div>
+        </div>
       </div>
     </div>
+  );
+}
   );
 }
