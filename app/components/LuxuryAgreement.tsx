@@ -41,16 +41,37 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
   const security = property.ruleSecurity || "Les clés sont confiées aux voyageurs ; leur perte entraîne des frais. Toute activité illégale entraînera l'annulation du séjour.";
 
   return (
-    <div className="a4-container bg-[#FCFBF9] text-[#1A1A1A] font-sans selection:bg-[#A8987E] selection:text-white box-border flex flex-col justify-between mx-auto">
+    <div id="print-area" className="a4-container bg-[#FCFBF9] text-[#1A1A1A] font-sans selection:bg-[#A8987E] selection:text-white box-border flex flex-col justify-between mx-auto h-full min-h-[100svh] sm:min-h-[297mm]">
+      <style>{`
+        @media print {
+          @page { size: auto; margin: 0mm; }
+          body { 
+            margin: 0 !important; 
+            padding: 0 !important; 
+            -webkit-print-color-adjust: exact !important; 
+            print-color-adjust: exact !important; 
+          }
+          #print-area {
+            width: 210mm !important;
+            height: 297mm !important;
+            overflow: hidden !important;
+            page-break-after: avoid !important;
+          }
+          .break-inside-avoid {
+            break-inside: avoid !important;
+            page-break-inside: avoid !important;
+          }
+        }
+      `}</style>
       
       {/* Top Content Group */}
       <div className="flex flex-col gap-10">
         {/* Header */}
-        <header className="text-center py-6">
-          <h1 className="font-serif text-5xl tracking-[0.2em] uppercase mb-4 text-[#1A1A1A]">
+        <header className="text-center py-6 whitespace-nowrap">
+          <h1 className="font-serif text-5xl tracking-[0.2em] uppercase mb-4 text-[#1A1A1A] text-center whitespace-nowrap">
             {property.name || "MAMOUNIA 08"}
           </h1>
-          <p className="font-sans text-xs tracking-[0.4em] uppercase opacity-50 text-[#A8987E]">
+          <p className="font-sans text-xs tracking-[0.4em] uppercase opacity-50 text-[#A8987E] text-center whitespace-nowrap">
             Guest Stay Agreement
           </p>
         </header>
