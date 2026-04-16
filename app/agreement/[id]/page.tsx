@@ -90,27 +90,80 @@ export default async function AgreementPage({ params }: PageProps) {
 
       <style dangerouslySetInnerHTML={{ __html: `
         @media print {
+          @page {
+            size: A4;
+            margin: 20mm;
+          }
           body { 
             margin: 0 !important; 
             padding: 0 !important; 
             background: white !important; 
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
           .no-print { display: none !important; }
+          
+          /* Force Physical A4 dimensions */
           .a4-container { 
             width: 210mm !important; 
-            height: 297mm !important; 
-            margin: 0 auto !important;
-            padding: 48px !important; /* 3rem */
+            min-height: 297mm !important; 
+            margin: 0 !important;
+            padding: 0 !important; /* Managed by @page margin */
             box-shadow: none !important; 
             border: none !important;
+            background: #FCFBF9 !important;
+            display: flex !important;
+            flex-direction: column !important;
           }
-          div { box-shadow: none !important; border-radius: 0 !important; overflow: visible !important; }
-        }
-        @page {
-          size: A4;
-          margin: 0;
+
+          /* Replace Grid with Flex/Block for print stability */
+          .agreement-info-bar {
+            display: flex !important;
+            flex-direction: row !important;
+            justify-content: space-between !important;
+            grid-template-columns: none !important;
+            gap: 0 !important;
+            border-top: 1px solid rgba(168, 152, 126, 0.2) !important;
+            border-bottom: 1px solid rgba(168, 152, 126, 0.2) !important;
+          }
+          .info-bar-item {
+            flex: 1 !important;
+            border-right: 1px solid rgba(168, 152, 126, 0.2) !important;
+          }
+          .info-bar-item:last-child {
+            border-right: none !important;
+          }
+
+          .house-etiquette-grid {
+            display: block !important;
+            grid-template-columns: none !important;
+          }
+          .etiquette-item {
+            display: flex !important;
+            margin-bottom: 2rem !important;
+            page-break-inside: avoid !important;
+          }
+
+          .agreement-signature-row {
+            margin-top: auto !important;
+            page-break-inside: avoid !important;
+          }
+          .signature-grid {
+            display: flex !important;
+            flex-direction: row !important;
+            justify-content: space-between !important;
+            grid-template-columns: none !important;
+            align-items: flex-end !important;
+            gap: 2rem !important;
+          }
+          .signature-field {
+            flex: 1 !important;
+            border-bottom: 1px solid rgba(168, 152, 126, 0.4) !important;
+          }
+
+          /* General spacing/text fixes for print */
+          h1 { font-size: 3.5rem !important; }
+          p, div { overflow: visible !important; }
         }
       `}} />
     </div>
