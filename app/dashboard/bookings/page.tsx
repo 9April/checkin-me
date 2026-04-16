@@ -77,7 +77,7 @@ export default async function BookingsPage() {
                     target="_blank"
                     className="text-sm font-bold text-blue-600 flex items-center gap-1"
                   >
-                    View Agreement
+                    View
                   </Link>
                   <Link 
                     href={`/agreement/${booking.id}`} 
@@ -85,6 +85,13 @@ export default async function BookingsPage() {
                     className="text-sm text-gray-600 inline-flex items-center gap-1"
                   >
                     <Printer size={16} /> Print
+                  </Link>
+                  <Link
+                    href={`/agreement/${booking.id}?download=1`}
+                    target="_blank"
+                    className="text-sm text-gray-500 font-medium"
+                  >
+                    Download
                   </Link>
                   <TrashAction bookingId={booking.id} mode="soft" />
                 </div>
@@ -146,7 +153,7 @@ export default async function BookingsPage() {
                         title='View Agreement'
                       >
                         <ExternalLink size={18} />
-                        Agreement
+                        View
                       </Link>
                       <Link
                         href={`/agreement/${booking.id}`}
@@ -156,6 +163,15 @@ export default async function BookingsPage() {
                       >
                         <Printer size={18} />
                         Print
+                      </Link>
+                      <Link
+                        href={`/agreement/${booking.id}?download=1`}
+                        target="_blank"
+                        className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-1"
+                        title='Download Agreement'
+                      >
+                        <Download size={18} />
+                        Download
                       </Link>
                       <TrashAction bookingId={booking.id} mode="soft" />
                     </div>

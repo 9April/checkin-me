@@ -64,8 +64,21 @@ export default async function AgreementPage({ params }: PageProps) {
           <ArrowLeft size={14} />
           Dashboard
         </Link>
-        <PrintButton />
+        <div className="flex items-center gap-3">
+          <PrintButton mode="download" />
+          <PrintButton />
+        </div>
       </div>
+
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `
+            if (window.location.search.includes('download=1')) {
+              window.print();
+            }
+          `,
+        }}
+      />
 
       {/* The Printable Document */}
       <div className="w-full max-w-screen-md bg-white overflow-hidden">

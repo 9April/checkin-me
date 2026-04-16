@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Save, Info, ListTodo, Clock, CheckCircle, AlertCircle, X, Palette, Layout, Users, ShieldCheck, Sparkles } from 'lucide-react';
+import { Save, Info, ListTodo, Clock, CheckCircle, AlertCircle, X, Palette, Layout, Users, ShieldCheck, Sparkles, History } from 'lucide-react';
 import { updateProperty } from './actions';
 
 interface PropertySettingsFormProps {
@@ -335,6 +335,27 @@ export default function PropertySettingsForm({ property, initialRules }: Propert
             </div>
           </div>
           <p className="text-xs text-[#6B7280]">These four categories populate the "House Etiquette" grid in your luxury stay agreement. Respect the design by keeping descriptions concise.</p>
+        </div>
+      </section>
+
+      {/* Legacy House Rules Reference (for transition) */}
+      <section className="bg-gray-50 rounded-3xl border border-[#E5E7EB] border-dashed overflow-hidden text-black opacity-80">
+        <div className="p-6 border-b border-[#E5E7EB] flex items-center gap-3">
+          <div className="w-10 h-10 bg-gray-100 text-gray-500 rounded-xl flex items-center justify-center">
+            <History size={20} />
+          </div>
+          <h2 className="text-lg font-bold">Legacy House Rules Reference</h2>
+        </div>
+        <div className="p-8 space-y-4">
+          <p className="text-xs text-[#6B7280] bg-white p-3 rounded-xl border border-gray-100">
+            <strong>Note:</strong> These are your original house rules as they were stored before the update. You can copy them into the new categories above to ensure they appear in the Luxury Agreement layout.
+          </p>
+          <textarea 
+            readOnly
+            value={initialRules || "(No old rules found)"}
+            rows={6}
+            className="w-full px-5 py-4 bg-white border border-[#E5E7EB] rounded-2xl outline-none font-mono text-sm leading-relaxed text-gray-400"
+          />
         </div>
       </section>
 
