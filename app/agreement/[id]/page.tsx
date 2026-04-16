@@ -70,6 +70,18 @@ export default async function AgreementPage({ params }: PageProps) {
         </div>
       </div>
 
+      <style dangerouslySetInnerHTML={{ __html: `
+        @media print {
+          html, body { 
+            height: 100vh !important; 
+            overflow: hidden !important; 
+            margin: 0 !important; 
+            padding: 0 !important; 
+          }
+          @page { margin: 0 !important; }
+        }
+      `}} />
+
       <script
         dangerouslySetInnerHTML={{
           __html: `
