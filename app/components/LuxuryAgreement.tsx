@@ -82,20 +82,20 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
         </header>
 
         {/* Information Bar */}
-        <section className="agreement-info-bar grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-0 border-t border-b border-[#A8987E]/20 py-8">
-          <div className="info-bar-item flex flex-col items-center md:border-r border-[#A8987E]/20 px-4 min-w-0">
+        <section className="agreement-info-bar grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-0 border-t border-b border-[#A8987E]/20 py-8">
+          <div className="info-bar-item flex flex-col items-center sm:border-r border-[#A8987E]/20 px-4 sm:px-6 min-w-0">
             <p className="text-[10px] uppercase tracking-widest opacity-40 mb-3">Guest Name</p>
-            <p className="font-serif text-xl text-center leading-tight truncate w-full">{booking.guestName}</p>
+            <p className="font-serif text-[11pt] sm:text-[12pt] text-center leading-tight truncate w-full">{booking.guestName}</p>
           </div>
-          <div className="info-bar-item flex flex-col items-center md:border-r border-[#A8987E]/20 px-4 min-w-0">
+          <div className="info-bar-item flex flex-col items-center sm:border-r border-[#A8987E]/20 px-4 sm:px-6 min-w-0">
             <p className="text-[10px] uppercase tracking-widest opacity-40 mb-3">Email Address</p>
-            <p className="font-serif text-[clamp(0.75rem,1.8vw,1.05rem)] text-center leading-tight w-full break-all whitespace-nowrap overflow-visible">
+            <p className="font-serif text-[11pt] sm:text-[12pt] text-center leading-tight w-full truncate">
               {booking.guestEmail}
             </p>
           </div>
-          <div className="info-bar-item flex flex-col items-center px-4 min-w-0">
+          <div className="info-bar-item flex flex-col items-center px-4 sm:px-6 min-w-0">
             <p className="text-[10px] uppercase tracking-widest opacity-40 mb-3">Stay Period</p>
-            <p className="font-serif text-[clamp(0.75rem,2vw,1.15rem)] text-center leading-tight whitespace-nowrap">
+            <p className="font-serif text-[11pt] sm:text-[12pt] text-center leading-tight whitespace-nowrap">
               {formatDate(booking.checkin)} — {formatDate(booking.checkout)}
             </p>
           </div>
@@ -173,11 +173,11 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
           <div className="signature-grid grid grid-cols-1 md:grid-cols-3 gap-10 items-end">
             <div className="signature-field border-b border-[#A8987E]/40 pb-3">
               <p className="text-[9px] uppercase tracking-widest opacity-40 mb-2">Date of Arrival</p>
-              <p className="font-serif text-[clamp(0.85rem,2vw,1.125rem)] leading-none">{formatDate(booking.checkin)}</p>
+              <p className="font-serif text-[11pt] sm:text-[12pt] leading-none">{formatDate(booking.checkin)}</p>
             </div>
             <div className="signature-field border-b border-[#A8987E]/40 pb-3">
               <p className="text-[9px] uppercase tracking-widest opacity-40 mb-2">Estimated Arrival</p>
-              <p className="font-serif text-[clamp(0.85rem,2vw,1.125rem)] leading-none">{booking.checkinHour || "—"}</p>
+              <p className="font-serif text-[11pt] sm:text-[12pt] leading-none">{booking.checkinHour || "—"}</p>
             </div>
             <div className="signature-field border-b border-[#A8987E]/40 pb-3 relative min-h-[60px] flex flex-col justify-end">
               <p className="text-[9px] uppercase tracking-widest opacity-40 mb-2 absolute top-0 left-0">Signature</p>
