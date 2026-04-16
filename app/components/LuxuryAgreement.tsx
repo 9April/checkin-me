@@ -42,7 +42,7 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
   const security = property.ruleSecurity || "Les clés sont confiées aux voyageurs ; leur perte entraîne des frais. Toute activité illégale entraînera l'annulation du séjour.";
 
   return (
-    <div id="print-area" className="a4-container bg-white text-[#1A1A1A] font-sans selection:bg-[#A8987E] selection:text-white box-border flex flex-col justify-between mx-auto" style={{ width: '210mm', height: '297mm', minHeight: '297mm' }}>
+    <div id="print-area" className="a4-container bg-white text-[#1A1A1A] font-sans selection:bg-[#A8987E] selection:text-white box-border flex flex-col justify-between mx-auto w-full max-w-4xl print:w-[210mm] print:h-[297mm] print:min-h-[297mm]">
       <style>{`
         @media print {
           @page { 
@@ -71,6 +71,9 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
             -webkit-transform: scale(0.82) !important;
             transform-origin: top center !important;
             -webkit-transform-origin: top center !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: space-between !important;
           }
           
           .no-print { display: none !important; }
@@ -79,24 +82,22 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
             break-inside: avoid !important;
             page-break-inside: avoid !important;
           }
-        }
-        
-        /* True Scale Engine: Mathematically fits the 210mm Desktop layout to any mobile screen width */
-        @media screen and (max-width: 1024px) {
-          #print-area {
-            /* 210mm is approximately 794px. We scale based on actual viewport width. */
-            transform-origin: top center !important;
-            transform: scale(calc(100vw / 210mm)) !important;
-            -webkit-transform: scale(calc(100vw / 210mm)) !important;
-            margin: 0 auto !important;
-          }
+          
+          /* Forced Desktop Gaps for Print */
+          .flex-col { gap: 2.5rem !important; }
+          .gap-10 { gap: 2.5rem !important; }
+          .py-8 { padding-top: 2rem !important; padding-bottom: 2rem !important; }
+          .pt-12 { padding-top: 3rem !important; }
+          .agreement-info-bar { grid-template-columns: 1fr 1.6fr 0.8fr !important; }
+          .house-etiquette-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+          .signature-grid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
         }
       `}</style>
       
       {/* Top Content Group */}
-      <div className="flex flex-col gap-10">
+      <div className="flex flex-col gap-6 sm:gap-10">
         {/* Header */}
-        <header className="text-center py-6 whitespace-nowrap">
+        <header className="text-center py-4 sm:py-6 whitespace-nowrap">
           <h1 className="font-serif text-5xl tracking-[0.2em] uppercase mb-4 text-[#1A1A1A] text-center whitespace-nowrap">
             {property.name || "MAMOUNIA 08"}
           </h1>
@@ -106,12 +107,12 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
         </header>
 
         {/* Information Bar */}
-        <section className="agreement-info-bar grid grid-cols-[1fr_1.6fr_0.8fr] gap-0 border-t border-b border-[#A8987E]/20 py-8">
+        <section className="agreement-info-bar grid grid-cols-1 sm:grid grid-cols-[1fr_1.6fr_0.8fr] gap-4 sm:gap-0 border-t border-b border-[#A8987E]/20 py-6 sm:py-8">
           <div className="info-bar-item flex flex-col items-center border-r border-[#A8987E]/20 px-6 min-w-0">
             <p className="text-[10px] uppercase tracking-widest opacity-40 mb-3">Guest Name</p>
             <p className="font-serif text-[12pt] text-center leading-tight truncate w-full">{booking.guestName}</p>
           </div>
-          <div className="info-bar-item flex flex-col items-center border-r border-[#A8987E]/20 px-6 min-w-0">
+          <div className="info-bar-item flex flex-col items-center border-b sm:border-b-0 sm:border-r border-[#A8987E]/20 pb-4 sm:pb-0 px-6 min-w-0">
             <p className="text-[10px] uppercase tracking-widest opacity-40 mb-3">Email Address</p>
             <p className="font-serif text-[12pt] text-center leading-tight w-full truncate">
               {booking.guestEmail}
@@ -126,9 +127,9 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
         </section>
 
         {/* House Etiquette & Rules */}
-        <section className="agreement-house-etiquette flex flex-col gap-8 break-inside-avoid">
-          <h2 className="font-serif text-2xl text-center italic opacity-80 decoration-[#A8987E]/20 underline underline-offset-8 mb-4">House Etiquette</h2>
-          <div className="house-etiquette-grid grid grid-cols-2 gap-x-12 gap-y-10">
+        <section className="agreement-house-etiquette flex flex-col gap-6 sm:gap-8 break-inside-avoid">
+          <h2 className="font-serif text-xl sm:text-2xl text-center italic opacity-80 decoration-[#A8987E]/20 underline underline-offset-8 mb-4">House Etiquette</h2>
+          <div className="house-etiquette-grid grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-6 sm:gap-y-10">
             {/* Logistics */}
             <div className="etiquette-item flex gap-5">
               <div className="shrink-0 w-10 h-10 rounded-full border border-[#A8987E]/30 flex items-center justify-center text-[#A8987E]">
@@ -185,16 +186,16 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
       </div>
 
       {/* Pinned Bottom Content Group (Signature & Footer) */}
-      <div className="agreement-pinned-bottom flex flex-col gap-10 pt-12 w-full break-inside-avoid">
+      <div className="agreement-pinned-bottom flex flex-col gap-6 sm:gap-10 pt-8 sm:pt-12 w-full break-inside-avoid">
         {/* Confirmation & Signature Section */}
-        <section className="agreement-signature-row flex flex-col gap-10 break-inside-avoid">
+        <section className="agreement-signature-row flex flex-col gap-6 sm:gap-10 break-inside-avoid">
           <div className="text-center max-w-xl mx-auto">
             <p className="font-serif text-lg italic leading-relaxed opacity-90 border-b border-[#A8987E]/10 pb-6">
               Je confirme avoir pris connaissance du règlement intérieur et m'engage à le respecter durant mon séjour.
             </p>
           </div>
 
-          <div className="signature-grid grid grid-cols-3 gap-10 items-end break-inside-avoid">
+          <div className="signature-grid grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-10 items-end break-inside-avoid">
             <div className="signature-field border-b border-[#A8987E]/40 pb-3 break-inside-avoid">
               <p className="text-[10px] uppercase tracking-widest opacity-40 mb-2">Date of Arrival</p>
               <p className="font-serif text-[12pt] leading-none">{formatDate(booking.checkin)}</p>
