@@ -42,7 +42,7 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
   const security = property.ruleSecurity || "Les clés sont confiées aux voyageurs ; leur perte entraîne des frais. Toute activité illégale entraînera l'annulation du séjour.";
 
   return (
-    <div id="print-area" className="a4-container bg-white text-[#1A1A1A] font-sans selection:bg-[#A8987E] selection:text-white box-border flex flex-col justify-between mx-auto h-full min-h-[100svh] sm:min-h-[297mm]">
+    <div id="print-area" className="a4-container bg-white text-[#1A1A1A] font-sans selection:bg-[#A8987E] selection:text-white box-border flex flex-col justify-between mx-auto" style={{ width: '210mm', height: '297mm', minHeight: '297mm' }}>
       <style>{`
         @media print {
           @page { 
@@ -81,17 +81,14 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
           }
         }
         
-        /* Mobile Screen Version: Force Desktop-fidelity on mobile screen using zoom (no scroll artifacts) */
-        @media screen and (max-width: 768px) {
+        /* Universal Layout Logic: Treat the 210mm canvas as the ONLY source of truth. */
+        @media screen and (max-width: 1024px) {
           #print-area {
-            width: 210mm !important;
-            min-width: 210mm !important;
-            height: 297mm !important;
-            max-height: 297mm !important;
+            /* Scale precisely based on common phone screen widths relative to 210mm (794px) */
+            zoom: 0.44; 
+            -webkit-zoom: 0.44;
+            transform-origin: top center;
             margin: 0 auto !important;
-            zoom: 0.43; /* Mathematically fits 210mm width into iPhone screens cleanly */
-            -moz-transform: scale(0.43);
-            -moz-transform-origin: top center;
           }
         }
       `}</style>

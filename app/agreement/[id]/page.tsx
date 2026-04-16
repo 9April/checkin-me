@@ -54,9 +54,9 @@ export default async function AgreementPage({ params }: PageProps) {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col items-center py-6 sm:py-12 px-0 sm:px-4 overflow-x-hidden no-scrollbar print:m-0 print:p-0 print:block print:min-h-0 print:bg-white">
+    <div className="min-h-screen bg-white flex flex-col items-center py-0 px-0 overflow-x-hidden no-scrollbar print:m-0 print:p-0 print:block print:min-h-0 print:bg-white">
       {/* Controls - Hidden during print */}
-      <div className="no-print w-full max-w-screen-md flex justify-between items-center mb-8 bg-white/80 backdrop-blur-md p-5 rounded-none sm:rounded-2xl shadow-sm border-b sm:border border-gray-100 z-10 sticky top-0">
+      <div className="no-print w-full max-w-[210mm] flex justify-between items-center mb-8 bg-white/80 backdrop-blur-md p-5 rounded-none shadow-sm border-b border-gray-100 z-10 sticky top-0">
         <Link 
           href="/dashboard" 
           className="flex items-center gap-2 text-xs uppercase tracking-widest font-semibold text-gray-400 hover:text-[#1A1A1A] transition-all"
@@ -92,8 +92,8 @@ export default async function AgreementPage({ params }: PageProps) {
         }}
       />
 
-      {/* The Printable Document */}
-      <div className="w-full max-w-screen-md bg-white overflow-hidden print:w-auto print:max-w-none print:overflow-visible">
+      {/* The Printable Document - Locked to 210mm Width for Universal Parity */}
+      <div className="w-[210mm] bg-white overflow-hidden print:w-auto print:max-w-none print:overflow-visible">
         <LuxuryAgreement 
           property={propertyData as any} 
           booking={bookingData} 
