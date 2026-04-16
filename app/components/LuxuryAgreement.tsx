@@ -205,5 +205,3 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
     </div>
   );
 }
-  );
-}
