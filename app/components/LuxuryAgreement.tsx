@@ -76,13 +76,17 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
           @media print {
             @page { 
               size: A4; 
-              margin: 0; 
+              margin: 0 !important; 
             }
             html, body {
               margin: 0 !important;
               padding: 0 !important;
               height: 297mm !important;
+              max-height: 297mm !important;
               overflow: hidden !important;
+              background: #ffffff !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
             }
             .no-print { display: none !important; }
             #print-area {
@@ -90,14 +94,29 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
               margin: 0 !important;
               width: 210mm !important;
               height: 297mm !important;
+              max-height: 297mm !important;
               padding: 10mm !important;
-              position: absolute !important;
+              position: fixed !important;
               top: 0 !important;
               left: 0 !important;
+              right: 0 !important;
+              bottom: 0 !important;
+              overflow: hidden !important;
+              background: white !important;
+              z-index: 9999 !important;
+              box-shadow: none !important;
             }
+            /* Reset any parents that might have height/overflow issues */
+            div { overflow: visible !important; }
+            .a4-wrapper { 
+              height: 100% !important; 
+              overflow: visible !important; 
+              padding: 0 !important;
+              margin: 0 !important; 
+            }
+
             /* Compact spacing for print to ensure 1 page */
-            .print-compact-gap { gap: 1.5rem !important; }
-            .print-compact-py { padding-top: 1rem !important; padding-bottom: 1rem !important; }
+            .print-compact-gap { gap: 1.25rem !important; }
             .print-text-sz { font-size: 11pt !important; }
           }
         `}</style>
