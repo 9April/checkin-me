@@ -55,7 +55,8 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
             text-size-adjust: 100% !important;
           }
           #print-area {
-            width: 100% !important;
+            width: 210mm !important;
+            min-width: 210mm !important;
             max-width: 210mm !important;
             height: 297mm !important;
             min-height: 297mm !important;
