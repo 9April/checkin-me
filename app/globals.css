@@ -306,14 +306,6 @@ select.input option {
   display: none !important;
 }
 @media print {
-  @page {
-    size: A4 portrait;
-    margin: 0mm !important;
-    margin-top: 0mm !important;
-    margin-bottom: 0mm !important;
-    margin-left: 0mm !important;
-    margin-right: 0mm !important;
-  }
   body {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
@@ -326,17 +318,6 @@ select.input option {
   }
   .print-only {
     display: block !important;
-  }
-  .a4-container {
-    width: 210mm !important;
-    min-height: 297mm !important;
-    padding: 20mm !important;
-    margin: 0 auto !important;
-    background: #ffffff !important;
-    position: relative;
-    overflow: hidden !important;
-    box-sizing: border-box !important;
-    box-shadow: none !important;
   }
 }
 

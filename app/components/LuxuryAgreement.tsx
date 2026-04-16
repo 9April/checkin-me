@@ -44,9 +44,12 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
     <div id="print-area" className="a4-container bg-white text-[#1A1A1A] font-sans selection:bg-[#A8987E] selection:text-white box-border flex flex-col justify-between mx-auto h-full min-h-[100svh] sm:min-h-[297mm]">
       <style>{`
         @media print {
-          @page { size: A4 portrait; margin: 0mm !important; margin-top: 0mm !important; margin-bottom: 0mm !important; }
+          @page { 
+            size: A4 portrait; 
+            margin: 0mm !important; 
+          }
           html, body {
-            width: 210mm !important;
+            width: 100% !important;
             margin: 0 !important; 
             padding: 0 !important; 
             -webkit-print-color-adjust: exact !important; 
@@ -56,16 +59,14 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
           }
           #print-area {
             width: 210mm !important;
-            min-width: 210mm !important;
             max-width: 210mm !important;
             height: 297mm !important;
-            min-height: 297mm !important;
-            max-height: 297mm !important;
-            margin: 0 !important;
+            margin: 0 auto !important;
             overflow: hidden !important;
             padding-bottom: 5mm !important;
-            zoom: 0.92 !important; /* Mathematically shrink elements to fit strictly inside iOS Print Margins natively */
+            transform: scale(0.92);
             -webkit-transform: scale(0.92);
+            transform-origin: top center;
             -webkit-transform-origin: top center;
           }
           .break-inside-avoid {
@@ -167,25 +168,25 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
       </div>
 
       {/* Pinned Bottom Content Group (Signature & Footer) */}
-      <div className="agreement-pinned-bottom flex flex-col gap-10 pt-12 w-full">
+      <div className="agreement-pinned-bottom flex flex-col gap-10 pt-12 w-full break-inside-avoid">
         {/* Confirmation & Signature Section */}
-        <section className="agreement-signature-row flex flex-col gap-10">
+        <section className="agreement-signature-row flex flex-col gap-10 break-inside-avoid">
           <div className="text-center max-w-xl mx-auto">
             <p className="font-serif text-lg italic leading-relaxed opacity-90 border-b border-[#A8987E]/10 pb-6">
               Je confirme avoir pris connaissance du règlement intérieur et m'engage à le respecter durant mon séjour.
             </p>
           </div>
 
-          <div className="signature-grid grid grid-cols-3 gap-10 items-end">
-            <div className="signature-field border-b border-[#A8987E]/40 pb-3">
+          <div className="signature-grid grid grid-cols-3 gap-10 items-end break-inside-avoid">
+            <div className="signature-field border-b border-[#A8987E]/40 pb-3 break-inside-avoid">
               <p className="text-[10px] uppercase tracking-widest opacity-40 mb-2">Date of Arrival</p>
               <p className="font-serif text-[12pt] leading-none">{formatDate(booking.checkin)}</p>
             </div>
-            <div className="signature-field border-b border-[#A8987E]/40 pb-3">
+            <div className="signature-field border-b border-[#A8987E]/40 pb-3 break-inside-avoid">
               <p className="text-[10px] uppercase tracking-widest opacity-40 mb-2">Estimated Arrival</p>
               <p className="font-serif text-[12pt] leading-none">{booking.checkinHour || "—"}</p>
             </div>
-            <div className="signature-field border-b border-[#A8987E]/40 pb-3 relative min-h-[60px] flex flex-col justify-end">
+            <div className="signature-field border-b border-[#A8987E]/40 pb-3 relative min-h-[60px] flex flex-col justify-end break-inside-avoid">
               <p className="text-[10px] uppercase tracking-widest opacity-40 mb-2 absolute top-0 left-0">Signature</p>
               {booking.signature ? (
                 <img 
