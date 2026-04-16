@@ -158,9 +158,9 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
       </div>
 
       {/* Pinned Bottom Content Group (Signature & Footer) */}
-      <div className="agreement-pinned-bottom flex flex-col gap-6 pt-6 w-full">
+      <div className="agreement-pinned-bottom flex flex-col gap-4 pt-4 w-full">
         {/* Confirmation & Signature Section */}
-        <section className="agreement-signature-row flex flex-col gap-8">
+        <section className="agreement-signature-row flex flex-col gap-4">
           <div className="text-center max-w-xl mx-auto">
             <p className="font-serif text-[13px] italic leading-relaxed opacity-90 border-b border-[#A8987E]/10 pb-4">
               Je confirme avoir pris connaissance du règlement intérieur et m'engage à le respecter durant mon séjour.
@@ -192,7 +192,7 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
         </section>
 
         {/* Footer */}
-        <footer className="pt-8 border-t border-[#1A1A1A]/5 text-center">
+        <footer className="pt-4 border-t border-[#1A1A1A]/5 text-center">
           <p className="text-[9px] uppercase tracking-[0.3em] opacity-40">
             2026 {property.name || "Mamounia 08"} | Secure Digital Registration
           </p>

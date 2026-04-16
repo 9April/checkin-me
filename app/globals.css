@@ -344,7 +344,7 @@ select.input option {
   height: 297mm; /* Strict A4 height */
   min-height: 297mm;
   max-height: 297mm;
-  padding: 15mm; /* Reduced padding to fit 1 page */
+  padding: 10mm; /* Reduced padding to fit 1 page */
   background: #ffffff;
   margin: 0 auto;
   position: relative;
