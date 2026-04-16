@@ -325,12 +325,12 @@ select.input option {
   }
   .a4-container {
     width: 210mm !important;
-    height: 297mm !important;
-    padding: 3rem !important; /* 48px matching requested luxury editorial */
+    min-height: 297mm !important;
+    padding: 20mm !important;
     margin: 0 auto !important;
     background: #FCFBF9 !important;
     position: relative;
-    overflow: visible !important;
+    overflow: hidden !important;
     box-sizing: border-box !important;
     box-shadow: none !important;
   }
@@ -342,6 +342,7 @@ select.input option {
   width: 100%;
   max-width: 210mm; /* A4 width */
   min-height: 297mm; /* A4 height */
+  padding: 20mm;
   background: #FCFBF9;
   margin: 0 auto;
   position: relative;

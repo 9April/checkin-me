@@ -41,133 +41,140 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
   const security = property.ruleSecurity || "Les clés sont confiées aux voyageurs ; leur perte entraîne des frais. Toute activité illégale entraînera l'annulation du séjour.";
 
   return (
-    <div className="a4-container bg-[#FCFBF9] text-[#1A1A1A] font-sans selection:bg-[#A8987E] selection:text-white p-12 box-border flex flex-col gap-16 max-w-screen-md mx-auto min-h-screen sm:min-h-[297mm]">
-      {/* Header */}
-      <header className="text-center py-8">
-        <h1 className="font-serif text-5xl tracking-[0.2em] uppercase mb-4 text-[#1A1A1A]">
-          {property.name || "MAMOUNIA 08"}
-        </h1>
-        <p className="font-sans text-xs tracking-[0.4em] uppercase opacity-50 text-[#A8987E]">
-          Guest Stay Agreement
-        </p>
-      </header>
-
-      {/* Information Bar - Clearly Separated Containers */}
-      <section className="agreement-info-bar grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-0 border-t border-b border-[#A8987E]/20 py-10">
-        <div className="info-bar-item flex flex-col items-center md:border-r border-[#A8987E]/20 px-4 min-w-0">
-          <p className="text-[10px] uppercase tracking-widest opacity-40 mb-3">Guest Name</p>
-          <p className="font-serif text-xl text-center leading-tight truncate w-full">{booking.guestName}</p>
-        </div>
-        <div className="info-bar-item flex flex-col items-center md:border-r border-[#A8987E]/20 px-4 min-w-0">
-          <p className="text-[10px] uppercase tracking-widest opacity-40 mb-3">Email Address</p>
-          <p className="font-serif text-[clamp(0.75rem,1.8vw,1.05rem)] text-center leading-tight w-full break-all whitespace-nowrap overflow-visible">
-            {booking.guestEmail}
+    <div className="a4-container bg-[#FCFBF9] text-[#1A1A1A] font-sans selection:bg-[#A8987E] selection:text-white box-border flex flex-col justify-between mx-auto">
+      
+      {/* Top Content Group */}
+      <div className="flex flex-col gap-10">
+        {/* Header */}
+        <header className="text-center py-6">
+          <h1 className="font-serif text-5xl tracking-[0.2em] uppercase mb-4 text-[#1A1A1A]">
+            {property.name || "MAMOUNIA 08"}
+          </h1>
+          <p className="font-sans text-xs tracking-[0.4em] uppercase opacity-50 text-[#A8987E]">
+            Guest Stay Agreement
           </p>
-        </div>
-        <div className="info-bar-item flex flex-col items-center px-4 min-w-0">
-          <p className="text-[10px] uppercase tracking-widest opacity-40 mb-3">Stay Period</p>
-          <p className="font-serif text-xl text-center leading-tight whitespace-nowrap">
-            {formatDate(booking.checkin)} — {formatDate(booking.checkout)}
+        </header>
+
+        {/* Information Bar */}
+        <section className="agreement-info-bar grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-0 border-t border-b border-[#A8987E]/20 py-8">
+          <div className="info-bar-item flex flex-col items-center md:border-r border-[#A8987E]/20 px-4 min-w-0">
+            <p className="text-[10px] uppercase tracking-widest opacity-40 mb-3">Guest Name</p>
+            <p className="font-serif text-xl text-center leading-tight truncate w-full">{booking.guestName}</p>
+          </div>
+          <div className="info-bar-item flex flex-col items-center md:border-r border-[#A8987E]/20 px-4 min-w-0">
+            <p className="text-[10px] uppercase tracking-widest opacity-40 mb-3">Email Address</p>
+            <p className="font-serif text-[clamp(0.75rem,1.8vw,1.05rem)] text-center leading-tight w-full break-all whitespace-nowrap overflow-visible">
+              {booking.guestEmail}
+            </p>
+          </div>
+          <div className="info-bar-item flex flex-col items-center px-4 min-w-0">
+            <p className="text-[10px] uppercase tracking-widest opacity-40 mb-3">Stay Period</p>
+            <p className="font-serif text-xl text-center leading-tight whitespace-nowrap">
+              {formatDate(booking.checkin)} — {formatDate(booking.checkout)}
+            </p>
+          </div>
+        </section>
+
+        {/* House Etiquette & Rules */}
+        <section className="agreement-house-etiquette flex flex-col gap-8 break-inside-avoid">
+          <h2 className="font-serif text-2xl text-center italic opacity-80 decoration-[#A8987E]/20 underline underline-offset-8 mb-4">House Etiquette</h2>
+          <div className="house-etiquette-grid grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10">
+            {/* Logistics */}
+            <div className="etiquette-item flex gap-5">
+              <div className="shrink-0 w-10 h-10 rounded-full border border-[#A8987E]/30 flex items-center justify-center text-[#A8987E]">
+                <Clock size={18} />
+              </div>
+              <div className="flex flex-col gap-2">
+                <h3 className="text-xs uppercase tracking-[0.2em] font-bold text-[#A8987E]">Logistics</h3>
+                <p className="text-[13px] leading-relaxed opacity-70">
+                  {logistics}
+                </p>
+              </div>
+            </div>
+
+            {/* Occupants & accès */}
+            <div className="etiquette-item flex gap-5">
+              <div className="shrink-0 w-10 h-10 rounded-full border border-[#A8987E]/30 flex items-center justify-center text-[#A8987E]">
+                <Users size={18} />
+              </div>
+              <div className="flex flex-col gap-2">
+                <h3 className="text-xs uppercase tracking-[0.2em] font-bold text-[#A8987E]">Occupants & accès</h3>
+                <p className="text-[13px] leading-relaxed opacity-70">
+                  {occupants}
+                </p>
+              </div>
+            </div>
+
+            {/* Responsabilité & Propreté */}
+            <div className="etiquette-item flex gap-5">
+              <div className="shrink-0 w-10 h-10 rounded-full border border-[#A8987E]/30 flex items-center justify-center text-[#A8987E]">
+                <Sparkles size={18} />
+              </div>
+              <div className="flex flex-col gap-2">
+                <h3 className="text-xs uppercase tracking-[0.2em] font-bold text-[#A8987E]">Responsabilité & Propreté</h3>
+                <p className="text-[13px] leading-relaxed opacity-70">
+                  {responsibility}
+                </p>
+              </div>
+            </div>
+
+            {/* Accès & conformité */}
+            <div className="etiquette-item flex gap-5">
+              <div className="shrink-0 w-10 h-10 rounded-full border border-[#A8987E]/30 flex items-center justify-center text-[#A8987E]">
+                <ShieldCheck size={18} />
+              </div>
+              <div className="flex flex-col gap-2">
+                <h3 className="text-xs uppercase tracking-[0.2em] font-bold text-[#A8987E]">Accès & conformité</h3>
+                <p className="text-[13px] leading-relaxed opacity-70">
+                  {security}
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      {/* Pinned Bottom Content Group (Signature & Footer) */}
+      <div className="agreement-pinned-bottom flex flex-col gap-10 pt-12 break-inside-avoid">
+        {/* Confirmation & Signature Section */}
+        <section className="agreement-signature-row flex flex-col gap-10">
+          <div className="text-center max-w-xl mx-auto">
+            <p className="font-serif text-lg italic leading-relaxed opacity-90 border-b border-[#A8987E]/10 pb-6">
+              Je confirme avoir pris connaissance du règlement intérieur et m'engage à le respecter durant mon séjour.
+            </p>
+          </div>
+
+          <div className="signature-grid grid grid-cols-1 md:grid-cols-3 gap-10 items-end">
+            <div className="signature-field border-b border-[#A8987E]/40 pb-3">
+              <p className="text-[9px] uppercase tracking-widest opacity-40 mb-2">Date of Arrival</p>
+              <p className="font-serif text-lg leading-none">{formatDate(booking.checkin)}</p>
+            </div>
+            <div className="signature-field border-b border-[#A8987E]/40 pb-3">
+              <p className="text-[9px] uppercase tracking-widest opacity-40 mb-2">Estimated Arrival</p>
+              <p className="font-serif text-lg leading-none">{booking.checkinHour || "—"}</p>
+            </div>
+            <div className="signature-field border-b border-[#A8987E]/40 pb-3 relative min-h-[60px] flex flex-col justify-end">
+              <p className="text-[9px] uppercase tracking-widest opacity-40 mb-2 absolute top-0 left-0">Signature</p>
+              {booking.signature ? (
+                <img 
+                  src={booking.signature} 
+                  alt="Guest Signature" 
+                  className="h-16 w-auto object-contain pointer-events-none grayscale brightness-50" 
+                />
+              ) : (
+                <div className="h-12 border-b border-[#1A1A1A]/10 border-dashed" />
+              )}
+            </div>
+          </div>
+        </section>
+
+        {/* Footer */}
+        <footer className="pt-8 border-t border-[#1A1A1A]/5 text-center">
+          <p className="text-[9px] uppercase tracking-[0.3em] opacity-40">
+            2026 {property.name || "Mamounia 08"} | Secure Digital Registration
           </p>
-        </div>
-      </section>
-
-      {/* House Etiquette & Rules - 2x2 Grid */}
-      <section className="agreement-house-etiquette flex flex-col gap-10">
-        <h2 className="font-serif text-2xl text-center italic opacity-80 decoration-[#A8987E]/20 underline underline-offset-8">House Etiquette</h2>
-        <div className="house-etiquette-grid grid grid-cols-1 md:grid-cols-2 gap-12">
-          {/* Logistics */}
-          <div className="etiquette-item flex gap-5">
-            <div className="shrink-0 w-10 h-10 rounded-full border border-[#A8987E]/30 flex items-center justify-center text-[#A8987E]">
-              <Clock size={18} />
-            </div>
-            <div className="flex flex-col gap-2">
-              <h3 className="text-xs uppercase tracking-[0.2em] font-bold text-[#A8987E]">Logistics</h3>
-              <p className="text-[13px] leading-relaxed opacity-70">
-                {logistics}
-              </p>
-            </div>
-          </div>
-
-          {/* Occupants & accès */}
-          <div className="etiquette-item flex gap-5">
-            <div className="shrink-0 w-10 h-10 rounded-full border border-[#A8987E]/30 flex items-center justify-center text-[#A8987E]">
-              <Users size={18} />
-            </div>
-            <div className="flex flex-col gap-2">
-              <h3 className="text-xs uppercase tracking-[0.2em] font-bold text-[#A8987E]">Occupants & accès</h3>
-              <p className="text-[13px] leading-relaxed opacity-70">
-                {occupants}
-              </p>
-            </div>
-          </div>
-
-          {/* Responsabilité & Propreté */}
-          <div className="etiquette-item flex gap-5">
-            <div className="shrink-0 w-10 h-10 rounded-full border border-[#A8987E]/30 flex items-center justify-center text-[#A8987E]">
-              <Sparkles size={18} />
-            </div>
-            <div className="flex flex-col gap-2">
-              <h3 className="text-xs uppercase tracking-[0.2em] font-bold text-[#A8987E]">Responsabilité & Propreté</h3>
-              <p className="text-[13px] leading-relaxed opacity-70">
-                {responsibility}
-              </p>
-            </div>
-          </div>
-
-          {/* Accès & conformité */}
-          <div className="etiquette-item flex gap-5">
-            <div className="shrink-0 w-10 h-10 rounded-full border border-[#A8987E]/30 flex items-center justify-center text-[#A8987E]">
-              <ShieldCheck size={18} />
-            </div>
-            <div className="flex flex-col gap-2">
-              <h3 className="text-xs uppercase tracking-[0.2em] font-bold text-[#A8987E]">Accès & conformité</h3>
-              <p className="text-[13px] leading-relaxed opacity-70">
-                {security}
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Confirmation & Signature Section */}
-      <section className="agreement-signature-row mt-auto flex flex-col gap-12">
-        <div className="text-center max-w-xl mx-auto">
-          <p className="font-serif text-lg italic leading-relaxed opacity-90 border-b border-[#A8987E]/10 pb-6 mb-6">
-            Je confirme avoir pris connaissance du règlement intérieur et m'engage à le respecter durant mon séjour.
-          </p>
-        </div>
-
-        <div className="signature-grid grid grid-cols-1 md:grid-cols-3 gap-10 items-end">
-          <div className="signature-field border-b border-[#A8987E]/40 pb-3">
-            <p className="text-[9px] uppercase tracking-widest opacity-40 mb-2">Date of Arrival</p>
-            <p className="font-serif text-lg leading-none">{formatDate(booking.checkin)}</p>
-          </div>
-          <div className="signature-field border-b border-[#A8987E]/40 pb-3">
-            <p className="text-[9px] uppercase tracking-widest opacity-40 mb-2">Estimated Arrival</p>
-            <p className="font-serif text-lg leading-none">{booking.checkinHour || "—"}</p>
-          </div>
-          <div className="signature-field border-b border-[#A8987E]/40 pb-3 relative min-h-[60px] flex flex-col justify-end">
-            <p className="text-[9px] uppercase tracking-widest opacity-40 mb-2 absolute top-0 left-0">Signature</p>
-            {booking.signature ? (
-              <img 
-                src={booking.signature} 
-                alt="Guest Signature" 
-                className="h-16 w-auto object-contain pointer-events-none grayscale brightness-50" 
-              />
-            ) : (
-              <div className="h-12 border-b border-[#1A1A1A]/10 border-dashed" />
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="pt-10 border-t border-[#1A1A1A]/5 text-center">
-        <p className="text-[9px] uppercase tracking-[0.3em] opacity-40">
-          2026 {property.name || "Mamounia 08"} | Secure Digital Registration
-        </p>
-      </footer>
+        </footer>
+      </div>
     </div>
   );
 }
