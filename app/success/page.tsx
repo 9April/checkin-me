@@ -1,6 +1,7 @@
 // app/success/page.tsx
 
 import PdfDownloadButton from '@/app/components/PdfDownloadButton';
+import Link from 'next/link';
 
 export default async function Success({
   searchParams,
@@ -118,6 +119,18 @@ export default async function Success({
             </svg>
             Download PDF
           </PdfDownloadButton>
+        ) : null}
+
+        {params.pdf ? (
+          <Link
+            href={`/agreement/${params.pdf.replace('Booking-', '').replace('.pdf', '')}`}
+            className="inline-flex items-center justify-center gap-2 bg-[#FCFBF9] border border-[#A8987E] text-[#1A1A1A] hover:bg-[#F4F1EA] px-6 py-4 rounded-lg font-semibold transition-all active:scale-[0.98]"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+            </svg>
+            Print Luxury Agreement
+          </Link>
         ) : null}
       </div>
 

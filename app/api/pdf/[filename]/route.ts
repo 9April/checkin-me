@@ -6,9 +6,11 @@ import { auth } from '@/auth';
 
 export const dynamic = 'force-dynamic';
 
-/** PDFs we generate: `Booking-<cuid>.pdf` */
-function isAppBookingPdfName(name: string): boolean {
-  return /^Booking-[a-zA-Z0-9_-]+\.pdf$/i.test(name);
+/** PDFs we generate: `Booking-<cuid>.pdf`, plus signatures: `*_signature.png` */
+function isValidFileName(name: string): boolean {
+  const isPdf = /^Booking-[a-zA-Z0-9_-]+\.pdf$/i.test(name);
+  const isSignature = /^[0-9]+_signature\.png$/i.test(name);
+  return isPdf || isSignature;
 }
 
 export async function GET(
@@ -19,26 +21,33 @@ export async function GET(
     const { filename: raw } = await params;
     const filename = decodeURIComponent(raw);
 
-    if (!isAppBookingPdfName(filename) || filename.length > 240) {
+    if (!isValidFileName(filename) || filename.length > 240) {
       return new NextResponse('Bad Request', { status: 400 });
     }
 
     const session = await auth();
+    const isSignature = filename.endsWith('.png');
 
     if (!session?.user?.id) {
-      // Guest (success page / email link): allow only if this PDF belongs to a saved booking
+      // Guest (success page / email link): allow if this PDF or Signature belongs to a saved booking
       const guestOk = await prisma.booking.findFirst({
-        where: { pdfUrl: filename, deletedAt: null },
+        where: { 
+          OR: [{ pdfUrl: filename }, { signatureUrl: filename }],
+          deletedAt: null 
+        },
         select: { id: true },
       });
       if (!guestOk) {
         return new NextResponse('Unauthorized', { status: 401 });
       }
     } else {
-      // Logged-in host: only PDFs for bookings on their property
+      // Logged-in host: only files for bookings on their property
       const hostId = await getHostUserId();
       const booking = await prisma.booking.findFirst({
-        where: { pdfUrl: filename, deletedAt: null },
+        where: { 
+          OR: [{ pdfUrl: filename }, { signatureUrl: filename }],
+          deletedAt: null 
+        },
         select: { id: true, property: { select: { hostId: true } } },
       });
       if (!booking) {
@@ -55,15 +64,9 @@ export async function GET(
       .download(filename);
 
     if (error || !data) {
-      const msg =
-        error &&
-        typeof error === 'object' &&
-        'message' in error &&
-        typeof (error as { message?: string }).message === 'string'
-          ? (error as { message: string }).message
-          : JSON.stringify(error ?? 'unknown');
-      console.error('Supabase PDF download error:', msg, error);
-      return new NextResponse('PDF not found in cloud storage', { status: 404 });
+      const msg = error?.message || 'unknown error';
+      console.error('Supabase download error:', msg, error);
+      return new NextResponse('File not found in storage', { status: 404 });
     }
 
     const blob = await data.arrayBuffer();
@@ -73,12 +76,13 @@ export async function GET(
       request.nextUrl.searchParams.get('download') === 'true';
 
     const disposition = wantsDownload ? 'attachment' : 'inline';
+    const contentType = isSignature ? 'image/png' : 'application/pdf';
 
     return new NextResponse(blob, {
       headers: {
-        'Content-Type': 'application/pdf',
+        'Content-Type': contentType,
         'Content-Disposition': `${disposition}; filename="${filename}"`,
-        'Cache-Control': 'private, max-age=300',
+        'Cache-Control': 'private, max-age=3600',
       },
     });
   } catch (error) {

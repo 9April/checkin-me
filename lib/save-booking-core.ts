@@ -112,24 +112,46 @@ async function sendCheckInEmails(opts: {
     : '';
   const attachmentLine = opts.pdfAttachment ? tm.guestAttachmentLine : '';
   const guestBody = `${tm.guestDear(opts.guestName)}\n\n${tm.guestThanks(opts.propertyName)}${attachmentLine}${pdfNote}\n\n${tm.guestLookForward}\n\n${tm.guestBestRegards(opts.propertyName)}`;
-  const guestBodyHtml = `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#f6f7fb">
-<div style="max-width:640px;margin:0 auto;padding:24px">
-  <div style="background:#fff;border:1px solid #eee;border-radius:16px;overflow:hidden">
-    <div style="padding:18px 20px;background:linear-gradient(135deg,#111827,#374151);color:#fff">
-      <div style="font-size:14px;opacity:.9">Checkin-Me</div>
-      <div style="font-size:18px;font-weight:700;margin-top:6px">${escapeHtml(opts.propertyName)}</div>
+  const guestBodyHtml = `<!DOCTYPE html><html><head>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head><body style="margin:0;padding:0;background-color:#FCFBF9;font-family:'Inter',system-ui,-apple-system,sans-serif;color:#1A1A1A">
+<div style="max-width:600px;margin:40px auto;background-color:#FCFBF9;border:1px solid rgba(168,152,126,0.1)">
+  <div style="padding:60px 40px;text-align:center">
+    <div style="font-family:'Playfair Display',serif;font-size:32px;letter-spacing:0.3em;text-transform:uppercase;margin-bottom:8px;color:#1A1A1A">${escapeHtml(opts.propertyName)}</div>
+    <div style="font-size:10px;letter-spacing:0.4em;text-transform:uppercase;opacity:0.5;color:#A8987E;margin-bottom:48px">Secure Digital Registration</div>
+    
+    <div style="height:1px;background-color:rgba(168,152,126,0.2);margin-bottom:48px"></div>
+    
+    <div style="font-family:'Playfair Display',serif;font-size:24px;font-style:italic;margin-bottom:24px">${escapeHtml(tm.guestDear(opts.guestName))}</div>
+    
+    <p style="font-size:15px;line-height:1.7;color:#374151;margin-bottom:32px">
+      ${tm.guestThanksHtml(escapeHtml(opts.propertyName))}
+    </p>
+
+    <div style="background-color:#fff;border:1px solid rgba(168,152,126,0.15);padding:32px;margin-bottom:40px;text-align:left">
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.2em;color:#A8987E;margin-bottom:16px">Stay Details</div>
+      <div style="font-family:'Playfair Display',serif;font-size:18px;margin-bottom:8px"><strong>Property:</strong> ${escapeHtml(opts.propertyName)}</div>
+      <div style="font-family:'Playfair Display',serif;font-size:18px;margin-bottom:8px"><strong>Dates:</strong> ${opts.checkin} — ${opts.checkout}</div>
+      ${opts.checkinHour ? `<div style="font-family:'Playfair Display',serif;font-size:18px"><strong>Arrival:</strong> ${escapeHtml(opts.checkinHour)}</div>` : ''}
     </div>
-    <div style="padding:20px;font-family:system-ui,-apple-system,sans-serif;line-height:1.55;color:#111827">
-      <p style="margin:0 0 12px">${escapeHtml(tm.guestDear(opts.guestName))}</p>
-      <p style="margin:0 0 12px">${tm.guestThanksHtml(escapeHtml(opts.propertyName))}</p>
-      ${opts.pdfAttachment ? `<div style="margin:14px 0;padding:12px 14px;border:1px solid #e5e7eb;border-radius:12px;background:#f9fafb"><strong>${tm.guestHtmlAttachment}</strong></div>` : ''}
-      ${opts.pdfFailedNote ? `<p style="margin:12px 0"><em>${escapeHtml(opts.pdfFailedNote)}</em></p>` : ''}
-      <p style="margin:12px 0 0">${escapeHtml(tm.guestLookForward)}</p>
-      <p style="margin:16px 0 0">${escapeHtml(tm.guestBestRegards(opts.propertyName)).replace(/\n/g, '<br/>')}</p>
+
+    ${opts.pdfAttachment ? `
+    <div style="margin-bottom:48px">
+      <p style="font-size:14px;color:#717171;margin-bottom:20px">${tm.guestHtmlAttachment}</p>
+      <a href="https://${process.env.VERCEL_URL || 'checkin-me.com'}/agreement/${opts.pdfAttachment.filename.replace('Booking-', '').replace('.pdf', '')}" style="display:inline-block;background-color:#1A1A1A;color:#FCFBF9;padding:18px 36px;text-decoration:none;font-size:13px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;border-radius:2px">View Signed Agreement</a>
     </div>
+    ` : ''}
+
+    <div style="height:1px;background-color:rgba(168,152,126,0.1);margin-bottom:40px"></div>
+    
+    <p style="font-size:14px;color:#717171;font-style:italic">${escapeHtml(tm.guestLookForward)}</p>
+    <div style="font-family:'Playfair Display',serif;font-size:18px;margin-top:12px">${escapeHtml(tm.guestBestRegards(opts.propertyName)).replace(/\n/g, '<br/>')}</div>
   </div>
-  <div style="text-align:center;font-family:system-ui,-apple-system,sans-serif;color:#6b7280;font-size:12px;margin-top:12px">
-    This message was sent by Checkin-Me.
+  
+  <div style="padding:40px;text-align:center;background-color:#1A1A1A;color:#FCFBF9">
+    <div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;opacity:0.6 hover:opacity:1;transition:opacity 0.3s">
+      © 2026 ${escapeHtml(opts.propertyName)} | Powered by Checkin-Me
+    </div>
   </div>
 </div>
 </body></html>`;
@@ -496,6 +518,7 @@ export async function executeSaveBooking(
         propertyId,
         totalTravelers,
         selfieUrl: selfieName,
+        signatureUrl: signatureName,
         checkinHour,
         whatsapp,
         travelers: {

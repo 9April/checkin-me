@@ -28,15 +28,18 @@
   --color-ab-brand-hover: var(--ab-brand-hover);
   --color-ab-muted: var(--ab-muted);
   --color-ab-border: var(--ab-border);
-  --color-ab-text: var(--ab-text);
   --color-ab-text-secondary: var(--ab-text-secondary);
   --color-gold-primary: var(--gold-primary);
   --color-gold-dark: var(--gold-dark);
   --color-gold-light: var(--gold-light);
   --color-luxury-cream: var(--luxury-cream);
   --color-deep-charcoal: var(--deep-charcoal);
+  --color-stay-bg: #FCFBF9;
+  --color-stay-text: #1A1A1A;
+  --color-stay-accent: #A8987E;
   --font-sans: var(--font-inter), "Circular", -apple-system, BlinkMacSystemFont, "Segoe UI",
     Roboto, "Helvetica Neue", sans-serif;
+  --font-serif: var(--font-playfair), "Playfair Display", serif;
   --font-mono: var(--font-geist-mono);
 }
 
@@ -301,4 +304,30 @@ select.input option {
 .luxury-privacy-container > header,
 .luxury-privacy-container header {
   display: none !important;
+}
+@media print {
+  @page {
+    size: A4;
+    margin: 0;
+  }
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    background: #FCFBF9 !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  .a4-container {
+    width: 210mm;
+    height: 297mm;
+    padding: 20mm;
+    margin: 0 auto;
+    background: #FCFBF9 !important;
+    position: relative;
+    overflow: hidden;
+  }
 }
