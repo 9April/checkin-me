@@ -329,5 +329,17 @@ select.input option {
     background: #FCFBF9 !important;
     position: relative;
     overflow: hidden;
+    box-sizing: border-box;
   }
+}
+
+/* Web-view responsive support for the agreement */
+.a4-container {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 210mm; /* A4 width */
+  min-height: 297mm; /* A4 height */
+  background: #FCFBF9;
+  margin: 0 auto;
+  position: relative;
 }

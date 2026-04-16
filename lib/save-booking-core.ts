@@ -100,6 +100,7 @@ async function sendCheckInEmails(opts: {
     contentType?: string;
   }>;
   lang: Lang;
+  bookingId: string;
 }): Promise<{ mailError: string }> {
   const tm = getCheckinEmailTemplates(opts.lang);
   const guest = opts.guestEmail.trim();
@@ -135,12 +136,10 @@ async function sendCheckInEmails(opts: {
       ${opts.checkinHour ? `<div style="font-family:'Playfair Display',serif;font-size:18px"><strong>Arrival:</strong> ${escapeHtml(opts.checkinHour)}</div>` : ''}
     </div>
 
-    ${opts.pdfAttachment ? `
     <div style="margin-bottom:48px">
-      <p style="font-size:14px;color:#717171;margin-bottom:20px">${tm.guestHtmlAttachment}</p>
-      <a href="https://${process.env.VERCEL_URL || 'checkin-me.com'}/agreement/${opts.pdfAttachment.filename.replace('Booking-', '').replace('.pdf', '')}" style="display:inline-block;background-color:#1A1A1A;color:#FCFBF9;padding:18px 36px;text-decoration:none;font-size:13px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;border-radius:2px">View Signed Agreement</a>
+      <p style="font-size:14px;color:#717171;margin-bottom:20px">Your digital signed agreement is now available for your records.</p>
+      <a href="https://${process.env.VERCEL_URL || 'checkin-me.com'}/agreement/${opts.bookingId}" style="display:inline-block;background-color:#1A1A1A;color:#FCFBF9;padding:18px 36px;text-decoration:none;font-size:11px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;border-radius:2px">View Digital Agreement</a>
     </div>
-    ` : ''}
 
     <div style="height:1px;background-color:rgba(168,152,126,0.1);margin-bottom:40px"></div>
     
@@ -155,9 +154,7 @@ async function sendCheckInEmails(opts: {
   </div>
 </div>
 </body></html>`;
-  const adminAttachmentLine = opts.pdfAttachment
-    ? '\n\n' + tm.adminAttachment
-    : '';
+  const adminAttachmentLine = '';
   const adminDocsLine =
     opts.adminAttachments && opts.adminAttachments.length > 0
       ? '\n\n' + tm.adminExtraDocumentsAttached
@@ -546,84 +543,11 @@ export async function executeSaveBooking(
     const rules = resolveHouseRulesForLang(property.houseRules, lang);
     const idFiles = travelersData.flatMap((t) => t.idFiles);
 
-    let pdfBytes: any;
-    try {
-      console.log('--- Generating PDF Agreement (Legacy Engine) ---');
-      const imagesB64 = idFiles.map((f) => {
-        const buf = imageBuffers[f];
-        if (!buf) return null;
-        const ext = f.split('.').pop() || 'jpg';
-        const mime = ext === 'png' ? 'image/png' : 'image/jpeg';
-        return `data:${mime};base64,${buf.toString('base64')}`;
-      }).filter((img): img is string => img !== null);
-
-      pdfBytes = await buildPDF({
-        guestName,
-        guestEmail,
-        checkin,
-        checkout,
-        propertyName: property.name,
-        logoUrl: property.logoUrl,
-        primaryColor: property.primaryColor,
-        pdfTemplate: property.pdfTemplate,
-        pdfFooter: property.pdfFooter,
-        travelers: travelersData.map((t) => ({
-          country: t.country,
-          idNumber: t.idNumber,
-          idFiles: t.idFiles,
-        })),
-        rules,
-        signature,
-        idImages: imagesB64,
-        lang,
-        checkinHour,
-        whatsapp,
-      });
-      console.log('--- PDF Generated Successfully ---');
-    } catch (pdfErr) {
-      console.error('--- PDF Generation Failed:', pdfErr);
-      // Fallback: Continue without PDF if necessary, but log as serious error
-    }
-
-    const pdfName = `Booking-${booking.id}.pdf`;
-    let pdfStoredInCloud = false;
-
-    if (pdfBytes) {
-      try {
-        console.log(`--- Uploading PDF to Storage: ${pdfName} ---`);
-        const { error: pdfUploadError } = await supabaseAdmin.storage
-          .from('checkin-me')
-          .upload(pdfName, Buffer.from(pdfBytes), {
-            contentType: 'application/pdf',
-            upsert: true,
-          });
-
-        if (pdfUploadError) {
-          console.error('--- Supabase PDF upload error:', pdfUploadError.message);
-        } else {
-          pdfStoredInCloud = true;
-          await prisma.booking.update({
-            where: { id: booking.id },
-            data: { pdfUrl: pdfName },
-          });
-          console.log('--- PDF Stored and DB Record Updated ---');
-        }
-      } catch (uploadErr) {
-        console.error('--- PDF Storage Step Crashed:', uploadErr);
-      }
-    }
-
     /* ---------- 4. send emails (Protected with Try/Catch) ---------- */
     try {
       console.log('--- Initiating Email Dispatch ---');
       const adminEmail = property.adminEmail?.trim() || property.host?.email?.trim() || null;
       
-      const pdfAttachment = pdfBytes ? {
-        filename: pdfName,
-        content: Buffer.from(pdfBytes),
-        contentType: 'application/pdf',
-      } : undefined;
-
       // Prepare ID doc attachments (Limited to 12 to avoid size issues)
       const idDocKeys = [...new Set(idFiles)].filter(Boolean);
       const idDocDownloads = await Promise.all(
@@ -636,10 +560,7 @@ export async function executeSaveBooking(
           return res.ok ? res.attachment : null;
         })
       );
-      const combinedAttachments = [
-        ...(pdfAttachment ? [pdfAttachment] : []),
-        ...(idDocDownloads.filter(Boolean) as any[]),
-      ];
+      const combinedAttachments = idDocDownloads.filter(Boolean) as any[];
 
       const { mailError } = await sendCheckInEmails({
         guestEmail,
@@ -648,7 +569,7 @@ export async function executeSaveBooking(
         propertyName: property.name,
         checkin,
         checkout,
-        pdfAttachment,
+        pdfAttachment: undefined, // Legacy PDF removed
         guestAttachments: combinedAttachments,
         adminAttachments: combinedAttachments,
         checkinHour,
@@ -656,6 +577,7 @@ export async function executeSaveBooking(
         totalTravelers,
         travelers: travelersData,
         lang,
+        bookingId: booking.id,
       });
 
       if (mailError) console.warn('--- Email Dispatch reported failures:', mailError);
@@ -665,13 +587,12 @@ export async function executeSaveBooking(
     }
 
     const q = new URLSearchParams();
-    if (pdfStoredInCloud) q.set('pdf', pdfName);
+    q.set('id', booking.id);
     q.set('guest', guestName);
 
     console.log('--- executeSaveBooking Success ---');
     return jsonSafeResult({
       success: true,
-      pdfName: pdfStoredInCloud ? pdfName : undefined,
       redirectUrl: `/success?${q.toString()}`,
     });
   } catch (e: any) {

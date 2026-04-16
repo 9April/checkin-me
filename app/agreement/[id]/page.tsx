@@ -50,21 +50,21 @@ export default async function AgreementPage({ params }: PageProps) {
   };
 
   return (
-    <div className="min-h-screen bg-[#F0F0F0] flex flex-col items-center py-12 px-4 no-scrollbar">
+    <div className="min-h-screen bg-[#FDFDFD] flex flex-col items-center py-6 sm:py-12 px-0 sm:px-4 no-scrollbar">
       {/* Controls - Hidden during print */}
-      <div className="no-print w-full max-w-[210mm] flex justify-between items-center mb-12 bg-white p-5 rounded-2xl shadow-sm border border-gray-200/50">
+      <div className="no-print w-full max-w-screen-md flex justify-between items-center mb-8 bg-white/80 backdrop-blur-md p-5 rounded-none sm:rounded-2xl shadow-sm border-b sm:border border-gray-100 z-10 sticky top-0">
         <Link 
           href="/dashboard" 
-          className="flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-[#1A1A1A] transition-all"
+          className="flex items-center gap-2 text-xs uppercase tracking-widest font-semibold text-gray-400 hover:text-[#1A1A1A] transition-all"
         >
-          <ArrowLeft size={16} />
-          Back to Dashboard
+          <ArrowLeft size={14} />
+          Dashboard
         </Link>
         <PrintButton />
       </div>
 
       {/* The Printable Document */}
-      <div className="shadow-[0_24px_48px_-12px_rgba(0,0,0,0.1)] rounded-sm overflow-hidden scale-[0.85] sm:scale-100 origin-top bg-white">
+      <div className="w-full max-w-screen-md bg-white overflow-hidden">
         <LuxuryAgreement 
           property={propertyData} 
           booking={bookingData} 
