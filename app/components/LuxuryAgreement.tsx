@@ -47,7 +47,6 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
           @page { size: A4 portrait; margin: 0; }
           html, body {
             width: 210mm !important;
-            height: 297mm !important;
             margin: 0 !important; 
             padding: 0 !important; 
             -webkit-print-color-adjust: exact !important; 
@@ -58,15 +57,16 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
           #print-area {
             width: 100% !important;
             max-width: 210mm !important;
-            height: 100% !important;
-            max-height: 297mm !important;
             margin: 0 !important;
-            overflow: hidden !important;
-            page-break-after: avoid !important;
           }
           .break-inside-avoid {
             break-inside: avoid !important;
             page-break-inside: avoid !important;
+          }
+          .force-page-break {
+            break-before: page !important;
+            page-break-before: always !important;
+            margin-top: 20mm !important; /* Visual padding for start of page 2 */
           }
         }
       `}</style>
@@ -163,7 +163,7 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
       </div>
 
       {/* Pinned Bottom Content Group (Signature & Footer) */}
-      <div className="agreement-pinned-bottom flex flex-col gap-6 sm:gap-10 pt-6 sm:pt-12 break-inside-avoid">
+      <div className="agreement-pinned-bottom flex flex-col gap-6 sm:gap-10 pt-6 sm:pt-12 force-page-break w-full">
         {/* Confirmation & Signature Section */}
         <section className="agreement-signature-row flex flex-col gap-6 sm:gap-10">
           <div className="text-center max-w-xl mx-auto">

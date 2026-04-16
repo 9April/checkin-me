@@ -346,5 +346,4 @@ select.input option {
   background: #ffffff;
   margin: 0 auto;
   position: relative;
-  overflow: hidden; /* Only hidden on web to prevent scrollbars in container */
 }
