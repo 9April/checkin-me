@@ -87,8 +87,6 @@ export default async function AgreementPage({ params }: PageProps) {
           booking={bookingData} 
         />
       </div>
-
-      </div>
     </div>
   );
 }
