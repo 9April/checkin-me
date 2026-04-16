@@ -32,7 +32,8 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
   const formatDate = (dateStr: string) => {
     if (!dateStr || !dateStr.includes('-')) return dateStr;
     const [y, m, d] = dateStr.split('-');
-    return `${d}-${m}-${y}`;
+    const shortYear = y.slice(-2);
+    return `${d}/${m}/${shortYear}`;
   };
 
   const logistics = property.ruleLogistics || "L'arrivée est prévue à partir de 15:00 et le départ doit impérativement être effectué avant 11:00.";
