@@ -41,7 +41,7 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
   const security = property.ruleSecurity || "Les clés sont confiées aux voyageurs ; leur perte entraîne des frais. Toute activité illégale entraînera l'annulation du séjour.";
 
   return (
-    <div id="print-area" className="a4-container bg-[#FCFBF9] text-[#1A1A1A] font-sans selection:bg-[#A8987E] selection:text-white box-border flex flex-col justify-between mx-auto h-full min-h-[100svh] sm:min-h-[297mm]">
+    <div id="print-area" className="a4-container bg-white text-[#1A1A1A] font-sans selection:bg-[#A8987E] selection:text-white box-border flex flex-col justify-between mx-auto h-full min-h-[100svh] sm:min-h-[297mm]">
       <style>{`
         @media print {
           @page { size: A4 portrait; margin: 0; }
@@ -95,7 +95,7 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
           </div>
           <div className="info-bar-item flex flex-col items-center px-4 min-w-0">
             <p className="text-[10px] uppercase tracking-widest opacity-40 mb-3">Stay Period</p>
-            <p className="font-serif text-xl text-center leading-tight whitespace-nowrap">
+            <p className="font-serif text-[clamp(0.75rem,2vw,1.15rem)] text-center leading-tight whitespace-nowrap">
               {formatDate(booking.checkin)} — {formatDate(booking.checkout)}
             </p>
           </div>
@@ -173,11 +173,11 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
           <div className="signature-grid grid grid-cols-1 md:grid-cols-3 gap-10 items-end">
             <div className="signature-field border-b border-[#A8987E]/40 pb-3">
               <p className="text-[9px] uppercase tracking-widest opacity-40 mb-2">Date of Arrival</p>
-              <p className="font-serif text-lg leading-none">{formatDate(booking.checkin)}</p>
+              <p className="font-serif text-[clamp(0.85rem,2vw,1.125rem)] leading-none">{formatDate(booking.checkin)}</p>
             </div>
             <div className="signature-field border-b border-[#A8987E]/40 pb-3">
               <p className="text-[9px] uppercase tracking-widest opacity-40 mb-2">Estimated Arrival</p>
-              <p className="font-serif text-lg leading-none">{booking.checkinHour || "—"}</p>
+              <p className="font-serif text-[clamp(0.85rem,2vw,1.125rem)] leading-none">{booking.checkinHour || "—"}</p>
             </div>
             <div className="signature-field border-b border-[#A8987E]/40 pb-3 relative min-h-[60px] flex flex-col justify-end">
               <p className="text-[9px] uppercase tracking-widest opacity-40 mb-2 absolute top-0 left-0">Signature</p>

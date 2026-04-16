@@ -313,7 +313,7 @@ select.input option {
   body {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
-    background: #FCFBF9 !important;
+    background: #ffffff !important;
     margin: 0 !important;
     padding: 0 !important;
   }
@@ -328,7 +328,7 @@ select.input option {
     min-height: 297mm !important;
     padding: 20mm !important;
     margin: 0 auto !important;
-    background: #FCFBF9 !important;
+    background: #ffffff !important;
     position: relative;
     overflow: hidden !important;
     box-sizing: border-box !important;
@@ -343,7 +343,7 @@ select.input option {
   max-width: 210mm; /* A4 width */
   min-height: 297mm; /* A4 height */
   padding: 20mm;
-  background: #FCFBF9;
+  background: #ffffff;
   margin: 0 auto;
   position: relative;
   overflow: hidden; /* Only hidden on web to prevent scrollbars in container */
