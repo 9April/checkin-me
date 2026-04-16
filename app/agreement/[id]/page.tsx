@@ -54,7 +54,7 @@ export default async function AgreementPage({ params }: PageProps) {
   };
 
   return (
-    <div className="min-h-screen bg-[#FDFDFD] flex flex-col items-center py-6 sm:py-12 px-0 sm:px-4 no-scrollbar">
+    <div className="min-h-screen bg-white flex flex-col items-center py-6 sm:py-12 px-0 sm:px-4 no-scrollbar">
       {/* Controls - Hidden during print */}
       <div className="no-print w-full max-w-screen-md flex justify-between items-center mb-8 bg-white/80 backdrop-blur-md p-5 rounded-none sm:rounded-2xl shadow-sm border-b sm:border border-gray-100 z-10 sticky top-0">
         <Link 
@@ -88,88 +88,7 @@ export default async function AgreementPage({ params }: PageProps) {
         />
       </div>
 
-      <style dangerouslySetInnerHTML={{ __html: `
-        @media print {
-          @page {
-            size: A4;
-            margin: 0;
-          }
-          body { 
-            margin: 0 !important; 
-            padding: 0 !important; 
-            background: white !important; 
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-          }
-          .no-print { display: none !important; }
-          
-          /* Forced Zero-Margin A4 Frame */
-          .a4-container { 
-            display: flex !important;
-            flex-direction: column !important;
-            justify-content: space-between !important;
-            width: 210mm !important; 
-            height: 297mm !important; 
-            margin: 0 !important;
-            padding: 20mm !important; /* Internal safety margin */
-            box-sizing: border-box !important;
-            box-shadow: none !important; 
-            border: none !important;
-            background: #FCFBF9 !important;
-            overflow: hidden !important;
-          }
-
-          .agreement-info-bar {
-            display: flex !important;
-            flex-direction: row !important;
-            justify-content: space-between !important;
-            grid-template-columns: none !important;
-            gap: 0 !important;
-            border-top: 1px solid rgba(168, 152, 126, 0.2) !important;
-            border-bottom: 1px solid rgba(168, 152, 126, 0.2) !important;
-          }
-          .info-bar-item {
-            flex: 1 !important;
-            border-right: 1px solid rgba(168, 152, 126, 0.2) !important;
-          }
-          .info-bar-item:last-child {
-            border-right: none !important;
-          }
-
-          .agreement-house-etiquette {
-            page-break-inside: avoid !important;
-          }
-          .house-etiquette-grid {
-            display: block !important;
-            grid-template-columns: none !important;
-          }
-          .etiquette-item {
-            display: flex !important;
-            margin-bottom: 1rem !important;
-            page-break-inside: avoid !important;
-          }
-
-          .agreement-pinned-bottom {
-            margin-top: auto !important;
-            page-break-inside: avoid !important;
-          }
-          .signature-grid {
-            display: flex !important;
-            flex-direction: row !important;
-            justify-content: space-between !important;
-            grid-template-columns: none !important;
-            align-items: flex-end !important;
-            gap: 2rem !important;
-          }
-          .signature-field {
-            flex: 1 !important;
-            border-bottom: 1px solid rgba(168, 152, 126, 0.4) !important;
-          }
-
-          h1 { font-size: 32pt !important; }
-          p, div { overflow: visible !important; }
-        }
-      `}} />
+      </div>
     </div>
   );
 }
