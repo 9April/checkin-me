@@ -204,6 +204,7 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
                   <img 
                     src={booking.signature} 
                     alt="Guest Signature" 
+                    crossOrigin="anonymous"
                     className="h-12 w-auto object-contain grayscale pointer-events-none brightness-75 mix-blend-multiply" 
                   />
                 ) : (

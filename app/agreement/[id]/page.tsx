@@ -65,8 +65,8 @@ export default async function AgreementPage({ params }: PageProps) {
           Dashboard
         </Link>
         <div className="flex items-center gap-3">
-          <PrintButton mode="download" />
-          <PrintButton />
+          <PrintButton mode="download" guestName={bookingData.guestName} />
+          <PrintButton guestName={bookingData.guestName} />
         </div>
       </div>
 
