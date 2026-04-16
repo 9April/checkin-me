@@ -64,6 +64,9 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
             margin: 0 !important;
             overflow: hidden !important;
             padding-bottom: 5mm !important;
+            zoom: 0.92 !important; /* Mathematically shrink elements to fit strictly inside iOS Print Margins natively */
+            -webkit-transform: scale(0.92);
+            -webkit-transform-origin: top center;
           }
           .break-inside-avoid {
             break-inside: avoid !important;
