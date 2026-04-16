@@ -4,13 +4,8 @@ import React from 'react';
 import { 
   Clock, 
   Volume2, 
-  Flame, 
-  Leaf, 
   ShieldCheck, 
-  Users, 
-  NoSmoking, 
-  Music,
-  MoveHorizontal
+  Leaf
 } from 'lucide-react';
 
 interface LuxuryAgreementProps {
