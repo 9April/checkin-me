@@ -44,7 +44,7 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
     <div id="print-area" className="a4-container bg-white text-[#1A1A1A] font-sans selection:bg-[#A8987E] selection:text-white box-border flex flex-col justify-between mx-auto h-full min-h-[100svh] sm:min-h-[297mm]">
       <style>{`
         @media print {
-          @page { size: A4 portrait; margin: 0; }
+          @page { size: A4 portrait; margin: 0mm !important; margin-top: 0mm !important; margin-bottom: 0mm !important; }
           html, body {
             width: 210mm !important;
             margin: 0 !important; 

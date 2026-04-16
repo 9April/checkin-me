@@ -307,8 +307,12 @@ select.input option {
 }
 @media print {
   @page {
-    size: A4;
-    margin: 0;
+    size: A4 portrait;
+    margin: 0mm !important;
+    margin-top: 0mm !important;
+    margin-bottom: 0mm !important;
+    margin-left: 0mm !important;
+    margin-right: 0mm !important;
   }
   body {
     -webkit-print-color-adjust: exact !important;
