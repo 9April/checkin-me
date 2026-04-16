@@ -41,7 +41,7 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
   const security = property.ruleSecurity || "Les clés sont confiées aux voyageurs ; leur perte entraîne des frais. Toute activité illégale entraînera l'annulation du séjour.";
 
   return (
-    <div id="print-area" className="a4-container bg-white text-[#1A1A1A] font-sans selection:bg-[#A8987E] selection:text-white box-border flex flex-col justify-between mx-auto h-full min-h-[100svh] sm:min-h-[297mm]">
+    <div id="print-area" className="a4-container bg-white text-[#1A1A1A] font-sans selection:bg-[#A8987E] selection:text-white box-border flex flex-col mx-auto">
       <style>{`
         @media print {
           @page { size: A4 portrait; margin: 0; }
@@ -163,42 +163,42 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
       </div>
 
       {/* Pinned Bottom Content Group (Signature & Footer) */}
-      <div className="agreement-pinned-bottom flex flex-col gap-4 pt-4 w-full">
+      <div className="agreement-pinned-bottom flex flex-col gap-2 pt-2 w-full mt-2">
         {/* Confirmation & Signature Section */}
-        <section className="agreement-signature-row flex flex-col gap-4">
+        <section className="agreement-signature-row flex flex-col gap-2">
           <div className="text-center max-w-xl mx-auto">
-            <p className="font-serif text-[13px] italic leading-relaxed opacity-90 border-b border-[#A8987E]/10 pb-4">
+            <p className="font-serif text-[12px] italic leading-relaxed opacity-90 border-b border-[#A8987E]/10 pb-2">
               Je confirme avoir pris connaissance du règlement intérieur et m'engage à le respecter durant mon séjour.
             </p>
           </div>
 
-          <div className="signature-grid grid grid-cols-3 gap-6 items-end">
-            <div className="signature-field border-b border-[#A8987E]/40 pb-3">
-              <p className="text-[9px] uppercase tracking-widest opacity-40 mb-2">Date of Arrival</p>
+          <div className="signature-grid grid grid-cols-3 gap-4 items-end">
+            <div className="signature-field border-b border-[#A8987E]/40 pb-2">
+              <p className="text-[9px] uppercase tracking-widest opacity-40 mb-1">Date of Arrival</p>
               <p className="font-serif text-[10pt] leading-none">{formatDate(booking.checkin)}</p>
             </div>
-            <div className="signature-field border-b border-[#A8987E]/40 pb-3">
-              <p className="text-[9px] uppercase tracking-widest opacity-40 mb-2">Estimated Arrival</p>
+            <div className="signature-field border-b border-[#A8987E]/40 pb-2">
+              <p className="text-[9px] uppercase tracking-widest opacity-40 mb-1">Estimated Arrival</p>
               <p className="font-serif text-[10pt] leading-none">{booking.checkinHour || "—"}</p>
             </div>
-            <div className="signature-field border-b border-[#A8987E]/40 pb-3 relative min-h-[50px] flex flex-col justify-end">
-              <p className="text-[9px] uppercase tracking-widest opacity-40 mb-2 absolute top-0 left-0">Signature</p>
+            <div className="signature-field border-b border-[#A8987E]/40 pb-2 relative min-h-[40px] flex flex-col justify-end">
+              <p className="text-[9px] uppercase tracking-widest opacity-40 mb-1 absolute top-0 left-0">Signature</p>
               {booking.signature ? (
                 <img 
                   src={booking.signature} 
                   alt="Guest Signature" 
-                  className="h-16 w-auto object-contain pointer-events-none grayscale brightness-50" 
+                  className="h-10 w-auto object-contain pointer-events-none grayscale brightness-50" 
                 />
               ) : (
-                <div className="h-12 border-b border-[#1A1A1A]/10 border-dashed" />
+                <div className="h-8 border-b border-[#1A1A1A]/10 border-dashed" />
               )}
             </div>
           </div>
         </section>
 
         {/* Footer */}
-        <footer className="pt-4 border-t border-[#1A1A1A]/5 text-center">
-          <p className="text-[9px] uppercase tracking-[0.3em] opacity-40">
+        <footer className="pt-2 border-t border-[#1A1A1A]/5 text-center mt-2">
+          <p className="text-[8px] uppercase tracking-[0.3em] opacity-40">
             2026 {property.name || "Mamounia 08"} | Secure Digital Registration
           </p>
         </footer>
