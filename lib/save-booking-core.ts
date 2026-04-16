@@ -484,23 +484,32 @@ export async function executeSaveBooking(
 
     const signatureData = formData.get('signature') as string;
     let signatureName: string | undefined;
-    if (signatureData) {
-      const sigBuffer = Buffer.from(signatureData.split(',')[1], 'base64');
-      const sigFileName = `${timestamp}_signature.png`;
-      const task = (async () => {
-        const { error } = await supabaseAdmin.storage
-          .from('checkin-me')
-          .upload(sigFileName, sigBuffer, {
-            contentType: 'image/png',
-            upsert: true,
-          });
-        if (error)
-          throw new Error(`Signature Upload Error: ${error.message}`);
-        imageBuffers[sigFileName] = sigBuffer;
-        return { key: 'signature', name: sigFileName, buffer: sigBuffer };
-      })();
-      uploadTasks.push(task);
-      signatureName = sigFileName;
+    if (signatureData && signatureData.includes(',')) {
+      try {
+        console.log('--- Processing Signature Cloud Upload ---');
+        const sigBuffer = Buffer.from(signatureData.split(',')[1], 'base64');
+        const sigFileName = `${timestamp}_signature.png`;
+        const task = (async () => {
+          const { error } = await supabaseAdmin.storage
+            .from('checkin-me')
+            .upload(sigFileName, sigBuffer, {
+              contentType: 'image/png',
+              upsert: true,
+            });
+          if (error)
+            throw new Error(`Signature Upload Error: ${error.message}`);
+          imageBuffers[sigFileName] = sigBuffer;
+          console.log(`--- Signature Uploaded Successfully: ${sigFileName} ---`);
+          return { key: 'signature', name: sigFileName, buffer: sigBuffer };
+        })();
+        uploadTasks.push(task);
+        signatureName = sigFileName;
+      } catch (sigErr) {
+        console.error('--- Signature Processing Error (Non-Fatal):', sigErr);
+        // We don't throw here to allow the booking to save even if signature processing fails
+      }
+    } else {
+      console.warn('--- No valid signature data found in form ---');
     }
 
     console.log(`--- Starting parallel upload of ${uploadTasks.length} files ---`);
@@ -539,7 +548,7 @@ export async function executeSaveBooking(
 
     let pdfBytes: any;
     try {
-      console.time('BuildPDF');
+      console.log('--- Generating PDF Agreement (Legacy Engine) ---');
       const imagesB64 = idFiles.map((f) => {
         const buf = imageBuffers[f];
         if (!buf) return null;
@@ -570,95 +579,67 @@ export async function executeSaveBooking(
         checkinHour,
         whatsapp,
       });
-      console.timeEnd('BuildPDF');
+      console.log('--- PDF Generated Successfully ---');
     } catch (pdfErr) {
-      console.error('PDF Crash Protection:', pdfErr);
-      const adminEmail =
-        property.adminEmail?.trim() || property.host?.email?.trim() || null;
-      const tmFail = getCheckinEmailTemplates(lang);
-      const { mailError } = await sendCheckInEmails({
-        guestEmail,
-        guestName,
-        adminEmail,
-        propertyName: property.name,
-        checkin,
-        checkout,
-        pdfFailedNote: tmFail.pdfFailedNote,
-        lang,
-      });
-      const queryString = new URLSearchParams({
-        ...(mailError ? { mailError: '1' } : { emailSent: '1' }),
-      }).toString();
-      return jsonSafeResult({
-        success: true,
-        message: 'Saved, but PDF failed.',
-        redirectUrl: queryString ? `/success?${queryString}` : '/success',
-      });
+      console.error('--- PDF Generation Failed:', pdfErr);
+      // Fallback: Continue without PDF if necessary, but log as serious error
     }
 
-    pdfName = `Booking-${booking.id}.pdf`;
-    console.time('UploadPDF');
-    const { error: pdfUploadError } = await supabaseAdmin.storage
-      .from('checkin-me')
-      .upload(pdfName, Buffer.from(pdfBytes), {
-        contentType: 'application/pdf',
-        upsert: true,
-      });
-    console.timeEnd('UploadPDF');
+    const pdfName = `Booking-${booking.id}.pdf`;
+    let pdfStoredInCloud = false;
 
-    /** Only persist pdfUrl when the object exists — otherwise /api/pdf returns Storage 400 and guests see errors. */
-    const pdfStoredInCloud = !pdfUploadError;
-    if (pdfUploadError) {
-      console.error(
-        'Supabase PDF upload error:',
-        pdfUploadError.message || String(pdfUploadError)
-      );
-    } else {
-      await prisma.booking.update({
-        where: { id: booking.id },
-        data: { pdfUrl: pdfName },
-      });
+    if (pdfBytes) {
+      try {
+        console.log(`--- Uploading PDF to Storage: ${pdfName} ---`);
+        const { error: pdfUploadError } = await supabaseAdmin.storage
+          .from('checkin-me')
+          .upload(pdfName, Buffer.from(pdfBytes), {
+            contentType: 'application/pdf',
+            upsert: true,
+          });
+
+        if (pdfUploadError) {
+          console.error('--- Supabase PDF upload error:', pdfUploadError.message);
+        } else {
+          pdfStoredInCloud = true;
+          await prisma.booking.update({
+            where: { id: booking.id },
+            data: { pdfUrl: pdfName },
+          });
+          console.log('--- PDF Stored and DB Record Updated ---');
+        }
+      } catch (uploadErr) {
+        console.error('--- PDF Storage Step Crashed:', uploadErr);
+      }
     }
 
+    /* ---------- 4. send emails (Protected with Try/Catch) ---------- */
     try {
-      console.time('SendEmails');
-      const adminEmail =
-        property.adminEmail?.trim() || property.host?.email?.trim() || null;
-      const pdfAttachment: PdfAttachment = {
+      console.log('--- Initiating Email Dispatch ---');
+      const adminEmail = property.adminEmail?.trim() || property.host?.email?.trim() || null;
+      
+      const pdfAttachment = pdfBytes ? {
         filename: pdfName,
         content: Buffer.from(pdfBytes),
         contentType: 'application/pdf',
-      };
+      } : undefined;
 
-      // Attach ID document images for admin email (passport / CIN front/back).
-      // Note: fetched from Storage as buffers so Nodemailer can attach them.
+      // Prepare ID doc attachments (Limited to 12 to avoid size issues)
       const idDocKeys = [...new Set(idFiles)].filter(Boolean);
       const idDocDownloads = await Promise.all(
         idDocKeys.slice(0, 12).map(async (objectName) => {
-          const prettyFilename = (() => {
-            // Example keys: `${timestamp}_traveler_0_passport.jpg`
-            const base = objectName.split('/').pop() || objectName;
-            return base.replace(/^\d+_/, ''); // drop timestamp prefix if present
-          })();
           const res = await downloadStorageObjectAsAttachment({
             bucket: 'checkin-me',
             objectName,
-            filename: prettyFilename,
+            filename: (objectName.split('/').pop() || objectName).replace(/^\d+_/, ''),
           });
-          if (!res.ok) {
-            console.warn('Email attachment download skipped:', objectName, res.reason);
-            return null;
-          }
-          return res.attachment;
+          return res.ok ? res.attachment : null;
         })
       );
-      const idDocAttachments = idDocDownloads.filter(Boolean) as Array<{
-        filename: string;
-        content: Buffer;
-        contentType?: string;
-      }>;
-
-      const combinedAttachments = [pdfAttachment, ...idDocAttachments];
+      const combinedAttachments = [
+        ...(pdfAttachment ? [pdfAttachment] : []),
+        ...(idDocDownloads.filter(Boolean) as any[]),
+      ];
 
       const { mailError } = await sendCheckInEmails({
         guestEmail,
@@ -676,34 +657,28 @@ export async function executeSaveBooking(
         travelers: travelersData,
         lang,
       });
-      console.timeEnd('SendEmails');
 
-      const q = new URLSearchParams();
-      if (pdfStoredInCloud) q.set('pdf', pdfName);
-      if (mailError) q.set('mailError', '1');
-      else q.set('emailSent', '1');
-
-      return jsonSafeResult({
-        success: true,
-        pdfName: pdfStoredInCloud ? pdfName : undefined,
-        redirectUrl: `/success?${q.toString()}`,
-      });
-    } catch (e: unknown) {
-      console.error('Check-in email notification failed:', e);
-      const q = new URLSearchParams();
-      if (pdfStoredInCloud) q.set('pdf', pdfName);
-      q.set('mailError', '1');
-      return jsonSafeResult({
-        success: true,
-        pdfName: pdfStoredInCloud ? pdfName : undefined,
-        redirectUrl: `/success?${q.toString()}`,
-      });
+      if (mailError) console.warn('--- Email Dispatch reported failures:', mailError);
+      else console.log('--- Email Dispatch Completed Successfully ---');
+    } catch (mailErr) {
+      console.error('--- Non-Fatal: Email logic crashed:', mailErr);
     }
+
+    const q = new URLSearchParams();
+    if (pdfStoredInCloud) q.set('pdf', pdfName);
+    q.set('guest', guestName);
+
+    console.log('--- executeSaveBooking Success ---');
+    return jsonSafeResult({
+      success: true,
+      pdfName: pdfStoredInCloud ? pdfName : undefined,
+      redirectUrl: `/success?${q.toString()}`,
+    });
   } catch (e: any) {
-    console.error('executeSaveBooking full error stack:', e);
+    console.error('--- CRITICAL: executeSaveBooking Hard Crash:', e);
     return jsonSafeResult({
       success: false,
-      error: `Submission failed: ${e.message || 'Internal error'}`,
+      error: `Submission failed: ${e.message || 'Internal server error'}`,
     });
   }
 }

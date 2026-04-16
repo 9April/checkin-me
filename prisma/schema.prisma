@@ -56,7 +56,6 @@ model VerificationToken {
 model Property {
   id              String    @id @default(cuid())
   name            String
-  slug            String?   @unique
   hostId          String
   logoUrl         String?
   houseRules      String?
@@ -74,28 +73,29 @@ model Property {
   requireIdPhotos Boolean   @default(true)
   pdfTemplate     String?
   pdfFooter       String?
+  slug            String?   @unique
   bookings        Booking[]
   host            User      @relation(fields: [hostId], references: [id], onDelete: Cascade)
 }
 
 model Booking {
-  id              String     @id @default(cuid())
-  propertyId      String
-  guestName       String
-  guestEmail      String
-  checkin         String
-  checkout        String
-  checkinHour     String?
-  whatsapp        String?
-  selfieUrl       String?
-  signatureUrl    String?
-  totalTravelers  Int?
-  pdfUrl          String?
-  status          String     @default("PENDING")
-  createdAt       DateTime   @default(now())
-  deletedAt       DateTime?
-  property        Property   @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  travelers       Traveler[]
+  id             String     @id @default(cuid())
+  propertyId     String
+  guestName      String
+  guestEmail     String
+  checkin        String
+  checkout       String
+  checkinHour    String?
+  whatsapp       String?
+  pdfUrl         String?
+  status         String     @default("PENDING")
+  createdAt      DateTime   @default(now())
+  deletedAt      DateTime?
+  selfieUrl      String?
+  totalTravelers Int?
+  signatureUrl   String?
+  property       Property   @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  travelers      Traveler[]
 }
 
 model Traveler {
