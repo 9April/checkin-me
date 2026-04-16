@@ -41,7 +41,7 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
   const security = property.ruleSecurity || "Les clés sont confiées aux voyageurs ; leur perte entraîne des frais. Toute activité illégale entraînera l'annulation du séjour.";
 
   return (
-    <div id="print-area" className="a4-container bg-white text-[#1A1A1A] font-sans selection:bg-[#A8987E] selection:text-white box-border flex flex-col justify-between mx-auto h-full min-h-[100svh] sm:min-h-[297mm]">
+    <div id="print-area" className="a4-container bg-white text-[#1A1A1A] font-sans selection:bg-[#A8987E] selection:text-white box-border flex flex-col justify-between print:justify-start mx-auto h-full min-h-[100svh] sm:min-h-[297mm]">
       <style>{`
         @media print {
           @page { 
@@ -64,11 +64,17 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
             margin: 0 auto !important;
             overflow: hidden !important;
             padding-bottom: 5mm !important;
-            transform: scale(0.92);
-            -webkit-transform: scale(0.92);
-            transform-origin: top center;
-            -webkit-transform-origin: top center;
+            transform: scale(0.82) !important;
+            -webkit-transform: scale(0.82) !important;
+            transform-origin: top center !important;
+            -webkit-transform-origin: top center !important;
           }
+          /* Compress gaps aggressively during print */
+          .flex-col { gap: 1rem !important; }
+          .gap-10 { gap: 1rem !important; }
+          .py-8 { padding-top: 1rem !important; padding-bottom: 1rem !important; }
+          .pt-12 { padding-top: 1rem !important; }
+          
           .break-inside-avoid {
             break-inside: avoid !important;
             page-break-inside: avoid !important;
