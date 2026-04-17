@@ -70,7 +70,7 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
           transformOrigin: 'top center',
           margin: scale < 1 ? '0 auto' : '0 auto'
         }}
-        className="a4-container bg-white text-[#1A1A1A] font-sans box-border p-[10mm] shadow-2xl print:shadow-none print:transform-none print:m-0 print:p-[10mm]"
+        className="a4-container bg-white text-[#1A1A1A] font-sans box-border p-[10mm] shadow-none sm:shadow-2xl print:shadow-none print:transform-none print:m-0 print:p-[10mm]"
       >
         <style>{`
           @media print {
@@ -135,12 +135,21 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
             </header>
 
             {/* Information Bar */}
-            <section className="grid grid-cols-[1fr_1.6fr_0.8fr] border-t border-b border-[#A8987E]/20 py-4 sm:py-6">
-              <div className="flex flex-col items-center border-r border-[#A8987E]/20 px-3 min-w-0">
+            <section 
+              style={{ borderColor: 'rgba(168, 152, 126, 0.2)' }}
+              className="grid grid-cols-[1fr_1.6fr_0.8fr] border-t border-b py-4 sm:py-6"
+            >
+              <div 
+                style={{ borderColor: 'rgba(168, 152, 126, 0.2)' }}
+                className="flex flex-col items-center border-r px-3 min-w-0"
+              >
                 <p className="text-[8px] uppercase tracking-widest opacity-40 mb-1 lg:mb-2">Guest Name</p>
                 <p className="font-serif text-[11pt] sm:text-[12pt] text-center leading-tight truncate w-full font-medium">{booking.guestName}</p>
               </div>
-              <div className="flex flex-col items-center border-r border-[#A8987E]/20 px-3 min-w-0">
+              <div 
+                style={{ borderColor: 'rgba(168, 152, 126, 0.2)' }}
+                className="flex flex-col items-center border-r px-3 min-w-0"
+              >
                 <p className="text-[8px] uppercase tracking-widest opacity-40 mb-1 lg:mb-2">Email Address</p>
                 <p className="font-serif text-[11pt] sm:text-[12pt] text-center leading-tight w-full truncate font-medium">
                   {booking.guestEmail}
@@ -156,7 +165,12 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
 
             {/* House Etiquette & Rules */}
             <section className="flex flex-col gap-4 sm:gap-6">
-              <h2 className="font-serif text-lg sm:text-xl text-center italic opacity-80 decoration-[#A8987E]/20 underline underline-offset-8 mb-2">House Etiquette</h2>
+              <h2 
+                style={{ textDecorationColor: 'rgba(168, 152, 126, 0.2)' }}
+                className="font-serif text-lg sm:text-xl text-center italic opacity-80 underline underline-offset-8 mb-2"
+              >
+                House Etiquette
+              </h2>
               <div className="grid grid-cols-2 gap-x-8 gap-y-5 sm:gap-y-7">
                 {[
                   { icon: <Clock size={16} />, title: "Logistics", text: logistics },
@@ -165,7 +179,10 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
                   { icon: <ShieldCheck size={16} />, title: "Sécurité", text: security }
                 ].map((item, i) => (
                   <div key={i} className="flex gap-4 items-start">
-                    <div className="shrink-0 w-8 h-8 rounded-full border border-[#A8987E]/30 flex items-center justify-center text-[#A8987E]">
+                    <div 
+                      style={{ borderColor: 'rgba(168, 152, 126, 0.3)' }}
+                      className="shrink-0 w-8 h-8 rounded-full border flex items-center justify-center text-[#A8987E]"
+                    >
                       {item.icon}
                     </div>
                     <div className="flex flex-col gap-1">
@@ -181,7 +198,10 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
           </div>
 
           {/* Pinned Bottom Content Group (Signature & Footer) */}
-          <div className="flex flex-col gap-5 sm:gap-8 pt-4 border-t border-[#A8987E]/10">
+          <div 
+            style={{ borderColor: 'rgba(168, 152, 126, 0.1)' }}
+            className="flex flex-col gap-5 sm:gap-8 pt-4 border-t"
+          >
             {/* Confirmation Section */}
             <div className="text-center max-w-lg mx-auto mb-2">
               <p className="font-serif text-[14px] sm:text-[16px] italic leading-relaxed opacity-90">
@@ -190,15 +210,24 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
             </div>
 
             <div className="grid grid-cols-3 gap-6 items-end">
-              <div className="border-b border-[#A8987E]/40 pb-2">
+              <div 
+                style={{ borderColor: 'rgba(168, 152, 126, 0.4)' }}
+                className="border-b pb-2"
+              >
                 <p className="text-[8px] uppercase tracking-widest opacity-40 mb-1">Date of Arrival</p>
                 <p className="font-serif text-[11pt] leading-tight font-medium">{formatDate(booking.checkin)}</p>
               </div>
-              <div className="border-b border-[#A8987E]/40 pb-2">
+              <div 
+                style={{ borderColor: 'rgba(168, 152, 126, 0.4)' }}
+                className="border-b pb-2"
+              >
                 <p className="text-[8px] uppercase tracking-widest opacity-40 mb-1">Estimated Arrival</p>
                 <p className="font-serif text-[11pt] leading-tight font-medium">{booking.checkinHour || "—"}</p>
               </div>
-              <div className="border-b border-[#A8987E]/40 pb-2 relative min-h-[50px] flex flex-col justify-end">
+              <div 
+                style={{ borderColor: 'rgba(168, 152, 126, 0.4)' }}
+                className="border-b pb-2 relative min-h-[50px] flex flex-col justify-end"
+              >
                 <p className="text-[8px] uppercase tracking-widest opacity-40 mb-1 absolute top-0 left-0">Signature</p>
                 {booking.signature ? (
                   <img 
@@ -208,7 +237,10 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
                     className="h-12 w-auto object-contain pointer-events-none" 
                   />
                 ) : (
-                  <div className="h-8 border-b border-[#1A1A1A]/10 border-dashed" />
+                  <div 
+                    style={{ borderColor: 'rgba(26, 26, 26, 0.1)' }}
+                    className="h-8 border-b border-dashed" 
+                  />
                 )}
               </div>
             </div>
