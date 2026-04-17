@@ -1,8 +1,12 @@
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
-export async function generateAgreementPDF(elementId: string, filename: string = 'agreement.pdf') {
-  console.log('[PDF] Starting generation for ID:', elementId);
+export async function generateAgreementPDF(
+  elementId: string, 
+  filename: string = 'agreement.pdf',
+  action: 'save' | 'print' = 'save'
+) {
+  console.log(`[PDF] Starting ${action} for ID:`, elementId);
   const element = document.getElementById(elementId);
   
   if (!element) {
@@ -21,16 +25,15 @@ export async function generateAgreementPDF(elementId: string, filename: string =
     const originalOverflow = document.body.style.overflow;
     
     // Temporarily force 1:1 scale and fixed width for capture
-    // This helps html2canvas see the full document at A4 dimensions
     element.style.transform = 'none';
     element.style.width = '210mm';
     document.body.style.overflow = 'visible';
     
     console.log('[PDF] Running html2canvas...');
     const canvas = await html2canvas(element, {
-      scale: 2, // Slightly lower scale for better compatibility/speed during debug
+      scale: 2, 
       useCORS: true,
-      logging: true, // Enable html2canvas logs
+      logging: false,
       backgroundColor: '#ffffff',
       width: 210 * 3.7795,
       height: 297 * 3.7795,
@@ -58,9 +61,32 @@ export async function generateAgreementPDF(elementId: string, filename: string =
     // A4 dimensions are 210 x 297 mm
     pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297, undefined, 'FAST');
     
-    console.log('[PDF] Saving file:', filename);
-    // 3. Save the PDF
-    pdf.save(filename);
+    if (action === 'save') {
+      console.log('[PDF] Saving file:', filename);
+      pdf.save(filename);
+    } else {
+      console.log('[PDF] Opening print dialog...');
+      const blob = pdf.output('blob');
+      const url = URL.createObjectURL(blob);
+      
+      const iframe = document.createElement('iframe');
+      iframe.style.display = 'none';
+      iframe.src = url;
+      document.body.appendChild(iframe);
+      
+      iframe.onload = () => {
+        setTimeout(() => {
+          iframe.contentWindow?.focus();
+          iframe.contentWindow?.print();
+          // Clean up after some time
+          setTimeout(() => {
+            document.body.removeChild(iframe);
+            URL.revokeObjectURL(url);
+          }, 1000);
+        }, 100);
+      };
+    }
+    
     console.log('[PDF] Success!');
   } catch (error) {
     console.error('[PDF] Error generating PDF:', error);

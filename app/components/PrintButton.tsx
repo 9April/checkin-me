@@ -22,7 +22,8 @@ export default function PrintButton({
     setIsGenerating(true);
     try {
       const filename = `Agreement_${guestName.replace(/\s+/g, '_')}.pdf`;
-      await generateAgreementPDF('print-area', filename);
+      const action = mode === 'download' ? 'save' : 'print';
+      await generateAgreementPDF('print-area', filename, action);
     } finally {
       setIsGenerating(false);
     }
