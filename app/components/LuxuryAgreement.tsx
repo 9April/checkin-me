@@ -121,12 +121,12 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
           }
         `}</style>
         
-        <div className="flex flex-col h-full justify-between print-compact-gap">
+        <div className="flex flex-col h-full justify-start gap-10 print-compact-gap">
           {/* Top Content Group */}
           <div className="flex flex-col gap-5 sm:gap-7 print-compact-gap">
             {/* Header */}
             <header className="text-center py-2 sm:py-4">
-              <h1 className="font-serif text-4xl sm:text-5xl tracking-[0.2em] uppercase mb-2 sm:mb-3 text-[#1A1A1A] whitespace-nowrap overflow-hidden text-ellipsis">
+              <h1 className="font-serif text-4xl sm:text-5xl tracking-[0.2em] uppercase mb-2 sm:mb-3 text-[#1A1A1A]">
                 {property.name || "MAMOUNIA 08"}
               </h1>
               <p className="font-sans text-[9px] sm:text-xs tracking-[0.4em] uppercase opacity-50 text-[#A8987E]">
@@ -141,17 +141,17 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
             >
               <div 
                 style={{ borderColor: 'rgba(168, 152, 126, 0.2)' }}
-                className="flex flex-col items-center border-r px-3 min-w-0"
+                className="flex flex-col items-center border-r px-3 min-w-0 pb-1"
               >
                 <p className="text-[8px] uppercase tracking-widest opacity-40 mb-1 lg:mb-2">Guest Name</p>
-                <p className="font-serif text-[11pt] sm:text-[12pt] text-center leading-tight truncate w-full font-medium">{booking.guestName}</p>
+                <p className="font-serif text-[11pt] sm:text-[12pt] text-center leading-tight truncate w-full font-medium pb-1">{booking.guestName}</p>
               </div>
               <div 
                 style={{ borderColor: 'rgba(168, 152, 126, 0.2)' }}
-                className="flex flex-col items-center border-r px-3 min-w-0"
+                className="flex flex-col items-center border-r px-3 min-w-0 pb-1"
               >
                 <p className="text-[8px] uppercase tracking-widest opacity-40 mb-1 lg:mb-2">Email Address</p>
-                <p className="font-serif text-[11pt] sm:text-[12pt] text-center leading-tight w-full truncate font-medium">
+                <p className="font-serif text-[11pt] sm:text-[12pt] text-center leading-tight w-full truncate font-medium pb-1">
                   {booking.guestEmail}
                 </p>
               </div>
@@ -234,7 +234,7 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
                     src={booking.signature} 
                     alt="Guest Signature" 
                     crossOrigin="anonymous"
-                    className="h-12 w-auto object-contain pointer-events-none" 
+                    className="h-9 w-auto object-contain pointer-events-none" 
                   />
                 ) : (
                   <div 

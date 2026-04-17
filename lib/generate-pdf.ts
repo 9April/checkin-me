@@ -31,13 +31,15 @@ export async function generateAgreementPDF(
     
     console.log('[PDF] Running html2canvas...');
     const canvas = await html2canvas(element, {
-      scale: 2, 
+      scale: 2.5, // High resolution
       useCORS: true,
       logging: false,
       backgroundColor: '#ffffff',
-      width: 210 * 3.7795,
-      height: 297 * 3.7795,
+      width: (210 * 3.7795) + 2, // Added 2px safety buffer
+      height: (297 * 3.7795) + 2, // Added 2px safety buffer
       allowTaint: false,
+      scrollX: 0,
+      scrollY: 0,
     });
 
     console.log('[PDF] Capture complete, restoring styles...');
