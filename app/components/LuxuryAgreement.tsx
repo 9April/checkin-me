@@ -70,7 +70,7 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
           transformOrigin: 'top center',
           margin: scale < 1 ? '0 auto' : '0 auto'
         }}
-        className="a4-container bg-white text-[#1A1A1A] font-sans box-border p-[10mm] shadow-none sm:shadow-2xl print:shadow-none print:transform-none print:m-0 print:p-[10mm]"
+        className="a4-container bg-white text-[#1A1A1A] font-sans box-border p-[10mm] shadow-2xl print:shadow-none print:transform-none print:m-0 print:p-[10mm]"
       >
         <style>{`
           @media print {
