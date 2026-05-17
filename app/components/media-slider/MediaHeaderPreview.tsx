@@ -11,7 +11,7 @@ interface MediaHeaderPreviewProps {
 export default function MediaHeaderPreview({ videoUrl, images }: MediaHeaderPreviewProps) {
   return (
     <div className="w-full max-w-5xl mx-auto bg-white rounded-3xl shadow-xl border border-gray-100/60 p-6 md:p-10 flex items-center justify-center">
-      <div className="flex flex-col md:flex-row items-center justify-center gap-10 md:gap-16 w-full">
+      <div className="flex flex-col md:flex-row items-center md:items-start justify-center gap-10 md:gap-16 w-full">
         
         {/* Left Column: Video Player */}
         <div className="relative w-full max-w-[300px] sm:max-w-[340px] md:max-w-[360px] aspect-[9/16] rounded-2xl overflow-hidden shadow-lg bg-[#1A1A1A] shrink-0">
@@ -37,7 +37,7 @@ export default function MediaHeaderPreview({ videoUrl, images }: MediaHeaderPrev
         </div>
 
         {/* Right Column: Stacked Card Slider */}
-        <div className="relative w-full max-w-[300px] sm:max-w-[340px] md:max-w-[360px] flex flex-col items-center justify-center shrink-0">
+        <div className="relative w-full max-w-[300px] sm:max-w-[340px] md:max-w-[360px] flex flex-col items-center justify-center md:justify-start shrink-0">
           <StackedCardSlider images={images} />
         </div>
 

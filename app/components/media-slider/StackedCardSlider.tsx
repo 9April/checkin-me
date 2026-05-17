@@ -58,7 +58,7 @@ export default function StackedCardSlider({ images }: StackedCardSliderProps) {
   const visibleIndices = getVisibleIndices();
 
   return (
-    <div className="relative w-full h-full flex flex-col items-center justify-center overflow-visible">
+    <div className="relative w-full h-full flex flex-col items-center justify-center md:justify-start overflow-visible">
       {/* Cards Container */}
       <div className="relative w-full max-w-[400px] aspect-[9/16] perspective-1000">
         {/* Render cards from back to front to handle z-index naturally */}
