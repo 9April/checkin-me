@@ -792,7 +792,7 @@ export default function CheckInForm({
       <div
         className={`transition-all duration-300 ${
           isRulesOpen || isPrivacyOpen ? "blur-md grayscale-[0.2]" : ""
-        } ${phoneLayout ? "flex flex-1 min-h-0 min-w-0 flex-col w-full" : "max-w-3xl mx-auto w-full"}`}
+        } ${phoneLayout ? "flex flex-1 min-h-0 min-w-0 flex-col w-full" : "max-w-5xl mx-auto w-full"}`}
       >
         <div
           className={`bg-white shadow-xl shadow-gray-300/30 overflow-hidden border border-gray-200/80 max-w-full ${
