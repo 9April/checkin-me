@@ -240,6 +240,19 @@ export default function MediaDashboard({ propertyId, initialVideoUrl, initialIma
 
       const res = await saveMediaStudio(formData);
       if (res.success) {
+        // Update local states with permanent Supabase URLs
+        setVideoFile(null);
+        if (res.videoUrl) {
+          setVideoUrl(res.videoUrl);
+        }
+        if (res.images) {
+          setImages(res.images.map((img: any) => ({
+            id: img.id,
+            url: img.url,
+            name: img.name,
+            role: img.role
+          })));
+        }
         alert("Media saved successfully and is now visible on your Check-in Form!");
         if (onSaveComplete) onSaveComplete();
       } else {

@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { getHostUserId } from "@/lib/session-host-id";
 import { getSupabaseAdmin } from "@/lib/supabase";
+import { revalidatePath } from "next/cache";
 import crypto from "crypto";
 
 export async function createPresignedUploadUrl(propertyId: string, fileName: string) {
@@ -131,7 +132,7 @@ export async function saveMediaStudio(formData: FormData) {
 
     const imagesJson = JSON.stringify(sliderImages);
 
-    await prisma.property.update({
+    const updatedProperty = await prisma.property.update({
       where: { id: propertyId },
       data: {
         mediaVideoUrl,
@@ -139,7 +140,17 @@ export async function saveMediaStudio(formData: FormData) {
       }
     });
 
-    return { success: true };
+    // Revalidate paths to clear Next.js client-side caches
+    revalidatePath("/media-preview");
+    if (updatedProperty.slug) {
+      revalidatePath(`/check-in/${updatedProperty.slug}`);
+    }
+
+    return { 
+      success: true, 
+      videoUrl: mediaVideoUrl, 
+      images: sliderImages 
+    };
   } catch (e: any) {
     console.error("Error saving media studio:", e);
     return { success: false, error: e.message };
