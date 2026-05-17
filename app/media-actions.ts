@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getHostUserId } from "@/lib/session-host-id";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { revalidatePath } from "next/cache";
+import { signMediaUrl } from "@/lib/sign-media";
 import crypto from "crypto";
 
 export async function createPresignedUploadUrl(propertyId: string, fileName: string) {
@@ -146,10 +147,21 @@ export async function saveMediaStudio(formData: FormData) {
       revalidatePath(`/check-in/${updatedProperty.slug}`);
     }
 
+    const signedVideoUrl = await signMediaUrl(mediaVideoUrl);
+    const signedImages = await Promise.all(
+      sliderImages.map(async (img: any) => {
+        const signedUrl = await signMediaUrl(img.url);
+        return {
+          ...img,
+          url: signedUrl || img.url
+        };
+      })
+    );
+
     return { 
       success: true, 
-      videoUrl: mediaVideoUrl, 
-      images: sliderImages 
+      videoUrl: signedVideoUrl, 
+      images: signedImages 
     };
   } catch (e: any) {
     console.error("Error saving media studio:", e);

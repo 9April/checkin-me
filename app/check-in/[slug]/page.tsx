@@ -3,6 +3,7 @@ import { normalizeLang } from "@/lib/lang";
 import { reserveUniquePropertySlug } from "@/lib/property-slug";
 import { notFound } from "next/navigation";
 import CheckInForm from "../../components/CheckInForm";
+import { signPropertyMedia } from "@/lib/sign-media";
 
 export default async function PropertyCheckInPage({
   params,
@@ -34,6 +35,11 @@ export default async function PropertyCheckInPage({
     });
   }
 
+  const { videoUrl, images } = await signPropertyMedia(
+    property.mediaVideoUrl,
+    property.mediaSliderImages
+  );
+
   return (
     <CheckInForm
       initialLang={initialLang}
@@ -51,8 +57,8 @@ export default async function PropertyCheckInPage({
         ruleOccupants: property.ruleOccupants,
         ruleResponsibility: property.ruleResponsibility,
         ruleSecurity: property.ruleSecurity,
-        mediaVideoUrl: property.mediaVideoUrl,
-        mediaSliderImages: property.mediaSliderImages,
+        mediaVideoUrl: videoUrl,
+        mediaSliderImages: JSON.stringify(images),
       }}
     />
   );

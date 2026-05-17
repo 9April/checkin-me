@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { getHostUserId } from "@/lib/session-host-id";
 import { redirect } from "next/navigation";
 import MediaPreviewClient from "@/app/components/media-slider/MediaPreviewClient";
+import { signPropertyMedia } from "@/lib/sign-media";
 
 export default async function MediaPreviewPage() {
   const hostId = await getHostUserId();
@@ -17,20 +18,16 @@ export default async function MediaPreviewPage() {
     redirect("/dashboard");
   }
 
-  let initialImages = [];
-  try {
-    if (property.mediaSliderImages) {
-      initialImages = JSON.parse(property.mediaSliderImages);
-    }
-  } catch (e) {
-    console.error("Failed to parse existing media images");
-  }
+  const { videoUrl, images } = await signPropertyMedia(
+    property.mediaVideoUrl,
+    property.mediaSliderImages
+  );
 
   return (
     <MediaPreviewClient 
       propertyId={property.id} 
-      initialVideoUrl={property.mediaVideoUrl} 
-      initialImages={initialImages} 
+      initialVideoUrl={videoUrl} 
+      initialImages={images} 
     />
   );
 }
