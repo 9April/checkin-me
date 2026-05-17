@@ -11,6 +11,7 @@ interface MediaHeaderPreviewProps {
 
 export default function MediaHeaderPreview({ videoUrl, images }: MediaHeaderPreviewProps) {
   const [isMuted, setIsMuted] = useState(true);
+  const [isVideoLoading, setIsVideoLoading] = useState(true);
 
   return (
     <div className="w-full max-w-5xl mx-auto bg-white rounded-3xl shadow-xl border border-gray-100/60 p-6 md:p-10 flex items-center justify-center">
@@ -20,6 +21,14 @@ export default function MediaHeaderPreview({ videoUrl, images }: MediaHeaderPrev
         <div className="relative w-full max-w-[300px] sm:max-w-[340px] md:max-w-[360px] aspect-[9/16] rounded-2xl overflow-hidden shadow-lg bg-[#1A1A1A] shrink-0 group">
           {videoUrl ? (
             <>
+              {/* Premium Shimmer Loading Skeleton */}
+              {isVideoLoading && (
+                <div className="absolute inset-0 bg-neutral-950 flex flex-col items-center justify-center z-20 animate-pulse">
+                  <div className="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin mb-3" />
+                  <p className="font-sans text-[10px] tracking-[0.2em] uppercase text-white/50">Loading Experience</p>
+                </div>
+              )}
+
               <video
                 src={videoUrl}
                 className="w-full h-full object-cover"
@@ -27,6 +36,8 @@ export default function MediaHeaderPreview({ videoUrl, images }: MediaHeaderPrev
                 loop
                 muted={isMuted}
                 playsInline
+                preload="auto"
+                onCanPlay={() => setIsVideoLoading(false)}
               />
               
               {/* Premium Floating Sound Control */}
