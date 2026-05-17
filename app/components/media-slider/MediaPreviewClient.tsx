@@ -15,13 +15,14 @@ interface MediaPreviewClientProps {
 
 export default function MediaPreviewClient({ propertyId, initialVideoUrl, initialImages }: MediaPreviewClientProps) {
   const [showPreview, setShowPreview] = useState(false);
+  const [videoFile, setVideoFile] = useState<File | null>(null);
   const [videoUrl, setVideoUrl] = useState<string | null>(initialVideoUrl);
-  const [images, setImages] = useState<SliderImage[]>(initialImages);
+  const [images, setImages] = useState<{ file?: File; url: string; id: string; name: string; role: string }[]>(
+    initialImages.map(img => ({ url: img.url, id: img.id, name: img.name, role: img.role }))
+  );
   const [triggerSave, setTriggerSave] = useState(0);
 
-  const handlePreview = (video: string | null, imgs: SliderImage[]) => {
-    setVideoUrl(video);
-    setImages(imgs);
+  const handlePreview = () => {
     setShowPreview(true);
   };
 
@@ -58,8 +59,12 @@ export default function MediaPreviewClient({ propertyId, initialVideoUrl, initia
         <div className={showPreview ? "hidden" : "block"}>
           <MediaDashboard 
             propertyId={propertyId} 
-            initialVideoUrl={initialVideoUrl} 
-            initialImages={initialImages} 
+            videoFile={videoFile}
+            setVideoFile={setVideoFile}
+            videoUrl={videoUrl}
+            setVideoUrl={setVideoUrl}
+            images={images}
+            setImages={setImages}
             onPreview={handlePreview} 
             triggerSave={triggerSave}
             onSaveComplete={() => setShowPreview(false)}
@@ -72,7 +77,10 @@ export default function MediaPreviewClient({ propertyId, initialVideoUrl, initia
               <h2 className="text-sm uppercase tracking-[0.3em] text-gray-400 mb-2">Live Preview</h2>
               <p className="font-serif text-3xl">Header Component</p>
             </div>
-            <MediaHeaderPreview videoUrl={videoUrl} images={images} />
+            <MediaHeaderPreview 
+              videoUrl={videoUrl} 
+              images={images.map(img => ({ id: img.id, url: img.url, name: img.name, role: img.role }))} 
+            />
           </div>
         )}
       </div>

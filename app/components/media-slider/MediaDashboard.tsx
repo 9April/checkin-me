@@ -7,9 +7,13 @@ import { saveMediaStudio, createPresignedUploadUrl } from "@/app/media-actions";
 
 interface MediaDashboardProps {
   propertyId: string;
-  initialVideoUrl?: string | null;
-  initialImages?: { url: string; id: string; name: string; role: string }[];
-  onPreview: (videoUrl: string | null, images: SliderImage[]) => void;
+  videoFile: File | null;
+  setVideoFile: React.Dispatch<React.SetStateAction<File | null>>;
+  videoUrl: string | null;
+  setVideoUrl: React.Dispatch<React.SetStateAction<string | null>>;
+  images: { file?: File; url: string; id: string; name: string; role: string }[];
+  setImages: React.Dispatch<React.SetStateAction<{ file?: File; url: string; id: string; name: string; role: string }[]>>;
+  onPreview: () => void;
   triggerSave?: number;
   onSaveComplete?: () => void;
 }
@@ -68,11 +72,18 @@ const compressImage = (file: File, maxWidth = 1200, maxHeight = 1600, quality = 
   });
 };
 
-export default function MediaDashboard({ propertyId, initialVideoUrl, initialImages, onPreview, triggerSave, onSaveComplete }: MediaDashboardProps) {
-  const [videoFile, setVideoFile] = useState<File | null>(null);
-  const [videoUrl, setVideoUrl] = useState<string | null>(initialVideoUrl || null);
-  
-  const [images, setImages] = useState<{ file?: File; url: string; id: string; name: string; role: string }[]>(initialImages || []);
+export default function MediaDashboard({ 
+  propertyId, 
+  videoFile,
+  setVideoFile,
+  videoUrl,
+  setVideoUrl,
+  images,
+  setImages,
+  onPreview, 
+  triggerSave, 
+  onSaveComplete 
+}: MediaDashboardProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [isCompressing, setIsCompressing] = useState(false);
   
@@ -190,7 +201,7 @@ export default function MediaDashboard({ propertyId, initialVideoUrl, initialIma
   };
 
   const handleGeneratePreview = () => {
-    onPreview(videoUrl, images.map(img => ({ id: img.id, url: img.url, name: img.name, role: img.role })));
+    onPreview();
   };
 
   const handleSave = async () => {
