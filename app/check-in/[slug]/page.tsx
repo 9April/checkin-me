@@ -51,6 +51,8 @@ export default async function PropertyCheckInPage({
         ruleOccupants: property.ruleOccupants,
         ruleResponsibility: property.ruleResponsibility,
         ruleSecurity: property.ruleSecurity,
+        mediaVideoUrl: property.mediaVideoUrl,
+        mediaSliderImages: property.mediaSliderImages,
       }}
     />
   );

@@ -11,6 +11,8 @@ import type { Lang } from '@/lib/lang';
 import { getPrivacyPolicyHtml } from '@/lib/privacy-policy-html';
 import DatePicker from './DatePicker';
 import CameraCapture from './CameraCapture';
+import MediaHeaderPreview from './media-slider/MediaHeaderPreview';
+import type { SliderImage } from './media-slider/StackedCardSlider';
 
 const TRANSLATIONS = {
   EN: {
@@ -434,6 +436,8 @@ interface PropertyData {
   ruleOccupants?: string | null;
   ruleResponsibility?: string | null;
   ruleSecurity?: string | null;
+  mediaVideoUrl?: string | null;
+  mediaSliderImages?: string | null;
 }
 
 export default function CheckInForm({
@@ -479,6 +483,17 @@ export default function CheckInForm({
     }
     return map;
   }, [lang]);
+
+  const sliderImagesParsed = useMemo(() => {
+    try {
+      if (property.mediaSliderImages) {
+        return JSON.parse(property.mediaSliderImages) as SliderImage[];
+      }
+    } catch (e) {
+      console.error("Failed to parse media slider images");
+    }
+    return [];
+  }, [property.mediaSliderImages]);
 
   /** Only reset scroll on wizard step changes — not on phoneLayout (viewport can flicker when modals open and retrigger this). */
   useEffect(() => {
@@ -896,6 +911,11 @@ export default function CheckInForm({
                   : "contents"
               }
             >
+              {property.mediaVideoUrl && sliderImagesParsed.length > 0 && (!phoneLayout || wizardStep === 0) && (
+                <div className={`animate-in fade-in slide-in-from-top-4 duration-700 ${phoneLayout ? "mt-4 mb-8" : "mb-12"}`}>
+                  <MediaHeaderPreview videoUrl={property.mediaVideoUrl} images={sliderImagesParsed} />
+                </div>
+              )}
               {Object.keys(validationErrors).length > 0 && (
                 <div
                   className={`p-4 bg-red-50 border border-red-200 rounded-xl md:rounded-2xl flex items-center gap-3 animate-in slide-in-from-top-4 duration-500 ${

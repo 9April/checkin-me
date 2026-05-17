@@ -77,6 +77,8 @@ model Property {
   ruleOccupants   String?
   ruleResponsibility String?
   ruleSecurity    String?
+  mediaVideoUrl   String?
+  mediaSliderImages String?
   slug            String?   @unique
   bookings        Booking[]
   host            User      @relation(fields: [hostId], references: [id], onDelete: Cascade)

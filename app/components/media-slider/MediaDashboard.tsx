@@ -3,16 +3,21 @@
 import React, { useState, useRef, useEffect } from "react";
 import { UploadCloud, Trash2, Image as ImageIcon, Video, X } from "lucide-react";
 import { SliderImage } from "./StackedCardSlider";
+import { saveMediaStudio } from "@/app/media-actions";
 
 interface MediaDashboardProps {
+  propertyId: string;
+  initialVideoUrl?: string | null;
+  initialImages?: { url: string; id: string; name: string; role: string }[];
   onPreview: (videoUrl: string | null, images: SliderImage[]) => void;
 }
 
-export default function MediaDashboard({ onPreview }: MediaDashboardProps) {
+export default function MediaDashboard({ propertyId, initialVideoUrl, initialImages, onPreview }: MediaDashboardProps) {
   const [videoFile, setVideoFile] = useState<File | null>(null);
-  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [videoUrl, setVideoUrl] = useState<string | null>(initialVideoUrl || null);
   
-  const [images, setImages] = useState<{ file: File; url: string; id: string; name: string; role: string }[]>([]);
+  const [images, setImages] = useState<{ file?: File; url: string; id: string; name: string; role: string }[]>(initialImages || []);
+  const [isSaving, setIsSaving] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
@@ -96,6 +101,37 @@ export default function MediaDashboard({ onPreview }: MediaDashboardProps) {
 
   const handleGeneratePreview = () => {
     onPreview(videoUrl, images.map(img => ({ id: img.id, url: img.url, name: img.name, role: img.role })));
+  };
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      const formData = new FormData();
+      formData.append("propertyId", propertyId);
+      
+      if (videoFile) {
+        formData.append("videoFile", videoFile);
+      }
+      
+      formData.append("imagesCount", images.length.toString());
+      images.forEach((img, i) => {
+        if (img.file) formData.append(`image_${i}_file`, img.file);
+        if (img.url && !img.file) formData.append(`image_${i}_url`, img.url); // Use existing URL if no new file
+        formData.append(`image_${i}_name`, img.name);
+        formData.append(`image_${i}_role`, img.role);
+      });
+
+      const res = await saveMediaStudio(formData);
+      if (res.success) {
+        alert("Media saved successfully and is now visible on your Check-in Form!");
+      } else {
+        throw new Error(res.error);
+      }
+    } catch (e: any) {
+      alert(`Failed to save: ${e.message}`);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -190,7 +226,9 @@ export default function MediaDashboard({ onPreview }: MediaDashboardProps) {
                     onChange={(e) => updateImageMetadata(img.id, "role", e.target.value)}
                     className="w-full text-sm p-2 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-black"
                   />
-                  <span className="text-[10px] text-gray-400 font-mono mt-1">{(img.file.size / 1024).toFixed(0)} KB</span>
+                  <span className="text-[10px] text-gray-400 font-mono mt-1">
+                    {img.file ? `${(img.file.size / 1024).toFixed(0)} KB` : "Saved to Cloud"}
+                  </span>
                 </div>
               </div>
             ))}
@@ -199,13 +237,21 @@ export default function MediaDashboard({ onPreview }: MediaDashboardProps) {
       )}
 
       {/* Actions */}
-      <div className="flex justify-end pt-6 border-t border-gray-100">
+      <div className="flex justify-end gap-4 pt-6 border-t border-gray-100">
         <button 
           onClick={handleGeneratePreview}
-          disabled={!videoUrl && images.length === 0}
-          className="bg-black text-white px-8 py-3 rounded-md font-medium text-sm tracking-widest uppercase hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={(!videoUrl && images.length === 0) || isSaving}
+          className="bg-gray-100 text-gray-800 border border-gray-200 px-8 py-3 rounded-md font-medium text-sm tracking-widest uppercase hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Generate Preview
+          Preview
+        </button>
+        <button 
+          onClick={handleSave}
+          disabled={(!videoUrl && images.length === 0) || isSaving}
+          className="flex items-center gap-2 bg-black text-white px-8 py-3 rounded-md font-medium text-sm tracking-widest uppercase hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isSaving && <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />}
+          {isSaving ? "Saving..." : "Save to Form"}
         </button>
       </div>
     </div>
