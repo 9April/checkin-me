@@ -13,7 +13,8 @@ import {
   X,
   FileText,
   Trash2,
-  ShieldCheck
+  ShieldCheck,
+  Film
 } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 
@@ -28,6 +29,7 @@ export default function DashboardLayout({
   const navItems = [
     { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Bookings', href: '/dashboard/bookings', icon: ClipboardList },
+    { name: 'Media Studio', href: '/media-preview', icon: Film },
     { name: 'Privacy Policy', href: '/dashboard/privacy', icon: ShieldCheck },
     { name: 'PDF Designer', href: '/dashboard/pdf-design', icon: FileText },
     { name: 'Settings', href: '/dashboard/settings', icon: Settings },
