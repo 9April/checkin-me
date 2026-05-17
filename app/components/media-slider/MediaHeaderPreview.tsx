@@ -23,7 +23,6 @@ export default function MediaHeaderPreview({ videoUrl, images }: MediaHeaderPrev
               loop
               muted
               playsInline
-              controls
             />
           ) : (
             <div className="flex flex-col items-center justify-center h-full w-full text-white/50">
