@@ -14,12 +14,67 @@ interface MediaDashboardProps {
   onSaveComplete?: () => void;
 }
 
+const compressImage = (file: File, maxWidth = 1200, maxHeight = 1600, quality = 0.85): Promise<File> => {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target?.result as string;
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        let width = img.width;
+        let height = img.height;
+
+        // Maintain aspect ratio
+        if (width > height) {
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          canvas.toBlob(
+            (blob) => {
+              if (blob) {
+                const compressedFile = new File([blob], file.name, {
+                  type: "image/jpeg",
+                  lastModified: Date.now(),
+                });
+                resolve(compressedFile);
+              } else {
+                resolve(file); // Fallback to original
+              }
+            },
+            "image/jpeg",
+            quality
+          );
+        } else {
+          resolve(file); // Fallback
+        }
+      };
+    };
+    reader.onerror = () => resolve(file);
+  });
+};
+
 export default function MediaDashboard({ propertyId, initialVideoUrl, initialImages, onPreview, triggerSave, onSaveComplete }: MediaDashboardProps) {
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [videoUrl, setVideoUrl] = useState<string | null>(initialVideoUrl || null);
   
   const [images, setImages] = useState<{ file?: File; url: string; id: string; name: string; role: string }[]>(initialImages || []);
   const [isSaving, setIsSaving] = useState(false);
+  const [isCompressing, setIsCompressing] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
@@ -81,22 +136,34 @@ export default function MediaDashboard({ propertyId, initialVideoUrl, initialIma
     }
 
     if (files) {
-      const validFiles = Array.from(files).filter(file => {
-        if (file.size > 5 * 1024 * 1024) {
-          alert(`Image "${file.name}" is too large. Each image must be under 5MB.`);
-          return false;
+      setIsCompressing(true);
+      const compressPromises = Array.from(files).map(async (file) => {
+        // Compress if larger than 1MB
+        if (file.type.startsWith("image/") && file.size > 1 * 1024 * 1024) {
+          try {
+            return await compressImage(file);
+          } catch (err) {
+            console.error("Compression failed for:", file.name, err);
+            return file;
+          }
         }
-        return true;
+        return file;
       });
 
-      const newImages = validFiles.map(file => ({
-        file,
-        url: URL.createObjectURL(file),
-        id: Math.random().toString(36).substring(7),
-        name: "",
-        role: ""
-      }));
-      setImages(prev => [...prev, ...newImages]);
+      Promise.all(compressPromises).then((compressedFiles) => {
+        const newImages = compressedFiles.map(file => ({
+          file,
+          url: URL.createObjectURL(file),
+          id: Math.random().toString(36).substring(7),
+          name: "",
+          role: ""
+        }));
+        setImages(prev => [...prev, ...newImages]);
+        setIsCompressing(false);
+      }).catch(err => {
+        console.error("Image loading failed:", err);
+        setIsCompressing(false);
+      });
     }
   };
 
@@ -206,13 +273,23 @@ export default function MediaDashboard({ propertyId, initialVideoUrl, initialIma
           <div 
             onDragOver={handleDragOver}
             onDrop={handleDrop}
-            onClick={() => fileInputRef.current?.click()}
-            className="border-2 border-dashed border-gray-200 rounded-2xl h-64 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors"
+            onClick={() => !isCompressing && fileInputRef.current?.click()}
+            className={`border-2 border-dashed border-gray-200 rounded-2xl h-64 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors ${isCompressing ? 'opacity-75 cursor-wait' : ''}`}
           >
-            <UploadCloud className="text-gray-400 mb-3" size={32} />
-            <p className="text-sm font-medium">Drag & drop images here</p>
-            <p className="text-xs text-gray-400 mt-1">or click to browse (JPG, PNG, WebP)</p>
-            <input type="file" accept="image/*" multiple className="hidden" ref={fileInputRef} onChange={handleImageUpload} />
+            {isCompressing ? (
+              <>
+                <div className="w-8 h-8 border-4 border-black/20 border-t-black rounded-full animate-spin mb-3" />
+                <p className="text-sm font-medium">Optimizing & compressing...</p>
+                <p className="text-xs text-gray-400 mt-1">Please wait a moment</p>
+              </>
+            ) : (
+              <>
+                <UploadCloud className="text-gray-400 mb-3" size={32} />
+                <p className="text-sm font-medium">Drag & drop images here</p>
+                <p className="text-xs text-gray-400 mt-1">or click to browse (JPG, PNG, WebP)</p>
+              </>
+            )}
+            <input type="file" accept="image/*" multiple className="hidden" ref={fileInputRef} onChange={handleImageUpload} disabled={isCompressing} />
           </div>
         </div>
       </div>
