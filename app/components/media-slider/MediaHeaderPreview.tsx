@@ -1,7 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import StackedCardSlider, { SliderImage } from "./StackedCardSlider";
+import { Volume2, VolumeX } from "lucide-react";
 
 interface MediaHeaderPreviewProps {
   videoUrl: string | null;
@@ -9,21 +10,34 @@ interface MediaHeaderPreviewProps {
 }
 
 export default function MediaHeaderPreview({ videoUrl, images }: MediaHeaderPreviewProps) {
+  const [isMuted, setIsMuted] = useState(true);
+
   return (
     <div className="w-full max-w-5xl mx-auto bg-white rounded-3xl shadow-xl border border-gray-100/60 p-6 md:p-10 flex items-center justify-center">
       <div className="flex flex-col md:flex-row items-center md:items-start justify-center gap-10 md:gap-16 w-full">
         
         {/* Left Column: Video Player */}
-        <div className="relative w-full max-w-[300px] sm:max-w-[340px] md:max-w-[360px] aspect-[9/16] rounded-2xl overflow-hidden shadow-lg bg-[#1A1A1A] shrink-0">
+        <div className="relative w-full max-w-[300px] sm:max-w-[340px] md:max-w-[360px] aspect-[9/16] rounded-2xl overflow-hidden shadow-lg bg-[#1A1A1A] shrink-0 group">
           {videoUrl ? (
-            <video
-              src={videoUrl}
-              className="w-full h-full object-cover"
-              autoPlay
-              loop
-              muted
-              playsInline
-            />
+            <>
+              <video
+                src={videoUrl}
+                className="w-full h-full object-cover"
+                autoPlay
+                loop
+                muted={isMuted}
+                playsInline
+              />
+              
+              {/* Premium Floating Sound Control */}
+              <button
+                onClick={() => setIsMuted(!isMuted)}
+                className="absolute bottom-4 right-4 p-3 rounded-full bg-black/60 hover:bg-black/80 text-white backdrop-blur-md border border-white/10 transition-all duration-300 z-10 hover:scale-105 shadow-md flex items-center justify-center"
+                title={isMuted ? "Unmute sound" : "Mute sound"}
+              >
+                {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+              </button>
+            </>
           ) : (
             <div className="flex flex-col items-center justify-center h-full w-full text-white/50">
               <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="mb-4 opacity-50">
