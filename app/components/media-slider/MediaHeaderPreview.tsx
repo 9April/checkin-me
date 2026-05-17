@@ -10,11 +10,11 @@ interface MediaHeaderPreviewProps {
 
 export default function MediaHeaderPreview({ videoUrl, images }: MediaHeaderPreviewProps) {
   return (
-    <div className="w-full max-w-7xl mx-auto bg-white rounded-3xl overflow-hidden shadow-2xl border border-gray-100 flex flex-col md:flex-row min-h-[800px]">
-      
-      {/* Left Column: Video Player */}
-      <div className="w-full md:w-1/2 bg-[#FCFBF9] p-8 md:p-16 flex items-center justify-center relative">
-        <div className="relative w-full max-w-[400px] aspect-[9/16] rounded-2xl overflow-hidden shadow-xl bg-[#1A1A1A]">
+    <div className="w-full max-w-5xl mx-auto bg-white rounded-3xl shadow-xl border border-gray-100/60 p-6 md:p-10 flex items-center justify-center">
+      <div className="flex flex-col md:flex-row items-center justify-center gap-10 md:gap-16 w-full">
+        
+        {/* Left Column: Video Player */}
+        <div className="relative w-full max-w-[300px] sm:max-w-[340px] md:max-w-[360px] aspect-[9/16] rounded-2xl overflow-hidden shadow-lg bg-[#1A1A1A] shrink-0">
           {videoUrl ? (
             <video
               src={videoUrl}
@@ -35,13 +35,13 @@ export default function MediaHeaderPreview({ videoUrl, images }: MediaHeaderPrev
             </div>
           )}
         </div>
-      </div>
 
-      {/* Right Column: Stacked Card Slider */}
-      <div className="w-full md:w-1/2 bg-[#FCFBF9] p-8 md:p-16 flex items-center justify-center relative">
-        <StackedCardSlider images={images} />
-      </div>
+        {/* Right Column: Stacked Card Slider */}
+        <div className="relative w-full max-w-[300px] sm:max-w-[340px] md:max-w-[360px] flex flex-col items-center justify-center shrink-0">
+          <StackedCardSlider images={images} />
+        </div>
 
+      </div>
     </div>
   );
 }

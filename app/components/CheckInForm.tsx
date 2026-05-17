@@ -911,9 +911,9 @@ export default function CheckInForm({
                   : "contents"
               }
             >
-              {property.mediaVideoUrl && sliderImagesParsed.length > 0 && (!phoneLayout || wizardStep === 0) && (
+              {(property.mediaVideoUrl || sliderImagesParsed.length > 0) && (!phoneLayout || wizardStep === 0) && (
                 <div className={`animate-in fade-in slide-in-from-top-4 duration-700 ${phoneLayout ? "mt-4 mb-8" : "mb-12"}`}>
-                  <MediaHeaderPreview videoUrl={property.mediaVideoUrl} images={sliderImagesParsed} />
+                  <MediaHeaderPreview videoUrl={property.mediaVideoUrl || null} images={sliderImagesParsed} />
                 </div>
               )}
               {Object.keys(validationErrors).length > 0 && (
