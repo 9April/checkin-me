@@ -388,14 +388,14 @@ export default function MediaDashboard({
       <div className="flex justify-end gap-4 pt-6 border-t border-gray-100">
         <button 
           onClick={handleGeneratePreview}
-          disabled={(!videoUrl && images.length === 0) || isSaving}
+          disabled={isSaving}
           className="bg-gray-100 text-gray-800 border border-gray-200 px-8 py-3 rounded-md font-medium text-sm tracking-widest uppercase hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Preview
         </button>
         <button 
           onClick={handleSave}
-          disabled={(!videoUrl && images.length === 0) || isSaving}
+          disabled={isSaving}
           className="flex items-center gap-2 bg-black text-white px-8 py-3 rounded-md font-medium text-sm tracking-widest uppercase hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isSaving && <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />}
