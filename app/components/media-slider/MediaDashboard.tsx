@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { UploadCloud, Trash2, Image as ImageIcon, Video, X } from "lucide-react";
 import { SliderImage } from "./StackedCardSlider";
-import { saveMediaStudio } from "@/app/media-actions";
+import { saveMediaStudio, createPresignedUploadUrl } from "@/app/media-actions";
 
 interface MediaDashboardProps {
   propertyId: string;
@@ -111,9 +111,9 @@ export default function MediaDashboard({ propertyId, initialVideoUrl, initialIma
   const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      // Limit to 20MB (Next.js serverActions bodySizeLimit is 20MB)
-      if (file.size > 20 * 1024 * 1024) {
-        alert("Video size must be less than 20MB to be successfully processed.");
+      // Limit to 100MB for direct client-side cloud uploads
+      if (file.size > 100 * 1024 * 1024) {
+        alert("Video size must be less than 100MB to be successfully processed.");
         if (videoInputRef.current) videoInputRef.current.value = "";
         return;
       }
@@ -196,11 +196,38 @@ export default function MediaDashboard({ propertyId, initialVideoUrl, initialIma
   const handleSave = async () => {
     setIsSaving(true);
     try {
+      let finalVideoUrl = videoUrl;
+
+      // If a new video file was selected, upload it directly from client using a signed URL
+      if (videoFile) {
+        const resUrl = await createPresignedUploadUrl(propertyId, videoFile.name);
+        if (!resUrl.success || !resUrl.signedUrl || !resUrl.path) {
+          throw new Error(resUrl.error || "Failed to create video upload link.");
+        }
+
+        // Upload the file via PUT to the signedUrl
+        const uploadRes = await fetch(resUrl.signedUrl, {
+          method: "PUT",
+          body: videoFile,
+          headers: {
+            "Content-Type": videoFile.type,
+          },
+        });
+
+        if (!uploadRes.ok) {
+          throw new Error("Failed to upload video to cloud storage.");
+        }
+
+        // Construct public URL using env or fallback
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://wblnwbdcfdiitvrznmt.supabase.co";
+        finalVideoUrl = `${supabaseUrl}/storage/v1/object/public/checkin-me/${resUrl.path}`;
+      }
+
       const formData = new FormData();
       formData.append("propertyId", propertyId);
       
-      if (videoFile) {
-        formData.append("videoFile", videoFile);
+      if (finalVideoUrl) {
+        formData.append("videoUrl", finalVideoUrl);
       }
       
       formData.append("imagesCount", images.length.toString());

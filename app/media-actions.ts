@@ -5,6 +5,44 @@ import { getHostUserId } from "@/lib/session-host-id";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import crypto from "crypto";
 
+export async function createPresignedUploadUrl(propertyId: string, fileName: string) {
+  try {
+    const hostId = await getHostUserId();
+    if (!hostId) {
+      throw new Error("Unauthorized");
+    }
+
+    // Verify ownership
+    const property = await prisma.property.findFirst({
+      where: { id: propertyId, hostId }
+    });
+
+    if (!property) {
+      throw new Error("Property not found or unauthorized");
+    }
+
+    const supabaseAdmin = getSupabaseAdmin();
+    const bucket = "checkin-me";
+    const ext = fileName.split('.').pop() || 'mp4';
+    const path = `media-studio/${propertyId}/video-${crypto.randomUUID()}.${ext}`;
+
+    const { data, error } = await supabaseAdmin.storage
+      .from(bucket)
+      .createSignedUploadUrl(path);
+
+    if (error) throw error;
+
+    return { 
+      success: true, 
+      signedUrl: data.signedUrl, 
+      path 
+    };
+  } catch (e: any) {
+    console.error("Error creating signed upload URL:", e);
+    return { success: false, error: e.message };
+  }
+}
+
 export async function saveMediaStudio(formData: FormData) {
   try {
     const hostId = await getHostUserId();
@@ -31,21 +69,27 @@ export async function saveMediaStudio(formData: FormData) {
 
     let mediaVideoUrl = property.mediaVideoUrl || null;
     
-    // Check if new video uploaded
-    const videoFile = formData.get("videoFile") as File | null;
-    if (videoFile && videoFile.size > 0) {
-      const ext = videoFile.name.split('.').pop() || 'mp4';
-      const path = `media-studio/${propertyId}/video-${crypto.randomUUID()}.${ext}`;
-      const buffer = Buffer.from(await videoFile.arrayBuffer());
-      const { error } = await supabaseAdmin.storage
-        .from(bucket)
-        .upload(path, buffer, {
-          contentType: videoFile.type,
-          upsert: true,
-        });
-      if (error) throw error;
-      const { data: { publicUrl } } = supabaseAdmin.storage.from(bucket).getPublicUrl(path);
-      mediaVideoUrl = publicUrl;
+    // Check if client-uploaded video URL is provided
+    const clientVideoUrl = formData.get("videoUrl") as string | null;
+    if (clientVideoUrl) {
+      mediaVideoUrl = clientVideoUrl;
+    } else {
+      // Check if new video uploaded via file
+      const videoFile = formData.get("videoFile") as File | null;
+      if (videoFile && videoFile.size > 0) {
+        const ext = videoFile.name.split('.').pop() || 'mp4';
+        const path = `media-studio/${propertyId}/video-${crypto.randomUUID()}.${ext}`;
+        const buffer = Buffer.from(await videoFile.arrayBuffer());
+        const { error } = await supabaseAdmin.storage
+          .from(bucket)
+          .upload(path, buffer, {
+            contentType: videoFile.type,
+            upsert: true,
+          });
+        if (error) throw error;
+        const { data: { publicUrl } } = supabaseAdmin.storage.from(bucket).getPublicUrl(path);
+        mediaVideoUrl = publicUrl;
+      }
     }
 
     // Process Images
