@@ -45,6 +45,15 @@ export async function createPresignedUploadUrl(propertyId: string, fileName: str
   }
 }
 
+function cleanSupabaseUrl(url: string | null): string | null {
+  if (!url) return null;
+  if (url.startsWith('blob:')) return url;
+  if (url.includes('/object/sign/') && url.includes('?token=')) {
+    return url.split('?token=')[0].replace('/object/sign/', '/object/public/');
+  }
+  return url;
+}
+
 export async function saveMediaStudio(formData: FormData) {
   try {
     const hostId = await getHostUserId();
@@ -69,12 +78,12 @@ export async function saveMediaStudio(formData: FormData) {
     const supabaseAdmin = getSupabaseAdmin();
     const bucket = "checkin-me"; 
 
-    let mediaVideoUrl = property.mediaVideoUrl || null;
+    let mediaVideoUrl = null;
     
     // Check if client-uploaded video URL is provided
     const clientVideoUrl = formData.get("videoUrl") as string | null;
-    if (clientVideoUrl) {
-      mediaVideoUrl = clientVideoUrl;
+    if (clientVideoUrl && clientVideoUrl !== "") {
+      mediaVideoUrl = cleanSupabaseUrl(clientVideoUrl);
     } else {
       // Check if new video uploaded via file
       const videoFile = formData.get("videoFile") as File | null;
@@ -106,7 +115,7 @@ export async function saveMediaStudio(formData: FormData) {
       const name = formData.get(`image_${i}_name`) as string || '';
       const role = formData.get(`image_${i}_role`) as string || '';
       
-      let imageUrl = urlStr || '';
+      let imageUrl = cleanSupabaseUrl(urlStr) || '';
 
       if (file && file.size > 0) {
         const ext = file.name.split('.').pop() || 'jpg';

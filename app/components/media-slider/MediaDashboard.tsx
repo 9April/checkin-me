@@ -237,9 +237,7 @@ export default function MediaDashboard({
       const formData = new FormData();
       formData.append("propertyId", propertyId);
       
-      if (finalVideoUrl) {
-        formData.append("videoUrl", finalVideoUrl);
-      }
+      formData.append("videoUrl", finalVideoUrl || "");
       
       formData.append("imagesCount", images.length.toString());
       images.forEach((img, i) => {
@@ -253,9 +251,7 @@ export default function MediaDashboard({
       if (res.success) {
         // Update local states with permanent Supabase URLs
         setVideoFile(null);
-        if (res.videoUrl) {
-          setVideoUrl(res.videoUrl);
-        }
+        setVideoUrl(res.videoUrl || null);
         if (res.images) {
           setImages(res.images.map((img: any) => ({
             id: img.id,
