@@ -10,9 +10,11 @@ interface MediaDashboardProps {
   initialVideoUrl?: string | null;
   initialImages?: { url: string; id: string; name: string; role: string }[];
   onPreview: (videoUrl: string | null, images: SliderImage[]) => void;
+  triggerSave?: number;
+  onSaveComplete?: () => void;
 }
 
-export default function MediaDashboard({ propertyId, initialVideoUrl, initialImages, onPreview }: MediaDashboardProps) {
+export default function MediaDashboard({ propertyId, initialVideoUrl, initialImages, onPreview, triggerSave, onSaveComplete }: MediaDashboardProps) {
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [videoUrl, setVideoUrl] = useState<string | null>(initialVideoUrl || null);
   
@@ -42,6 +44,13 @@ export default function MediaDashboard({ propertyId, initialVideoUrl, initialIma
     const metadataToSave = images.map(img => ({ id: img.id, name: img.name, role: img.role }));
     localStorage.setItem("mediaSliderMetadata", JSON.stringify(metadataToSave));
   }, [images]);
+
+  // Listen for save triggers from parent
+  useEffect(() => {
+    if (triggerSave && triggerSave > 0) {
+      handleSave();
+    }
+  }, [triggerSave]);
 
   // Video Handlers
   const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -124,6 +133,7 @@ export default function MediaDashboard({ propertyId, initialVideoUrl, initialIma
       const res = await saveMediaStudio(formData);
       if (res.success) {
         alert("Media saved successfully and is now visible on your Check-in Form!");
+        if (onSaveComplete) onSaveComplete();
       } else {
         throw new Error(res.error);
       }

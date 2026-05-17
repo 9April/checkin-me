@@ -17,6 +17,7 @@ export default function MediaPreviewClient({ propertyId, initialVideoUrl, initia
   const [showPreview, setShowPreview] = useState(false);
   const [videoUrl, setVideoUrl] = useState<string | null>(initialVideoUrl);
   const [images, setImages] = useState<SliderImage[]>(initialImages);
+  const [triggerSave, setTriggerSave] = useState(0);
 
   const handlePreview = (video: string | null, imgs: SliderImage[]) => {
     setVideoUrl(video);
@@ -36,24 +37,36 @@ export default function MediaPreviewClient({ propertyId, initialVideoUrl, initia
           <span className="font-serif text-xl italic hidden sm:block">Media Studio</span>
         </div>
         {showPreview && (
-          <button 
-            onClick={() => setShowPreview(false)}
-            className="text-xs uppercase tracking-widest font-semibold bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-md transition-colors"
-          >
-            Edit Configuration
-          </button>
+          <div className="flex gap-3">
+            <button 
+              onClick={() => setShowPreview(false)}
+              className="text-xs uppercase tracking-widest font-semibold bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-md transition-colors"
+            >
+              Back to Edit
+            </button>
+            <button 
+              onClick={() => setTriggerSave(t => t + 1)}
+              className="text-xs uppercase tracking-widest font-semibold bg-black text-white hover:bg-gray-800 px-4 py-2 rounded-md transition-colors"
+            >
+              Save to Form
+            </button>
+          </div>
         )}
       </div>
 
       <div className="container mx-auto px-4 mt-10">
-        {!showPreview ? (
+        <div className={showPreview ? "hidden" : "block"}>
           <MediaDashboard 
             propertyId={propertyId} 
             initialVideoUrl={initialVideoUrl} 
             initialImages={initialImages} 
             onPreview={handlePreview} 
+            triggerSave={triggerSave}
+            onSaveComplete={() => setShowPreview(false)}
           />
-        ) : (
+        </div>
+        
+        {showPreview && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out">
             <div className="mb-8 text-center">
               <h2 className="text-sm uppercase tracking-[0.3em] text-gray-400 mb-2">Live Preview</h2>
