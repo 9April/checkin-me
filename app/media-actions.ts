@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { getHostUserId } from "@/lib/session-host-id";
 import { getSupabaseAdmin } from "@/lib/supabase";
+import crypto from "crypto";
 
 export async function saveMediaStudio(formData: FormData) {
   try {

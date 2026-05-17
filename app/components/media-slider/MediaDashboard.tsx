@@ -56,6 +56,12 @@ export default function MediaDashboard({ propertyId, initialVideoUrl, initialIma
   const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
+      // Limit to 20MB (Next.js serverActions bodySizeLimit is 20MB)
+      if (file.size > 20 * 1024 * 1024) {
+        alert("Video size must be less than 20MB to be successfully processed.");
+        if (videoInputRef.current) videoInputRef.current.value = "";
+        return;
+      }
       setVideoFile(file);
       setVideoUrl(URL.createObjectURL(file));
     }
@@ -75,7 +81,15 @@ export default function MediaDashboard({ propertyId, initialVideoUrl, initialIma
     }
 
     if (files) {
-      const newImages = Array.from(files).map(file => ({
+      const validFiles = Array.from(files).filter(file => {
+        if (file.size > 5 * 1024 * 1024) {
+          alert(`Image "${file.name}" is too large. Each image must be under 5MB.`);
+          return false;
+        }
+        return true;
+      });
+
+      const newImages = validFiles.map(file => ({
         file,
         url: URL.createObjectURL(file),
         id: Math.random().toString(36).substring(7),
