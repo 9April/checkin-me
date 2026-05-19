@@ -270,10 +270,17 @@ export default function CameraCapture({
         });
         assignFileToInput(file);
         const imageUrl = URL.createObjectURL(blob);
-        setPendingImage(imageUrl);
-        setShowPreview(true);
+        
+        // Auto-confirm: bypass the redundant second confirmation modal
+        setCapturedImage(imageUrl);
+        setPendingImage(null);
+        setShowPreview(false);
         closeLive();
         setError(null);
+        
+        if (onCapture) {
+          onCapture(file);
+        }
       },
       'image/jpeg',
       0.70

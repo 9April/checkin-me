@@ -877,7 +877,7 @@ export default function CheckInForm({
               ref={scrollAreaRef}
               className={
                 phoneLayout
-                  ? "flex-1 min-h-0 min-w-0 overflow-y-auto overflow-x-hidden checkin-app-scroll checkin-px pb-4 space-y-8"
+                  ? "flex-1 min-h-0 min-w-0 overflow-y-auto overflow-x-hidden checkin-app-scroll checkin-px pb-28 space-y-8"
                   : "contents"
               }
             >
@@ -1415,7 +1415,7 @@ export default function CheckInForm({
             </div>
 
             {phoneLayout && (
-              <div className="shrink-0 flex gap-2 checkin-px pt-2 pb-safe border-t border-[#DDDDDD]/70 bg-[#F7F7F7]/95 backdrop-blur-md max-w-full min-w-0 touch-none overscroll-none select-none">
+              <div className="shrink-0 flex gap-2 checkin-px pt-2.5 pb-safe border-t border-gray-100 bg-white/95 backdrop-blur-md max-w-full min-w-0 touch-none overscroll-none select-none">
                 {wizardStep > 0 && (
                   <button
                     type="button"
