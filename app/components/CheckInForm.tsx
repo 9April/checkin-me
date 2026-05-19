@@ -475,6 +475,44 @@ export default function CheckInForm({
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
+  const [viewportHeight, setViewportHeight] = useState<number | null>(null);
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+
+  useEffect(() => {
+    if (!phoneLayout) return;
+    
+    const handleViewportChange = () => {
+      const vv = window.visualViewport;
+      if (!vv) return;
+      
+      setViewportHeight(vv.height);
+      
+      // Keyboard is open if visual viewport height is substantially less than the screen/window height
+      const diff = window.innerHeight - vv.height;
+      setIsKeyboardVisible(diff > 120);
+    };
+
+    const vv = window.visualViewport;
+    if (vv) {
+      setViewportHeight(vv.height);
+      vv.addEventListener('resize', handleViewportChange);
+      vv.addEventListener('scroll', handleViewportChange);
+    } else {
+      setViewportHeight(window.innerHeight);
+    }
+
+    window.addEventListener('resize', handleViewportChange);
+
+    return () => {
+      const vv = window.visualViewport;
+      if (vv) {
+        vv.removeEventListener('resize', handleViewportChange);
+        vv.removeEventListener('scroll', handleViewportChange);
+      }
+      window.removeEventListener('resize', handleViewportChange);
+    };
+  }, [phoneLayout]);
+
   const arrivalSlotLabels = useMemo(() => {
     const loc = arrivalLocaleForLang(lang);
     const map: Record<string, string> = {};
@@ -806,10 +844,14 @@ export default function CheckInForm({
     <main
       className={`bg-[#F7F7F7] font-sans w-full max-w-full overflow-x-hidden ${
         phoneLayout
-          ? "h-[100dvh] max-h-[100dvh] flex flex-col overflow-hidden overscroll-none"
+          ? "flex flex-col overflow-hidden overscroll-none"
           : "min-h-screen py-8 px-4 sm:px-6 lg:px-8 pb-24"
       }`}
-      style={{ "--primary-color": brandPrimary } as CSSProperties}
+      style={{
+        "--primary-color": brandPrimary,
+        height: phoneLayout && viewportHeight ? `${viewportHeight}px` : phoneLayout ? '100dvh' : undefined,
+        maxHeight: phoneLayout && viewportHeight ? `${viewportHeight}px` : phoneLayout ? '100dvh' : undefined,
+      } as CSSProperties}
     >
       <div
         className={`transition-all duration-300 ${
@@ -1414,7 +1456,7 @@ export default function CheckInForm({
             </button>
             </div>
 
-            {phoneLayout && (
+            {phoneLayout && !isKeyboardVisible && (
               <div className="shrink-0 flex gap-2 checkin-px pt-2.5 pb-safe border-t border-gray-100 bg-white/95 backdrop-blur-md max-w-full min-w-0 touch-none overscroll-none select-none">
                 {wizardStep > 0 && (
                   <button
