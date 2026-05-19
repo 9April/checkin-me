@@ -577,6 +577,28 @@ export default function CheckInForm({
     return () => window.removeEventListener('resize', resizeCanvas);
   }, []);
 
+  // Strict scroll-boundary controller to prevent document rubber-banding and elastic bounce on mobile
+  useEffect(() => {
+    if (!phoneLayout) return;
+
+    const originalBodyOverflow = document.body.style.overflow;
+    const originalBodyOverscroll = document.body.style.overscrollBehavior;
+    const originalHtmlOverflow = document.documentElement.style.overflow;
+    const originalHtmlOverscroll = document.documentElement.style.overscrollBehavior;
+
+    document.body.style.overflow = "hidden";
+    document.body.style.overscrollBehavior = "none";
+    document.documentElement.style.overflow = "hidden";
+    document.documentElement.style.overscrollBehavior = "none";
+
+    return () => {
+      document.body.style.overflow = originalBodyOverflow;
+      document.body.style.overscrollBehavior = originalBodyOverscroll;
+      document.documentElement.style.overflow = originalHtmlOverflow;
+      document.documentElement.style.overscrollBehavior = originalHtmlOverscroll;
+    };
+  }, [phoneLayout]);
+
   const rulesList = useMemo(
     () => resolveHouseRulesForLang(property.houseRules, lang),
     [property.houseRules, lang]
@@ -1393,7 +1415,7 @@ export default function CheckInForm({
             </div>
 
             {phoneLayout && (
-              <div className="shrink-0 flex gap-2 checkin-px pt-2 pb-safe border-t border-[#DDDDDD]/70 bg-[#F7F7F7]/95 backdrop-blur-md max-w-full min-w-0">
+              <div className="shrink-0 flex gap-2 checkin-px pt-2 pb-safe border-t border-[#DDDDDD]/70 bg-[#F7F7F7]/95 backdrop-blur-md max-w-full min-w-0 touch-none overscroll-none select-none">
                 {wizardStep > 0 && (
                   <button
                     type="button"
