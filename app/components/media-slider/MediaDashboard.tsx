@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { UploadCloud, Trash2, Image as ImageIcon, Video, X } from "lucide-react";
 import { SliderImage } from "./StackedCardSlider";
 import { saveMediaStudio, createPresignedUploadUrl } from "@/app/media-actions";
+import { supabase } from "@/lib/supabase";
 
 interface MediaDashboardProps {
   propertyId: string;
@@ -212,25 +213,21 @@ export default function MediaDashboard({
       // If a new video file was selected, upload it directly from client using a signed URL
       if (videoFile) {
         const resUrl = await createPresignedUploadUrl(propertyId, videoFile.name);
-        if (!resUrl.success || !resUrl.signedUrl || !resUrl.path) {
+        if (!resUrl.success || !resUrl.signedUrl || !resUrl.token || !resUrl.path) {
           throw new Error(resUrl.error || "Failed to create video upload link.");
         }
 
-        // Upload the file via PUT to the signedUrl
-        const uploadRes = await fetch(resUrl.signedUrl, {
-          method: "PUT",
-          body: videoFile,
-          headers: {
-            "Content-Type": videoFile.type,
-          },
-        });
+        // Upload the file via standard Supabase SDK helper
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from("checkin-me")
+          .uploadToSignedUrl(resUrl.path, resUrl.token, videoFile);
 
-        if (!uploadRes.ok) {
-          throw new Error("Failed to upload video to cloud storage.");
+        if (uploadError) {
+          throw new Error(`Failed to upload video to cloud storage: ${uploadError.message}`);
         }
 
         // Construct public URL using env or fallback
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://wblnwbdcfdiitvrznmt.supabase.co";
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://wblnwbdcfdiiitvrznmt.supabase.co";
         finalVideoUrl = `${supabaseUrl}/storage/v1/object/public/checkin-me/${resUrl.path}`;
       }
 

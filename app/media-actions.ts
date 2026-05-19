@@ -37,6 +37,7 @@ export async function createPresignedUploadUrl(propertyId: string, fileName: str
     return { 
       success: true, 
       signedUrl: data.signedUrl, 
+      token: data.token,
       path 
     };
   } catch (e: any) {
