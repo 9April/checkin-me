@@ -1,6 +1,40 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
 
+const LOCALIZED_TEXTS: Record<string, {
+  selectDates: string;
+  selectDate: string;
+  selectMonth: string;
+  close: string;
+  months: string[];
+  days: string[];
+}> = {
+  EN: {
+    selectDates: 'Select dates',
+    selectDate: 'Select a date',
+    selectMonth: 'Select Month',
+    close: 'Close',
+    months: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+    days: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+  },
+  FR: {
+    selectDates: 'Sélectionner les dates',
+    selectDate: 'Sélectionner une date',
+    selectMonth: 'Sélectionner le mois',
+    close: 'Fermer',
+    months: ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'],
+    days: ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'],
+  },
+  SP: {
+    selectDates: 'Seleccionar fechas',
+    selectDate: 'Seleccionar una fecha',
+    selectMonth: 'Seleccionar mes',
+    close: 'Cerrar',
+    months: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
+    days: ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'],
+  },
+};
+
 interface DatePickerProps {
   name: string;
   endDateName?: string;
@@ -37,6 +71,9 @@ export default function DatePicker({
   const [showMonthPicker, setShowMonthPicker] = useState(false);
   const [yearRangeStart, setYearRangeStart] = useState(new Date().getFullYear() - 50);
   const pickerRef = useRef<HTMLDivElement>(null);
+
+  const normalizedLang = (lang || 'EN').toUpperCase();
+  const t = LOCALIZED_TEXTS[normalizedLang] || LOCALIZED_TEXTS.EN;
 
   const d = (val: number | string) => {
     return val;
@@ -180,8 +217,7 @@ export default function DatePicker({
     return Array.from({ length: endYear - startYear + 1 }, (_, i) => startYear + i);
   };
 
-  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-  const currentMonths = months;
+  const currentMonths = t.months;
 
   const isDateDisabled = (day: number): boolean => {
     const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
@@ -284,7 +320,7 @@ export default function DatePicker({
         `}
       >
         <span className={displayValue ? 'text-gray-900' : 'text-gray-500'}>
-          {displayValue || (endDateName ? 'Select dates' : 'Select a date')}
+          {displayValue || (endDateName ? t.selectDates : t.selectDate)}
         </span>
         <svg className="w-5 h-5 text-[#FF385C]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -334,7 +370,7 @@ export default function DatePicker({
           {/* Month Picker */}
           {showMonthPicker && (
             <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
-              <div className="text-sm font-medium text-gray-600 mb-2 text-center">Select Month</div>
+              <div className="text-sm font-medium text-gray-600 mb-2 text-center">{t.selectMonth}</div>
               <div className="grid grid-cols-3 gap-2">
                 {currentMonths.map((month, index) => (
                   <button key={month} type="button" onClick={() => handleMonthSelect(index)} className={`py-2 px-3 rounded-lg text-sm font-medium transition-colors ${index === currentMonth.getMonth() ? 'bg-[#FF385C] text-white' : 'bg-white text-gray-700 hover:bg-rose-50'} cursor-pointer`}>{month.substring(0, 3)}</button>
@@ -345,7 +381,7 @@ export default function DatePicker({
 
           {/* Day labels */}
           <div className="grid grid-cols-7 gap-1 mb-2">
-            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => <div key={day} className="w-9 sm:w-10 h-8 flex items-center justify-center text-[10px] sm:text-xs font-semibold text-gray-500">{day}</div>)}
+            {t.days.map(day => <div key={day} className="w-9 sm:w-10 h-8 flex items-center justify-center text-[10px] sm:text-xs font-semibold text-gray-500">{day}</div>)}
           </div>
 
           {/* Calendar grid */}
@@ -353,7 +389,7 @@ export default function DatePicker({
 
           {/* Close button */}
           <div className="mt-4 pt-4 border-t border-gray-200 flex justify-end">
-            <button type="button" onClick={() => setIsOpen(false)} className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">Close</button>
+            <button type="button" onClick={() => setIsOpen(false)} className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">{t.close}</button>
           </div>
         </div>
       )}
