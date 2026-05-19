@@ -234,7 +234,7 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
                     src={booking.signature} 
                     alt="Guest Signature" 
                     crossOrigin="anonymous"
-                    className="h-9 w-auto object-contain pointer-events-none" 
+                    className="h-9 w-auto max-w-full object-contain pointer-events-none self-center" 
                   />
                 ) : (
                   <div 
