@@ -315,15 +315,28 @@ export default function CameraCapture({
         const compressed = await compressImage(file, 1000, 1300, 0.70);
         assignFileToInput(compressed);
         const imageUrl = URL.createObjectURL(compressed);
-        setPendingImage(imageUrl);
-        setShowPreview(true);
+        
+        // Auto-confirm: immediately use the photo that was already confirmed natively
+        setCapturedImage(imageUrl);
+        setPendingImage(null);
+        setShowPreview(false);
         setError(null);
+        
+        if (onCapture) {
+          onCapture(compressed);
+        }
       } catch (err) {
         console.error('Client-side compression failed:', err);
         const imageUrl = URL.createObjectURL(file);
-        setPendingImage(imageUrl);
-        setShowPreview(true);
+        
+        setCapturedImage(imageUrl);
+        setPendingImage(null);
+        setShowPreview(false);
         setError(null);
+        
+        if (onCapture) {
+          onCapture(file);
+        }
       } finally {
         setIsCompressing(false);
       }
