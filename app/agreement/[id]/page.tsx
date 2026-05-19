@@ -51,6 +51,12 @@ export default async function AgreementPage({ params }: PageProps) {
     checkout: booking.checkout,
     checkinHour: booking.checkinHour || undefined,
     signature: signatureUrl,
+    travelers: booking.travelers.map((t) => ({
+      name: t.name,
+      country: t.country,
+      idNumber: t.idNumber || '—',
+      type: t.type,
+    })),
   };
 
   return (

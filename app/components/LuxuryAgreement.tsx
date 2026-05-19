@@ -24,6 +24,12 @@ interface LuxuryAgreementProps {
     checkout: string;
     checkinHour?: string;
     signature?: string | null;
+    travelers?: Array<{
+      name: string;
+      country: string;
+      idNumber: string;
+      type: string;
+    }>;
   };
 }
 
@@ -162,6 +168,24 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
                 </p>
               </div>
             </section>
+
+            {/* Accompanying Guests */}
+            {booking.travelers && booking.travelers.length > 1 && (
+              <div 
+                style={{ borderColor: 'rgba(168, 152, 126, 0.15)', backgroundColor: 'rgba(252, 251, 249, 0.5)' }}
+                className="rounded-xl border p-3.5 text-center max-w-xl mx-auto mb-2 flex flex-col gap-1"
+              >
+                <p className="text-[8px] uppercase tracking-[0.25em] text-[#A8987E] font-bold">
+                  Accompanying Guests • Voyageurs accompagnants
+                </p>
+                <p className="font-serif text-[11px] sm:text-[12px] italic opacity-85 leading-relaxed">
+                  {booking.travelers
+                    .slice(1) // skip the primary guest (index 0)
+                    .map((t) => `${t.name} (${t.type === 'passport' ? 'Passport' : 'ID'}: ${t.idNumber})`)
+                    .join(', ')}
+                </p>
+              </div>
+            )}
 
             {/* House Etiquette & Rules */}
             <section className="flex flex-col gap-4 sm:gap-6">
