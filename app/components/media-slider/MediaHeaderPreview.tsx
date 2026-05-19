@@ -65,8 +65,8 @@ export default function MediaHeaderPreview({ videoUrl, images }: MediaHeaderPrev
         >
           {videoUrl ? (
             <>
-              {/* Premium Shimmer Loading Skeleton */}
-              {isVideoLoading && (
+              {/* Premium Shimmer Loading Skeleton (only if we don't have a poster image to cover it) */}
+              {isVideoLoading && (!images || images.length === 0) && (
                 <div className="absolute inset-0 bg-neutral-950 flex flex-col items-center justify-center z-20 animate-pulse">
                   <div className="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin mb-3" />
                   <p className="font-sans text-[10px] tracking-[0.2em] uppercase text-white/50">Loading Experience</p>
@@ -86,6 +86,7 @@ export default function MediaHeaderPreview({ videoUrl, images }: MediaHeaderPrev
               <video
                 ref={videoRef}
                 src={videoUrl}
+                poster={images && images.length > 0 ? images[0].url : undefined}
                 className="w-full h-full object-cover"
                 autoPlay
                 muted={isMuted}

@@ -93,17 +93,22 @@ export default function StackedCardSlider({ images }: StackedCardSliderProps) {
           return (
             <div
               key={`${image.id}-${position}`}
-              className="absolute top-0 left-0 w-full h-full rounded-2xl overflow-hidden shadow-xl select-none"
+              className="absolute top-0 left-0 w-full h-full rounded-2xl overflow-hidden shadow-xl select-none bg-[#1A1A1A]"
               style={{
                 zIndex,
                 opacity,
                 transform: `translateY(${translateY}px) scale(${scale})`,
                 transition: "all 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
-                backgroundImage: `url(${image.url})`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
               }}
-            />
+            >
+              <img
+                src={image.url}
+                alt={image.name || "Slide image"}
+                className="w-full h-full object-cover pointer-events-none"
+                loading={position === 0 ? "eager" : "lazy"}
+                draggable={false}
+              />
+            </div>
           );
         })}
       </div>
