@@ -17,11 +17,13 @@ interface StackedCardSliderProps {
 export default function StackedCardSlider({ images }: StackedCardSliderProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  const handleNext = useCallback(() => {
+  const handleNext = useCallback((e?: React.MouseEvent) => {
+    e?.preventDefault();
     setCurrentIndex((prev) => (prev + 1) % images.length);
   }, [images.length]);
 
-  const handlePrev = useCallback(() => {
+  const handlePrev = useCallback((e?: React.MouseEvent) => {
+    e?.preventDefault();
     setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
   }, [images.length]);
 
@@ -101,20 +103,7 @@ export default function StackedCardSlider({ images }: StackedCardSliderProps) {
                 backgroundSize: "cover",
                 backgroundPosition: "center",
               }}
-            >
-              {/* Gradient Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-              
-              {/* Text Content */}
-              <div className="absolute bottom-0 left-0 w-full p-6 text-white transform transition-transform duration-500">
-                <h3 className="font-serif text-3xl font-medium mb-1 drop-shadow-md">
-                  {image.name || "Unnamed"}
-                </h3>
-                <p className="font-sans text-sm tracking-widest uppercase opacity-80 drop-shadow-md">
-                  {image.role || "No Role"}
-                </p>
-              </div>
-            </div>
+            />
           );
         })}
       </div>
@@ -122,6 +111,7 @@ export default function StackedCardSlider({ images }: StackedCardSliderProps) {
       {/* Navigation Controls */}
       <div className="flex items-center gap-6 mt-12 z-40">
         <button
+          type="button"
           onClick={handlePrev}
           className="w-12 h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-white border border-gray-200 hover:border-gray-300 shadow-sm text-gray-600 hover:text-black transition-all hover:scale-105"
           aria-label="Previous image"
@@ -134,6 +124,7 @@ export default function StackedCardSlider({ images }: StackedCardSliderProps) {
         </span>
         
         <button
+          type="button"
           onClick={handleNext}
           className="w-12 h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-white border border-gray-200 hover:border-gray-300 shadow-sm text-gray-600 hover:text-black transition-all hover:scale-105"
           aria-label="Next image"

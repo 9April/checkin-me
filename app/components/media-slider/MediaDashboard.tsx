@@ -141,9 +141,13 @@ export default function MediaDashboard({
       const file = e.target.files[0];
       const mbSize = file.size / (1024 * 1024);
       
-      // Limit to 100MB for direct client-side cloud uploads
-      if (file.size > 100 * 1024 * 1024) {
-        alert("Video size must be less than 100MB to be successfully processed.");
+      // Enforce the 50MB hard limit for Supabase Free Tier storage uploads
+      if (file.size > 50 * 1024 * 1024) {
+        alert(
+          `Video size is too large (${mbSize.toFixed(1)} MB).\n\n` +
+          `Since your storage is hosted on the Supabase Free Plan, files are capped at a maximum of 50 MB.\n\n` +
+          `Please compress the video (under 50 MB) using a tool like Handbrake, CapCut, or Adobe Express before uploading, or host your video externally (e.g., Vimeo, YouTube Direct, or a CDN) and provide the direct public URL.`
+        );
         if (videoInputRef.current) videoInputRef.current.value = "";
         return;
       }
@@ -422,12 +426,12 @@ export default function MediaDashboard({
         </div>
       </div>
 
-      {/* Image Data Input Section */}
+      {/* Uploaded Images List Section */}
       {images.length > 0 && (
         <div className="mb-10">
           <div className="flex items-center justify-between border-b pb-2 mb-4">
             <h2 className="text-lg font-medium flex items-center gap-2">
-              Image Data ({images.length})
+              Uploaded Images ({images.length})
             </h2>
           </div>
           
@@ -440,22 +444,8 @@ export default function MediaDashboard({
                 <div className="h-40 w-full rounded-lg overflow-hidden bg-gray-200">
                   <img src={img.url} alt="preview" className="w-full h-full object-cover" />
                 </div>
-                <div className="flex flex-col gap-2">
-                  <input 
-                    type="text" 
-                    placeholder="Name (e.g. John Doe)" 
-                    value={img.name}
-                    onChange={(e) => updateImageMetadata(img.id, "name", e.target.value)}
-                    className="w-full text-sm p-2 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-black"
-                  />
-                  <input 
-                    type="text" 
-                    placeholder="Role (e.g. Host)" 
-                    value={img.role}
-                    onChange={(e) => updateImageMetadata(img.id, "role", e.target.value)}
-                    className="w-full text-sm p-2 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-black"
-                  />
-                  <span className="text-[10px] text-gray-400 font-mono mt-1">
+                <div className="flex flex-col gap-1 items-center justify-between">
+                  <span className="text-[10px] text-gray-400 font-mono mt-1 w-full text-center">
                     {img.file ? `${(img.file.size / 1024).toFixed(0)} KB` : "Saved to Cloud"}
                   </span>
                 </div>
