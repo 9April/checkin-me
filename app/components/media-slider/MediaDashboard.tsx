@@ -121,6 +121,20 @@ export default function MediaDashboard({
     }
   }, [triggerSave]);
 
+  // Scan aspect ratio for existing videoUrl on load
+  useEffect(() => {
+    if (videoUrl && !videoFile) {
+      const videoEl = document.createElement("video");
+      videoEl.preload = "metadata";
+      videoEl.src = videoUrl;
+      videoEl.onloadedmetadata = () => {
+        const width = videoEl.videoWidth;
+        const height = videoEl.videoHeight;
+        setIsVideoLandscape(width > height);
+      };
+    }
+  }, [videoUrl, videoFile]);
+
   // Video Handlers
   const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -315,8 +329,14 @@ export default function MediaDashboard({
             </div>
           ) : (
             <div className="flex flex-col gap-3">
-              <div className="flex justify-center">
-                <div className="relative rounded-2xl overflow-hidden h-[300px] aspect-[9/16] bg-[#1A1A1A] border border-gray-200 group shadow-md hover:shadow-lg transition-shadow">
+              <div className="flex justify-center w-full">
+                <div 
+                  className={`relative rounded-2xl overflow-hidden bg-[#1A1A1A] border border-gray-200 group shadow-md hover:shadow-lg transition-all duration-300 ${
+                    isVideoLandscape 
+                      ? "w-full max-w-[360px] aspect-video" 
+                      : "h-[300px] aspect-[9/16]"
+                  }`}
+                >
                   <video 
                     src={videoUrl} 
                     className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity" 
