@@ -95,6 +95,66 @@ function StaticDocumentGuides({
   );
 }
 
+const compressImage = (file: File, maxWidth = 1000, maxHeight = 1300, quality = 0.70): Promise<File> => {
+  return new Promise((resolve) => {
+    // Only compress images that are larger than 250 KB
+    if (!file.type.startsWith("image/") || file.size <= 250 * 1024) {
+      resolve(file);
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target?.result as string;
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        let width = img.width;
+        let height = img.height;
+
+        // Maintain aspect ratio
+        if (width > height) {
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          canvas.toBlob(
+            (blob) => {
+              if (blob) {
+                const compressedFile = new File([blob], file.name, {
+                  type: "image/jpeg",
+                  lastModified: Date.now(),
+                });
+                resolve(compressedFile);
+              } else {
+                resolve(file); // Fallback to original
+              }
+            },
+            "image/jpeg",
+            quality
+          );
+        } else {
+          resolve(file); // Fallback
+        }
+      };
+    };
+    reader.onerror = () => resolve(file);
+  });
+};
+
 export default function CameraCapture({
   name,
   disabled = false,
@@ -116,6 +176,7 @@ export default function CameraCapture({
   const [pendingImage, setPendingImage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [liveOpen, setLiveOpen] = useState(false);
+  const [isCompressing, setIsCompressing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -246,13 +307,26 @@ export default function CameraCapture({
     fileInputRef.current.click();
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const imageUrl = URL.createObjectURL(file);
-      setPendingImage(imageUrl);
-      setShowPreview(true);
-      setError(null);
+      setIsCompressing(true);
+      try {
+        const compressed = await compressImage(file, 1000, 1300, 0.70);
+        assignFileToInput(compressed);
+        const imageUrl = URL.createObjectURL(compressed);
+        setPendingImage(imageUrl);
+        setShowPreview(true);
+        setError(null);
+      } catch (err) {
+        console.error('Client-side compression failed:', err);
+        const imageUrl = URL.createObjectURL(file);
+        setPendingImage(imageUrl);
+        setShowPreview(true);
+        setError(null);
+      } finally {
+        setIsCompressing(false);
+      }
     }
   };
 
@@ -383,39 +457,43 @@ export default function CameraCapture({
           <button
             type="button"
             onClick={openCamera}
-            disabled={disabled}
+            disabled={disabled || isCompressing}
             className="w-full py-4 px-6 bg-[#FF385C] hover:bg-[#E31C5F] text-white font-semibold rounded-lg transition-all shadow-md active:scale-95 flex items-center justify-center gap-3 disabled:opacity-50"
           >
-            <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2.5}
-                  d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2.5}
-                  d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
-                />
-              </svg>
-            </div>
+            {isCompressing ? (
+              <div className="w-8 h-8 border-4 border-white/20 border-t-white rounded-full animate-spin shrink-0" />
+            ) : (
+              <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2.5}
+                    d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2.5}
+                    d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                </svg>
+              </div>
+            )}
             <span className="text-lg tracking-wide uppercase">
-              {resolvedMode === 'user' ? labels.takeSelfie : labels.takeDocument}
+              {isCompressing ? "Optimizing photo..." : (resolvedMode === 'user' ? labels.takeSelfie : labels.takeDocument)}
             </span>
           </button>
 
           <button
             type="button"
             onClick={openGallery}
-            disabled={disabled}
+            disabled={disabled || isCompressing}
             className="w-full py-3 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition-colors disabled:opacity-50 text-sm tracking-widest uppercase border border-gray-200"
           >
             {labels.uploadFromDevice}
