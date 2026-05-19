@@ -8,41 +8,40 @@ interface MediaHeaderPreviewProps {
 }
 
 export default function MediaHeaderPreview({ videoUrl, images }: MediaHeaderPreviewProps) {
-  const [isMuted, setIsMuted] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
   const [isVideoLoading, setIsVideoLoading] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  // Attempt unmuted autoplay, fallback gracefully to muted autoplay if blocked
+  // Guarantee standard muted autoplay on initial load, then attempt unmuting if permitted by browser
   useEffect(() => {
     const video = videoRef.current;
     if (!video || !videoUrl) return;
 
-    // Reset states
     setIsVideoLoading(true);
-    video.muted = false;
-    setIsMuted(false);
+    video.muted = true;
+    setIsMuted(true);
 
-    const playPromise = video.play();
-    if (playPromise !== undefined) {
-      playPromise
-        .then(() => {
-          setIsVideoLoading(false);
-        })
-        .catch((error) => {
-          console.log("Unmuted autoplay prevented. Falling back to muted autoplay.", error);
-          // Fallback to muted autoplay
-          video.muted = true;
-          setIsMuted(true);
-          video.play()
-            .then(() => {
-              setIsVideoLoading(false);
-            })
-            .catch((e) => {
-              console.error("Graceful autoplay failed completely:", e);
-              setIsVideoLoading(false);
-            });
-        });
-    }
+    // Standard HTML-driven autoplay starts muted. Programmatically trigger to guarantee activation.
+    video.play()
+      .then(() => {
+        setIsVideoLoading(false);
+        
+        // Programmatic unmute attempt
+        video.muted = false;
+        video.play()
+          .then(() => {
+            setIsMuted(false);
+          })
+          .catch(() => {
+            // Revert to muted if browser blocks unmuted sound
+            video.muted = true;
+            setIsMuted(true);
+          });
+      })
+      .catch((error) => {
+        console.warn("Autoplay programmatic initiation delayed:", error);
+        setIsVideoLoading(false);
+      });
   }, [videoUrl]);
 
   const toggleMute = (e?: React.MouseEvent) => {
@@ -88,6 +87,8 @@ export default function MediaHeaderPreview({ videoUrl, images }: MediaHeaderPrev
                 ref={videoRef}
                 src={videoUrl}
                 className="w-full h-full object-cover"
+                autoPlay
+                muted={isMuted}
                 loop
                 playsInline
                 preload="auto"
