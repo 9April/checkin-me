@@ -481,15 +481,11 @@ export default function CheckInForm({
   useEffect(() => {
     if (!phoneLayout) return;
     
+    // 1. Maintain locked layout height to fit visualViewport
     const handleViewportChange = () => {
       const vv = window.visualViewport;
       if (!vv) return;
-      
       setViewportHeight(vv.height);
-      
-      // Keyboard is open if visual viewport height is substantially less than the screen/window height
-      const diff = window.innerHeight - vv.height;
-      setIsKeyboardVisible(diff > 120);
     };
 
     const vv = window.visualViewport;
@@ -500,16 +496,55 @@ export default function CheckInForm({
     } else {
       setViewportHeight(window.innerHeight);
     }
-
     window.addEventListener('resize', handleViewportChange);
 
+    // 2. Instant keyboard visibility detection using bubbling focusin/focusout events.
+    // Fires instantly before the keyboard animation slides up, avoiding any button jumps.
+    const handleFocusIn = (e: FocusEvent) => {
+      const target = e.target as HTMLElement;
+      if (
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.tagName === 'SELECT')
+      ) {
+        setIsKeyboardVisible(true);
+      }
+    };
+
+    const handleFocusOut = (e: FocusEvent) => {
+      const target = e.target as HTMLElement;
+      if (
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.tagName === 'SELECT')
+      ) {
+        setTimeout(() => {
+          const activeEl = document.activeElement;
+          if (
+            !activeEl ||
+            (activeEl.tagName !== 'INPUT' &&
+              activeEl.tagName !== 'TEXTAREA' &&
+              activeEl.tagName !== 'SELECT')
+          ) {
+            setIsKeyboardVisible(false);
+          }
+        }, 50);
+      }
+    };
+
+    document.addEventListener('focusin', handleFocusIn);
+    document.addEventListener('focusout', handleFocusOut);
+
     return () => {
-      const vv = window.visualViewport;
       if (vv) {
         vv.removeEventListener('resize', handleViewportChange);
         vv.removeEventListener('scroll', handleViewportChange);
       }
       window.removeEventListener('resize', handleViewportChange);
+      document.removeEventListener('focusin', handleFocusIn);
+      document.removeEventListener('focusout', handleFocusOut);
     };
   }, [phoneLayout]);
 
