@@ -1,6 +1,4 @@
-"use client";
-
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import StackedCardSlider, { SliderImage } from "./StackedCardSlider";
 import { Volume2, VolumeX } from "lucide-react";
 
@@ -10,15 +8,62 @@ interface MediaHeaderPreviewProps {
 }
 
 export default function MediaHeaderPreview({ videoUrl, images }: MediaHeaderPreviewProps) {
-  const [isMuted, setIsMuted] = useState(true);
+  const [isMuted, setIsMuted] = useState(false);
   const [isVideoLoading, setIsVideoLoading] = useState(true);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Attempt unmuted autoplay, fallback gracefully to muted autoplay if blocked
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !videoUrl) return;
+
+    // Reset states
+    setIsVideoLoading(true);
+    video.muted = false;
+    setIsMuted(false);
+
+    const playPromise = video.play();
+    if (playPromise !== undefined) {
+      playPromise
+        .then(() => {
+          setIsVideoLoading(false);
+        })
+        .catch((error) => {
+          console.log("Unmuted autoplay prevented. Falling back to muted autoplay.", error);
+          // Fallback to muted autoplay
+          video.muted = true;
+          setIsMuted(true);
+          video.play()
+            .then(() => {
+              setIsVideoLoading(false);
+            })
+            .catch((e) => {
+              console.error("Graceful autoplay failed completely:", e);
+              setIsVideoLoading(false);
+            });
+        });
+    }
+  }, [videoUrl]);
+
+  const toggleMute = (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+    if (videoRef.current) {
+      const nextMuted = !videoRef.current.muted;
+      videoRef.current.muted = nextMuted;
+      setIsMuted(nextMuted);
+    }
+  };
 
   return (
     <div className="w-full max-w-5xl mx-auto bg-white rounded-3xl shadow-xl border border-gray-100/60 p-6 md:p-10 flex items-center justify-center">
       <div className="flex flex-col md:flex-row items-center md:items-start justify-center gap-10 md:gap-16 w-full">
         
         {/* Left Column: Video Player */}
-        <div className="relative w-full max-w-[300px] sm:max-w-[340px] md:max-w-[360px] aspect-[9/16] rounded-2xl overflow-hidden shadow-lg bg-[#1A1A1A] shrink-0 group">
+        <div 
+          onClick={(e) => toggleMute(e)}
+          className="relative w-full max-w-[300px] sm:max-w-[340px] md:max-w-[360px] aspect-[9/16] rounded-2xl overflow-hidden shadow-lg bg-[#1A1A1A] shrink-0 group cursor-pointer"
+        >
           {videoUrl ? (
             <>
               {/* Premium Shimmer Loading Skeleton */}
@@ -29,12 +74,21 @@ export default function MediaHeaderPreview({ videoUrl, images }: MediaHeaderPrev
                 </div>
               )}
 
+              {/* Pulsing Tap for Sound Banner when muted */}
+              {isMuted && !isVideoLoading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/10 hover:bg-black/30 transition-colors z-10">
+                  <div className="flex items-center gap-2 px-5 py-3 rounded-full bg-black/75 border border-white/20 text-white font-sans text-xs tracking-wider uppercase font-semibold animate-pulse shadow-xl backdrop-blur-md transition-transform hover:scale-105">
+                    <VolumeX size={14} className="animate-bounce" />
+                    <span>Tap for Sound</span>
+                  </div>
+                </div>
+              )}
+
               <video
+                ref={videoRef}
                 src={videoUrl}
                 className="w-full h-full object-cover"
-                autoPlay
                 loop
-                muted={isMuted}
                 playsInline
                 preload="auto"
                 onCanPlay={() => setIsVideoLoading(false)}
@@ -42,7 +96,8 @@ export default function MediaHeaderPreview({ videoUrl, images }: MediaHeaderPrev
               
               {/* Premium Floating Sound Control */}
               <button
-                onClick={() => setIsMuted(!isMuted)}
+                type="button"
+                onClick={(e) => toggleMute(e)}
                 className="absolute bottom-4 right-4 p-3 rounded-full bg-black/60 hover:bg-black/80 text-white backdrop-blur-md border border-white/10 transition-all duration-300 z-10 hover:scale-105 shadow-md flex items-center justify-center"
                 title={isMuted ? "Unmute sound" : "Mute sound"}
               >

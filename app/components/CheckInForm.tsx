@@ -801,97 +801,45 @@ export default function CheckInForm({
               : "rounded-3xl"
           }`}
         >
-          {/* Header */}
-          <div
-            className={`flex justify-between items-center gap-3 border-b border-[#DDDDDD]/50 bg-white/60 backdrop-blur-xl shrink-0 z-20 max-w-full min-w-0 ${
-              phoneLayout ? "p-3 pt-safe checkin-px flex-row" : "p-6 sm:p-8 flex-col sm:flex-row gap-6 sticky top-0"
-            }`}
-          >
+          {/* Header (Desktop Only) */}
+          {!phoneLayout && (
             <div
-              className={`flex items-center gap-1 p-1 bg-[#F7F7F7] rounded-xl overflow-x-auto no-scrollbar shrink-0 border border-[#DDDDDD] ${
-                phoneLayout ? "max-w-[55%]" : "w-full sm:w-auto gap-2 p-1.5"
-              }`}
+              className="flex justify-between items-center gap-3 border-b border-[#DDDDDD]/50 bg-white/60 backdrop-blur-xl shrink-0 z-20 max-w-full min-w-0 p-6 sm:p-8 flex-col sm:flex-row gap-6 sticky top-0"
             >
-              {(["EN", "FR", "SP"] as Lang[]).map((l) => (
-                <button
-                  key={l}
-                  type="button"
-                  onClick={() => setLang(l)}
-                  className={`flex-1 sm:flex-none rounded-xl font-bold uppercase tracking-widest transition-all duration-500 text-[9px] px-3 py-2 sm:text-[10px] sm:px-6 sm:py-2.5
-                    ${lang === l ? "bg-white text-[#222222] shadow-sm font-semibold" : "text-[#717171] hover:text-[#222222] hover:bg-white"}`}
-                >
-                  {l}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {phoneLayout && (
-            <div className="shrink-0 checkin-px py-2.5 border-b border-[#DDDDDD]/40 bg-[#F7F7F7]/90">
-              <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#222222] truncate text-center">
-                {property.formTitle || property.name}
-              </p>
-              <div className="flex justify-center gap-1.5 mt-2" role="tablist" aria-label="Form steps">
-                {Array.from({ length: finishStep + 1 }).map((_, i) => (
-                  <span
-                    key={i}
-                    className={`h-1.5 rounded-full transition-all duration-300 ${
-                      i === wizardStep ? "w-7 bg-[#FF385C]" : "w-1.5 bg-[#DDDDDD]"
-                    }`}
-                  />
+              <div
+                className="flex items-center gap-1 p-1 bg-[#F7F7F7] rounded-xl overflow-x-auto no-scrollbar shrink-0 border border-[#DDDDDD] w-full sm:w-auto gap-2 p-1.5"
+              >
+                {(["EN", "FR", "SP"] as Lang[]).map((l) => (
+                  <button
+                    key={l}
+                    type="button"
+                    onClick={() => setLang(l)}
+                    className={`flex-1 sm:flex-none rounded-xl font-bold uppercase tracking-widest transition-all duration-500 text-[10px] px-6 py-2.5
+                      ${lang === l ? "bg-white text-[#222222] shadow-sm font-semibold" : "text-[#717171] hover:text-[#222222] hover:bg-white"}`}
+                  >
+                    {l}
+                  </button>
                 ))}
-              </div>
-              <div className="flex justify-center gap-4 mt-2.5">
-                <button
-                  type="button"
-                  onClick={() => setIsPrivacyOpen(true)}
-                  className="text-[9px] font-bold text-[#FF385C] uppercase tracking-widest"
-                >
-                  Privacy
-                </button>
-                <span className="text-[#DDDDDD]">·</span>
-                <button
-                  type="button"
-                  onClick={() => setIsRulesOpen(true)}
-                  className="text-[9px] font-bold text-[#FF385C] uppercase tracking-widest"
-                >
-                  House rules
-                </button>
               </div>
             </div>
           )}
 
-          <div
-            className={`text-center bg-gradient-to-b from-[#F7F7F7] to-white ${
-              phoneLayout ? "checkin-px py-5" : "px-6 py-12 sm:py-16 sm:px-12"
-            } ${phoneLayout && wizardStep !== 0 ? "hidden" : ""}`}
-          >
-            <span
-              className={`inline-block bg-[#EBEBEB] rounded-full font-bold uppercase text-[#222222] ${
-                phoneLayout
-                  ? "px-3 py-1 text-[8px] tracking-[0.35em] mb-3"
-                  : "px-4 py-1.5 text-[10px] tracking-[0.35em] mb-5"
-              }`}
-            >
-              {t.title}
-            </span>
-            <h1
-              className={`font-semibold text-[#222222] tracking-tight mb-3 sm:mb-4 leading-snug ${
-                phoneLayout ? "text-2xl sm:text-[26px]" : "text-3xl sm:text-4xl"
-              }`}
-            >
-              {property.formTitle || `${property.name}`}
-            </h1>
-            {property.formSubtitle && (
-              <p
-                className={`text-[#717171] font-normal max-w-lg mx-auto leading-relaxed ${
-                  phoneLayout ? "text-sm" : "text-base sm:text-lg"
-                }`}
-              >
-                {property.formSubtitle}
-              </p>
-            )}
-          </div>
+          {/* Welcome card (Desktop Only) */}
+          {!phoneLayout && (
+            <div className="text-center bg-gradient-to-b from-[#F7F7F7] to-white px-6 py-12 sm:py-16 sm:px-12">
+              <span className="inline-block bg-[#EBEBEB] rounded-full font-bold uppercase text-[#222222] px-4 py-1.5 text-[10px] tracking-[0.35em] mb-5">
+                {t.title}
+              </span>
+              <h1 className="font-semibold text-[#222222] tracking-tight mb-3 sm:mb-4 leading-snug text-3xl sm:text-4xl">
+                {property.formTitle || `${property.name}`}
+              </h1>
+              {property.formSubtitle && (
+                <p className="text-[#717171] font-normal max-w-lg mx-auto leading-relaxed text-base sm:text-lg">
+                  {property.formSubtitle}
+                </p>
+              )}
+            </div>
+          )}
 
           <form
             ref={formRef}
@@ -911,6 +859,79 @@ export default function CheckInForm({
                   : "contents"
               }
             >
+              {/* Mobile Headers rendered inside the scrollable container */}
+              {phoneLayout && (
+                <div className="flex flex-col gap-4 pt-4 shrink-0">
+                  {/* Language switcher */}
+                  <div className="flex justify-between items-center gap-3 border-b border-[#DDDDDD]/50 bg-white/60 p-3 pt-safe flex-row rounded-2xl">
+                    <div className="flex items-center gap-1 p-1 bg-[#F7F7F7] rounded-xl overflow-x-auto no-scrollbar max-w-[55%] border border-[#DDDDDD]">
+                      {(["EN", "FR", "SP"] as Lang[]).map((l) => (
+                        <button
+                          key={l}
+                          type="button"
+                          onClick={() => setLang(l)}
+                          className={`rounded-xl font-bold uppercase tracking-widest transition-all duration-500 text-[9px] px-3 py-2
+                            ${lang === l ? "bg-white text-[#222222] shadow-sm font-semibold" : "text-[#717171] hover:text-[#222222] hover:bg-white"}`}
+                        >
+                          {l}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Wizard steps, links, and details */}
+                  <div className="py-2.5 border-b border-[#DDDDDD]/40 bg-[#F7F7F7]/90 rounded-2xl px-4">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#222222] truncate text-center">
+                      {property.formTitle || property.name}
+                    </p>
+                    <div className="flex justify-center gap-1.5 mt-2" role="tablist" aria-label="Form steps">
+                      {Array.from({ length: finishStep + 1 }).map((_, i) => (
+                        <span
+                          key={i}
+                          className={`h-1.5 rounded-full transition-all duration-300 ${
+                            i === wizardStep ? "w-7 bg-[#FF385C]" : "w-1.5 bg-[#DDDDDD]"
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <div className="flex justify-center gap-4 mt-2.5">
+                      <button
+                        type="button"
+                        onClick={() => setIsPrivacyOpen(true)}
+                        className="text-[9px] font-bold text-[#FF385C] uppercase tracking-widest"
+                      >
+                        Privacy
+                      </button>
+                      <span className="text-[#DDDDDD]">·</span>
+                      <button
+                        type="button"
+                        onClick={() => setIsRulesOpen(true)}
+                        className="text-[9px] font-bold text-[#FF385C] uppercase tracking-widest"
+                      >
+                        House rules
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Welcome card on mobile inside scroll (step 0 only) */}
+                  {wizardStep === 0 && (
+                    <div className="text-center bg-gradient-to-b from-[#F7F7F7] to-white py-5 px-4 rounded-2xl border border-[#DDDDDD]/30">
+                      <span className="inline-block bg-[#EBEBEB] rounded-full font-bold uppercase text-[#222222] px-3 py-1 text-[8px] tracking-[0.35em] mb-3">
+                        {t.title}
+                      </span>
+                      <h1 className="font-semibold text-[#222222] tracking-tight mb-3 leading-snug text-2xl">
+                        {property.formTitle || `${property.name}`}
+                      </h1>
+                      {property.formSubtitle && (
+                        <p className="text-[#717171] font-normal max-w-lg mx-auto leading-relaxed text-sm">
+                          {property.formSubtitle}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
               {(property.mediaVideoUrl || sliderImagesParsed.length > 0) && (!phoneLayout || wizardStep === 0) && (
                 <div className={`animate-in fade-in slide-in-from-top-4 duration-700 ${phoneLayout ? "mt-4 mb-8" : "mb-12"}`}>
                   <MediaHeaderPreview videoUrl={property.mediaVideoUrl || null} images={sliderImagesParsed} />
