@@ -87,6 +87,8 @@ export default function MediaDashboard({
 }: MediaDashboardProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [isCompressing, setIsCompressing] = useState(false);
+  const [isVideoLandscape, setIsVideoLandscape] = useState(false);
+  const [videoSizeMb, setVideoSizeMb] = useState(0);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
@@ -123,12 +125,28 @@ export default function MediaDashboard({
   const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
+      const mbSize = file.size / (1024 * 1024);
+      
       // Limit to 100MB for direct client-side cloud uploads
       if (file.size > 100 * 1024 * 1024) {
         alert("Video size must be less than 100MB to be successfully processed.");
         if (videoInputRef.current) videoInputRef.current.value = "";
         return;
       }
+
+      setVideoSizeMb(mbSize);
+
+      // Perform client-side video aspect-ratio verification
+      const videoEl = document.createElement("video");
+      videoEl.preload = "metadata";
+      videoEl.src = URL.createObjectURL(file);
+      videoEl.onloadedmetadata = () => {
+        const width = videoEl.videoWidth;
+        const height = videoEl.videoHeight;
+        setIsVideoLandscape(width > height);
+        URL.revokeObjectURL(videoEl.src);
+      };
+
       setVideoFile(file);
       setVideoUrl(URL.createObjectURL(file));
     }
@@ -137,6 +155,8 @@ export default function MediaDashboard({
   const removeVideo = () => {
     setVideoFile(null);
     setVideoUrl(null);
+    setIsVideoLandscape(false);
+    setVideoSizeMb(0);
     if (videoInputRef.current) videoInputRef.current.value = "";
   };
 
@@ -294,16 +314,60 @@ export default function MediaDashboard({
               <input type="file" accept="video/mp4,video/webm,video/quicktime" className="hidden" ref={videoInputRef} onChange={handleVideoUpload} />
             </div>
           ) : (
-            <div className="relative rounded-2xl overflow-hidden h-64 bg-black border border-gray-200 group">
-              <video src={videoUrl} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" autoPlay loop muted />
-              <div className="absolute top-3 right-3 flex gap-2">
-                <button onClick={removeVideo} className="p-2 bg-red-500/90 text-white rounded-full hover:bg-red-600 transition-colors">
-                  <Trash2 size={16} />
-                </button>
+            <div className="flex flex-col gap-3">
+              <div className="flex justify-center">
+                <div className="relative rounded-2xl overflow-hidden h-[300px] aspect-[9/16] bg-[#1A1A1A] border border-gray-200 group shadow-md hover:shadow-lg transition-shadow">
+                  <video 
+                    src={videoUrl} 
+                    className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity" 
+                    autoPlay 
+                    loop 
+                    muted 
+                    playsInline
+                  />
+                  <div className="absolute top-3 right-3 flex gap-2">
+                    <button 
+                      onClick={removeVideo} 
+                      className="p-2 bg-red-500/90 hover:bg-red-600 text-white rounded-full transition-colors shadow-md backdrop-blur-sm"
+                      title="Remove Video"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                  {videoFile && (
+                    <div className="absolute bottom-3 left-3 right-3 bg-black/60 text-white text-[10px] px-2 py-1 rounded backdrop-blur-sm truncate text-center">
+                      {videoFile.name} ({(videoFile.size / (1024 * 1024)).toFixed(1)} MB)
+                    </div>
+                  )}
+                </div>
               </div>
-              <div className="absolute bottom-3 left-3 bg-black/60 text-white text-xs px-2 py-1 rounded backdrop-blur-sm">
-                {videoFile?.name} ({(videoFile?.size! / (1024 * 1024)).toFixed(2)} MB)
-              </div>
+
+              {/* Landscape warning banner */}
+              {isVideoLandscape && (
+                <div className="p-3 bg-amber-50 border border-amber-100 text-amber-800 rounded-xl text-xs flex items-start gap-2 shadow-sm animate-fade-in">
+                  <span className="text-sm">⚠️</span>
+                  <div>
+                    <span className="font-semibold block">Landscape Video Detected</span>
+                    We highly recommend uploading a portrait (vertical 9:16) video so it fits mobile screens perfectly. Landscape videos will be cropped on mobile devices.
+                  </div>
+                </div>
+              )}
+              
+              {/* High file size warning/tips */}
+              {videoSizeMb > 15 && (
+                <div className="p-3 bg-blue-50 border border-blue-100 text-blue-800 rounded-xl text-xs flex items-start gap-2 shadow-sm animate-fade-in">
+                  <span className="text-sm">💡</span>
+                  <div>
+                    <span className="font-semibold block">Optimizer Tip: Large File ({videoSizeMb.toFixed(1)} MB)</span>
+                    For lightning-fast page loading:
+                    <ul className="list-disc pl-4 mt-1 space-y-0.5">
+                      <li>Keep the video duration under 15 seconds.</li>
+                      <li>Compress the resolution to 720p or 1080p.</li>
+                      <li>Convert to optimized MP4/H.264 format.</li>
+                    </ul>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
