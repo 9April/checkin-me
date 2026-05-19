@@ -92,7 +92,7 @@ export default function MediaHeaderPreview({ videoUrl, images }: MediaHeaderPrev
                 muted={isMuted}
                 loop
                 playsInline
-                preload="auto"
+                preload="metadata"
                 onCanPlay={() => setIsVideoLoading(false)}
               />
               

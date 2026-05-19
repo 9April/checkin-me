@@ -106,6 +106,7 @@ export default function StackedCardSlider({ images }: StackedCardSliderProps) {
                 alt={image.name || "Slide image"}
                 className="w-full h-full object-cover pointer-events-none"
                 loading={position === 0 ? "eager" : "lazy"}
+                decoding="async"
                 draggable={false}
               />
             </div>
