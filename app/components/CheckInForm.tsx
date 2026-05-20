@@ -1570,7 +1570,7 @@ export default function CheckInForm({
                       onClick={handleWizardContinue}
                       className="flex-1 min-w-0 py-3.5 rounded-2xl bg-gradient-to-r from-[#FF385C] to-[#E31C5F] text-white text-[11px] font-bold uppercase tracking-[0.2em] shadow-lg shadow-[#FF385C]/25 active:scale-[0.99] transition-transform"
                     >
-                      {wizardStep <= 1 ? t.reserve : t.continue}
+                      {wizardStep === 0 ? t.reserve : t.continue}
                     </button>
                     <a
                       href={`https://wa.me/212661420314?text=${encodeURIComponent(`Hello! I'm contacting you from the Mamounia online check-in form for "${property.name}". I need help with my pre-registration.`)}`}
