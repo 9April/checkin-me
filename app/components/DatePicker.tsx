@@ -57,12 +57,22 @@ export default function DatePicker({
   onChange,
   required = false,
   disabled = false,
-  min,
+  min: propMin,
   max,
   lang = 'EN',
   className = '',
   error = false,
 }: DatePickerProps) {
+  const getTodayLocalString = () => {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const min = propMin || getTodayLocalString();
+
   const [isOpen, setIsOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState(value || '');
   const [selectedEndDate, setSelectedEndDate] = useState('');
