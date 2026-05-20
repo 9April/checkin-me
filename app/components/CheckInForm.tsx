@@ -354,7 +354,11 @@ function filterErrorsForWizardStep(
 ): Record<string, string> {
   return Object.fromEntries(
     Object.entries(all).filter(([k]) => {
-      if (step === 0) {
+      // Step 0 has no input fields (only welcome video, slider, and location map)
+      if (step === 0) return false;
+
+      // Step 1 contains the personal registration details
+      if (step === 1) {
         return (
           k === "guestName" ||
           k === "guestEmail" ||
@@ -363,7 +367,11 @@ function filterErrorsForWizardStep(
           k === "checkinHour"
         );
       }
-      if (step === 1) return k.startsWith("traveler_");
+
+      // Step 2 contains the travelers documents/passports
+      if (step === 2) return k.startsWith("traveler_");
+
+      // Step 3 contains final rules, privacy, and signature
       return true;
     })
   );
@@ -393,7 +401,6 @@ function wizardStepHiddenClass(visible: boolean, phoneLayout: boolean): string {
 
 function firstWizardStepForErrors(errors: Record<string, string>): number {
   const keys = Object.keys(errors);
-  const finish = 2;
   for (const k of keys) {
     if (
       k === "guestName" ||
@@ -402,20 +409,20 @@ function firstWizardStepForErrors(errors: Record<string, string>): number {
       k === "checkout" ||
       k === "checkinHour"
     ) {
-      return 0;
+      return 1; // Step 1 is personal details now
     }
   }
   for (const k of keys) {
-    if (k.startsWith("traveler_")) return 1;
+    if (k.startsWith("traveler_")) return 2; // Step 2 is traveler documents
   }
   if (
     keys.includes("agreement") ||
     keys.includes("privacy") ||
     keys.includes("signature")
   ) {
-    return 2;
+    return 3; // Step 3 is signature, rules, and privacy
   }
-  return finish;
+  return 1;
 }
 
 interface PropertyData {
@@ -470,7 +477,7 @@ export default function CheckInForm({
     [property.showWhatsApp, whatsappValue]
   );
   const phoneLayout = usePhoneFormLayout();
-  const finishStep = 2;
+  const finishStep = phoneLayout ? 3 : 2;
   const [wizardStep, setWizardStep] = useState(0);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -880,9 +887,10 @@ export default function CheckInForm({
     }
   };
 
-  const showPersonal = !phoneLayout || wizardStep === 0;
-  const showTravelers = !phoneLayout || wizardStep === 1;
-  const showFinish = !phoneLayout || wizardStep === finishStep;
+  const showWelcome = !phoneLayout || wizardStep === 0;
+  const showPersonal = !phoneLayout || (phoneLayout ? wizardStep === 1 : true);
+  const showTravelers = !phoneLayout || (phoneLayout ? wizardStep === 2 : true);
+  const showFinish = !phoneLayout || (phoneLayout ? wizardStep === 3 : true);
 
   return (
     <main
@@ -1043,6 +1051,30 @@ export default function CheckInForm({
               {(property.mediaVideoUrl || sliderImagesParsed.length > 0) && (!phoneLayout || wizardStep === 0) && (
                 <div className={`animate-in fade-in slide-in-from-top-4 duration-700 ${phoneLayout ? "mt-4 mb-8" : "mb-12"}`}>
                   <MediaHeaderPreview videoUrl={property.mediaVideoUrl || null} images={sliderImagesParsed} />
+                </div>
+              )}
+
+              {/* Map embed section */}
+              {(!phoneLayout || wizardStep === 0) && (
+                <div className={`animate-in fade-in slide-in-from-top-4 duration-700 ${phoneLayout ? "mb-8 bg-[#FAFAFA] p-4 rounded-3xl border border-[#EEEEEE]" : "mb-12 md:rounded-2xl md:border md:border-[#EEEEEE] md:bg-[#FAFAFA] md:p-6 lg:p-8"}`}>
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-8 h-8 rounded-full bg-[#FF385C]/10 flex items-center justify-center text-[#FF385C]">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    </div>
+                    <span className="text-xs font-black uppercase tracking-[0.25em] text-[#222222]">
+                      {lang === 'FR' ? 'Localisation de la propriété' : lang === 'SP' ? 'Ubicación de la propiedad' : 'Property Location'}
+                    </span>
+                  </div>
+                  <div className="relative w-full rounded-2xl overflow-hidden border border-[#DDDDDD] shadow-sm bg-white aspect-[4/3] sm:aspect-[16/9] md:h-[350px]">
+                    <iframe
+                      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d207.6941959499211!2d-7.643220239649545!3d33.60252459972267!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xda7d3000dcc03e9%3A0x4c5bb61126e89176!2s4%20rue%20cemitiere%20complexe%20horizon!5e0!3m2!1sen!2sma!4v1779252658996!5m2!1sen!2sma"
+                      className="absolute inset-0 w-full h-full"
+                      style={{ border: 0 }}
+                      allowFullScreen={true}
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                    />
+                  </div>
                 </div>
               )}
               {Object.keys(validationErrors).length > 0 && (
