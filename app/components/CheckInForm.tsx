@@ -1536,7 +1536,7 @@ export default function CheckInForm({
               </button>
 
               <a
-                href={`https://wa.me/212612345678?text=${encodeURIComponent(`Hello, I'm filling out the check-in form for ${property.name} and need help.`)}`}
+                href={`https://wa.me/212661420314?text=${encodeURIComponent(`Hello! I'm contacting you from the Mamounia online check-in form for "${property.name}". I need help with my pre-registration.`)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-6 rounded-xl md:rounded-2xl bg-[#25D366] hover:bg-[#20ba59] text-white shadow-lg shadow-[#25D366]/20 active:scale-[0.97] transition-all flex items-center justify-center gap-2 text-sm md:text-base font-bold uppercase tracking-wider"
@@ -1573,7 +1573,7 @@ export default function CheckInForm({
                       {wizardStep <= 1 ? t.reserve : t.continue}
                     </button>
                     <a
-                      href={`https://wa.me/212612345678?text=${encodeURIComponent(`Hello, I'm filling out the check-in form for ${property.name} and need help.`)}`}
+                      href={`https://wa.me/212661420314?text=${encodeURIComponent(`Hello! I'm contacting you from the Mamounia online check-in form for "${property.name}". I need help with my pre-registration.`)}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="shrink-0 px-4 rounded-2xl bg-[#25D366] hover:bg-[#20ba59] text-white shadow-lg shadow-[#25D366]/20 active:scale-[0.97] transition-all flex items-center justify-center"
@@ -1595,7 +1595,7 @@ export default function CheckInForm({
                       {isLoading ? t.processingBtn : t.submit}
                     </button>
                     <a
-                      href={`https://wa.me/212612345678?text=${encodeURIComponent(`Hello, I'm filling out the check-in form for ${property.name} and need help.`)}`}
+                      href={`https://wa.me/212661420314?text=${encodeURIComponent(`Hello! I'm contacting you from the Mamounia online check-in form for "${property.name}". I need help with my pre-registration.`)}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="shrink-0 px-4 rounded-2xl bg-[#25D366] hover:bg-[#20ba59] text-white shadow-lg shadow-[#25D366]/20 active:scale-[0.97] transition-all flex items-center justify-center"
