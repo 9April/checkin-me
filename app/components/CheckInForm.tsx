@@ -906,33 +906,40 @@ export default function CheckInForm({
           travelers: parsedTravelers,
         });
 
-        // Small timeout to let React DOM render and load local/signature image components
-        await new Promise((resolve) => setTimeout(resolve, 600));
+        // Wait for fonts, signature image, and React DOM to fully render
+        await new Promise((resolve) => setTimeout(resolve, 800));
 
         const captureElement = document.getElementById('hidden-agreement-capture');
         if (captureElement) {
-          console.log('[PDF] Running html2canvas on offscreen element...');
+          // A4 in pixels at 96 dpi
+          const A4_W_PX = Math.round(210 * 3.7795);
+          const A4_H_PX = Math.round(297 * 3.7795);
+
+          console.log('[PDF] Running html2canvas at 4× scale for print-quality output...');
           const canvas = await html2canvas(captureElement, {
-            scale: 2.2, // High resolution matching PrintButton
+            scale: 4,            // 4× = ~384 dpi — crisp, professional print quality
             useCORS: true,
             logging: false,
             backgroundColor: '#ffffff',
-            width: (210 * 3.7795) + 2,
-            height: (297 * 3.7795) + 2,
+            width: A4_W_PX,
+            height: A4_H_PX,
+            windowWidth: A4_W_PX,
+            windowHeight: A4_H_PX,
             allowTaint: false,
             scrollX: 0,
             scrollY: 0,
           });
 
-          console.log('[PDF] Converting canvas to A4 jsPDF layout...');
-          const imgData = canvas.toDataURL('image/jpeg', 0.85);
+          console.log('[PDF] Converting canvas to lossless PNG A4 jsPDF layout...');
+          // PNG is lossless — no JPEG compression artifacts on text/lines
+          const imgData = canvas.toDataURL('image/png');
           const pdf = new jsPDF({
             orientation: 'portrait',
             unit: 'mm',
             format: 'a4',
-            compress: true
+            compress: true,
           });
-          pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297, undefined, 'FAST');
+          pdf.addImage(imgData, 'PNG', 0, 0, 210, 297, undefined, 'NONE');
           pdfBase64 = pdf.output('datauristring');
           formData.set('agreementPdf', pdfBase64);
           console.log('[PDF] Stunning pixel-perfect A4 PDF stay agreement captured successfully!');
