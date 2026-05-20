@@ -915,9 +915,9 @@ export default function CheckInForm({
           const A4_W_PX = Math.round(210 * 3.7795);
           const A4_H_PX = Math.round(297 * 3.7795);
 
-          console.log('[PDF] Running html2canvas at 4× scale for print-quality output...');
+          console.log('[PDF] Running html2canvas at 3× scale (~288 DPI professional quality)...');
           const canvas = await html2canvas(captureElement, {
-            scale: 4,            // 4× = ~384 dpi — crisp, professional print quality
+            scale: 3,            // 3× = ~288 DPI — sharp, professional quality, payload-safe
             useCORS: true,
             logging: false,
             backgroundColor: '#ffffff',
@@ -930,16 +930,16 @@ export default function CheckInForm({
             scrollY: 0,
           });
 
-          console.log('[PDF] Converting canvas to lossless PNG A4 jsPDF layout...');
-          // PNG is lossless — no JPEG compression artifacts on text/lines
-          const imgData = canvas.toDataURL('image/png');
+          console.log('[PDF] Converting canvas to JPEG 0.95 quality A4 PDF...');
+          // JPEG 0.95 = visually near-lossless, ~10× smaller than PNG — safe for email attachment
+          const imgData = canvas.toDataURL('image/jpeg', 0.95);
           const pdf = new jsPDF({
             orientation: 'portrait',
             unit: 'mm',
             format: 'a4',
             compress: true,
           });
-          pdf.addImage(imgData, 'PNG', 0, 0, 210, 297, undefined, 'NONE');
+          pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297, undefined, 'FAST');
           pdfBase64 = pdf.output('datauristring');
           formData.set('agreementPdf', pdfBase64);
           console.log('[PDF] Stunning pixel-perfect A4 PDF stay agreement captured successfully!');
