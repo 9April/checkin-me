@@ -100,6 +100,7 @@ const TRANSLATIONS = {
     errMoreFields: "And {n} more fields...",
     continue: "Continue",
     back: "Back",
+    reserve: "Reserve",
     docCameraTitleCinFront: "Moroccan national ID (CIN) — front",
     docCameraTitleCinBack: "Moroccan national ID (CIN) — back",
     docCameraTitlePassport: "Passport — photo page",
@@ -202,6 +203,7 @@ const TRANSLATIONS = {
     errMoreFields: "Et {n} autres champs...",
     continue: "Continuer",
     back: "Retour",
+    reserve: "Réserver",
     docCameraTitleCinFront: "CIN marocaine — recto",
     docCameraTitleCinBack: "CIN marocaine — verso",
     docCameraTitlePassport: "Passeport — page photo",
@@ -304,6 +306,7 @@ const TRANSLATIONS = {
     errMoreFields: "Y {n} campos más...",
     continue: "Continuar",
     back: "Atrás",
+    reserve: "Reservar",
     docCameraTitleCinFront: "CIN marroquí — anverso",
     docCameraTitleCinBack: "CIN marroquí — reverso",
     docCameraTitlePassport: "Pasaporte — página de la foto",
@@ -1521,15 +1524,30 @@ export default function CheckInForm({
               </p>
             )}
 
-            <button 
-              type="submit" 
-              disabled={isLoading} 
-              className={`w-full mt-4 text-white font-bold rounded-xl md:rounded-2xl shadow-lg shadow-[#FF385C]/25 transition-all duration-300 hover:brightness-105 active:scale-[0.99] disabled:opacity-60 disabled:grayscale flex items-center justify-center gap-3 md:gap-4 uppercase tracking-[0.2em] md:tracking-[0.25em] bg-gradient-to-r from-[#FF385C] to-[#E31C5F] relative overflow-hidden group py-4 text-base md:py-5 md:text-lg ${phoneLayout ? "hidden" : ""}`}
-            >
-              <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 skew-x-12" />
-              {isLoading && <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin" />}
-              {isLoading ? t.processingBtn : t.submit}
-            </button>
+            <div className={`mt-4 flex gap-4 ${phoneLayout ? "hidden" : ""}`}>
+              <button 
+                type="submit" 
+                disabled={isLoading} 
+                className="flex-1 text-white font-bold rounded-xl md:rounded-2xl shadow-lg shadow-[#FF385C]/25 transition-all duration-300 hover:brightness-105 active:scale-[0.99] disabled:opacity-60 disabled:grayscale flex items-center justify-center gap-3 md:gap-4 uppercase tracking-[0.2em] md:tracking-[0.25em] bg-gradient-to-r from-[#FF385C] to-[#E31C5F] relative overflow-hidden group py-4 text-base md:py-5 md:text-lg"
+              >
+                <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 skew-x-12" />
+                {isLoading && <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin" />}
+                {isLoading ? t.processingBtn : t.submit}
+              </button>
+
+              <a
+                href={`https://wa.me/212612345678?text=${encodeURIComponent(`Hello, I'm filling out the check-in form for ${property.name} and need help.`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-6 rounded-xl md:rounded-2xl bg-[#25D366] hover:bg-[#20ba59] text-white shadow-lg shadow-[#25D366]/20 active:scale-[0.97] transition-all flex items-center justify-center gap-2 text-sm md:text-base font-bold uppercase tracking-wider"
+                title="Chat on WhatsApp"
+              >
+                <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.457L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.413 9.864-9.852.002-2.634-1.013-5.11-2.861-6.962C16.63 1.94 14.153.918 11.517.918 6.08 11.516.918 11.519 1.64c10.96 5.432 9.878 9.843 9.873 9.853zM16.945 14c-.3.15-.3.15-1.5.15s-2.1-.9-3-1.8c-.9-.9-1.35-1.8-1.5-2.1-.15-.3-.02-.46.1-.58.12-.12.3-.3.45-.45.15-.15.2-.25.3-.45.1-.2.05-.35-.02-.5-.07-.15-.6-1.5-.82-2.03-.22-.53-.44-.45-.6-.46-.15-.01-.32-.01-.5-.01-.17 0-.46.06-.7.33-.24.27-.92.9-.92 2.2 0 1.3.95 2.56 1.08 2.73.13.17 1.87 2.85 4.53 4 .63.27 1.13.44 1.52.56.64.2 1.22.17 1.68.1.51-.07 1.57-.64 1.79-1.26.22-.62.22-1.15.15-1.26-.07-.1-.26-.17-.56-.32z"/>
+                </svg>
+                WhatsApp
+              </a>
+            </div>
             </div>
 
             {phoneLayout && (
@@ -1546,22 +1564,48 @@ export default function CheckInForm({
                   </button>
                 )}
                 {wizardStep < finishStep ? (
-                  <button
-                    type="button"
-                    onClick={handleWizardContinue}
-                    className="flex-1 min-w-0 py-3.5 rounded-2xl bg-gradient-to-r from-[#FF385C] to-[#E31C5F] text-white text-[11px] font-bold uppercase tracking-[0.2em] shadow-lg shadow-[#FF385C]/25 active:scale-[0.99] transition-transform"
-                  >
-                    {t.continue}
-                  </button>
+                  <div className="flex-1 flex gap-2 min-w-0">
+                    <button
+                      type="button"
+                      onClick={handleWizardContinue}
+                      className="flex-1 min-w-0 py-3.5 rounded-2xl bg-gradient-to-r from-[#FF385C] to-[#E31C5F] text-white text-[11px] font-bold uppercase tracking-[0.2em] shadow-lg shadow-[#FF385C]/25 active:scale-[0.99] transition-transform"
+                    >
+                      {wizardStep <= 1 ? t.reserve : t.continue}
+                    </button>
+                    <a
+                      href={`https://wa.me/212612345678?text=${encodeURIComponent(`Hello, I'm filling out the check-in form for ${property.name} and need help.`)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="shrink-0 px-4 rounded-2xl bg-[#25D366] hover:bg-[#20ba59] text-white shadow-lg shadow-[#25D366]/20 active:scale-[0.97] transition-all flex items-center justify-center"
+                      title="Chat on WhatsApp"
+                    >
+                      <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.457L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.413 9.864-9.852.002-2.634-1.013-5.11-2.861-6.962C16.63 1.94 14.153.918 11.517.918 6.08 11.516.918 11.519 1.64c10.96 5.432 9.878 9.843 9.873 9.853zM16.945 14c-.3.15-.3.15-1.5.15s-2.1-.9-3-1.8c-.9-.9-1.35-1.8-1.5-2.1-.15-.3-.02-.46.1-.58.12-.12.3-.3.45-.45.15-.15.2-.25.3-.45.1-.2.05-.35-.02-.5-.07-.15-.6-1.5-.82-2.03-.22-.53-.44-.45-.6-.46-.15-.01-.32-.01-.5-.01-.17 0-.46.06-.7.33-.24.27-.92.9-.92 2.2 0 1.3.95 2.56 1.08 2.73.13.17 1.87 2.85 4.53 4 .63.27 1.13.44 1.52.56.64.2 1.22.17 1.68.1.51-.07 1.57-.64 1.79-1.26.22-.62.22-1.15.15-1.26-.07-.1-.26-.17-.56-.32z"/>
+                      </svg>
+                    </a>
+                  </div>
                 ) : (
-                  <button
-                    type="submit"
-                    disabled={isLoading}
-                    className="flex-1 min-w-0 py-3.5 rounded-2xl bg-gradient-to-r from-[#FF385C] to-[#E31C5F] text-white text-[11px] font-bold uppercase tracking-[0.2em] shadow-lg shadow-[#FF385C]/25 disabled:opacity-60 flex items-center justify-center gap-2"
-                  >
-                    {isLoading && <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />}
-                    {isLoading ? t.processingBtn : t.submit}
-                  </button>
+                  <div className="flex-1 flex gap-2 min-w-0">
+                    <button
+                      type="submit"
+                      disabled={isLoading}
+                      className="flex-1 min-w-0 py-3.5 rounded-2xl bg-gradient-to-r from-[#FF385C] to-[#E31C5F] text-white text-[11px] font-bold uppercase tracking-[0.2em] shadow-lg shadow-[#FF385C]/25 disabled:opacity-60 flex items-center justify-center gap-2"
+                    >
+                      {isLoading && <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />}
+                      {isLoading ? t.processingBtn : t.submit}
+                    </button>
+                    <a
+                      href={`https://wa.me/212612345678?text=${encodeURIComponent(`Hello, I'm filling out the check-in form for ${property.name} and need help.`)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="shrink-0 px-4 rounded-2xl bg-[#25D366] hover:bg-[#20ba59] text-white shadow-lg shadow-[#25D366]/20 active:scale-[0.97] transition-all flex items-center justify-center"
+                      title="Chat on WhatsApp"
+                    >
+                      <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.457L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.413 9.864-9.852.002-2.634-1.013-5.11-2.861-6.962C16.63 1.94 14.153.918 11.517.918 6.08 11.516.918 11.519 1.64c10.96 5.432 9.878 9.843 9.873 9.853zM16.945 14c-.3.15-.3.15-1.5.15s-2.1-.9-3-1.8c-.9-.9-1.35-1.8-1.5-2.1-.15-.3-.02-.46.1-.58.12-.12.3-.3.45-.45.15-.15.2-.25.3-.45.1-.2.05-.35-.02-.5-.07-.15-.6-1.5-.82-2.03-.22-.53-.44-.45-.6-.46-.15-.01-.32-.01-.5-.01-.17 0-.46.06-.7.33-.24.27-.92.9-.92 2.2 0 1.3.95 2.56 1.08 2.73.13.17 1.87 2.85 4.53 4 .63.27 1.13.44 1.52.56.64.2 1.22.17 1.68.1.51-.07 1.57-.64 1.79-1.26.22-.62.22-1.15.15-1.26-.07-.1-.26-.17-.56-.32z"/>
+                      </svg>
+                    </a>
+                  </div>
                 )}
               </div>
             )}
