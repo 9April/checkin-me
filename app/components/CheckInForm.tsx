@@ -1417,18 +1417,18 @@ export default function CheckInForm({
             ))}
 
             <section className={`space-y-6 md:space-y-8 pt-6 md:pt-10 border-t border-[#EBEBEB] ${wizardStepHiddenClass(showFinish, phoneLayout)} ${!phoneLayout ? "md:rounded-2xl md:border md:border-[#EEEEEE] md:bg-[#FAFAFA] md:p-6 lg:p-8 md:mt-2" : ""}`}>
-               <div className="p-5 md:p-8 bg-[#1a1a1a] rounded-2xl md:rounded-3xl text-white space-y-4 md:space-y-6 shadow-lg shadow-gray-400/20">
+               <div className="p-5 md:p-8 bg-[#F7F7F7] border border-[#DDDDDD]/80 rounded-2xl md:rounded-3xl text-[#222222] space-y-4 md:space-y-6 shadow-sm">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-white/10 rounded-2xl flex items-center justify-center text-blue-400">
+                    <div className="w-10 h-10 bg-[#FF385C]/10 rounded-2xl flex items-center justify-center text-[#FF385C]">
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
                     </div>
-                    <h3 className="text-xs font-black uppercase tracking-[0.3em]">{t.privacyTitle}</h3>
+                    <h3 className="text-xs font-black uppercase tracking-[0.3em] text-[#222222]">{t.privacyTitle}</h3>
                   </div>
-                  <ul className="text-[11px] md:text-xs space-y-2 md:space-y-4 font-semibold opacity-80 leading-relaxed tracking-tight">
-                    <li className="flex gap-2"><span>•</span> {t.privacyEmail}</li>
-                    <li className="flex gap-2"><span>•</span> {t.privacyID}</li>
-                    <li className="flex gap-2"><span>•</span> {t.privacySelfie}</li>
-                    <li className="flex gap-2"><span>•</span> {t.privacyArrival}</li>
+                  <ul className="text-[11px] md:text-xs space-y-2 md:space-y-4 font-semibold text-[#484848] leading-relaxed tracking-tight">
+                    <li className="flex gap-2"><span className="text-[#FF385C]">•</span> {t.privacyEmail}</li>
+                    <li className="flex gap-2"><span className="text-[#FF385C]">•</span> {t.privacyID}</li>
+                    <li className="flex gap-2"><span className="text-[#FF385C]">•</span> {t.privacySelfie}</li>
+                    <li className="flex gap-2"><span className="text-[#FF385C]">•</span> {t.privacyArrival}</li>
                   </ul>
                </div>
 
