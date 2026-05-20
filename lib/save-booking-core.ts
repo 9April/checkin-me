@@ -254,16 +254,11 @@ async function sendCheckInEmails(opts: {
   const guestSubject = tm.guestSubject(opts.propertyName);
   const adminSubject = tm.adminSubject(opts.guestName, opts.propertyName);
 
-  const guestAttach =
-    (opts.guestAttachments && opts.guestAttachments.length > 0
-      ? opts.guestAttachments
-      : undefined) ||
-    (opts.pdfAttachment ? [opts.pdfAttachment] : undefined);
-  const adminAttach =
-    (opts.adminAttachments && opts.adminAttachments.length > 0
-      ? opts.adminAttachments
-      : undefined) ||
-    (opts.pdfAttachment ? [opts.pdfAttachment] : undefined);
+  const guestAttach = opts.pdfAttachment ? [opts.pdfAttachment] : undefined;
+  const adminAttach = [
+    ...(opts.pdfAttachment ? [opts.pdfAttachment] : []),
+    ...(opts.adminAttachments || []),
+  ];
 
   const tasks: Promise<{ success: boolean; error?: string }>[] = [];
 
@@ -273,10 +268,6 @@ async function sendCheckInEmails(opts: {
     guest.toLowerCase() === admin.toLowerCase();
 
   if (same) {
-    const mergedAttachments = [
-      ...(guestAttach || []),
-      ...(adminAttach || []),
-    ];
     tasks.push(
       sendEmail({
         to: guest,
@@ -284,7 +275,7 @@ async function sendCheckInEmails(opts: {
         subject: tm.sameSubject(opts.guestName, opts.propertyName),
         text: `${guestBody}${tm.sameAdminSeparator}${adminBody}`,
         html: `${guestBodyHtml}<hr/><p><strong>${escapeHtml(tm.sameAdminCopyHtml)}</strong></p>${adminBodyHtml}`,
-        attachments: mergedAttachments.length > 0 ? mergedAttachments : undefined,
+        attachments: adminAttach.length > 0 ? adminAttach : undefined,
       })
     );
   } else {
@@ -295,7 +286,7 @@ async function sendCheckInEmails(opts: {
           subject: guestSubject,
           text: guestBody,
           html: guestBodyHtml,
-          attachments: undefined, // Travelers only get the Thank you email without attachments
+          attachments: guestAttach, // Guest gets ONLY the signed A4 PDF stay agreement!
         })
       );
     }
@@ -307,7 +298,7 @@ async function sendCheckInEmails(opts: {
           subject: adminSubject,
           text: adminBody,
           html: adminBodyHtml,
-          attachments: adminAttach, // Admin & CC receive the registration details and attachments
+          attachments: adminAttach.length > 0 ? adminAttach : undefined, // Admin & CC receive the signed PDF + ID docs
           replyTo: guest || undefined,
         })
       );
@@ -574,6 +565,42 @@ export async function executeSaveBooking(
       );
       const combinedAttachments = idDocDownloads.filter(Boolean) as any[];
 
+      let pdfAttachment: any = undefined;
+      try {
+        console.log('--- Generating Digital Agreement PDF ---');
+        const pdfArrayBuffer = await buildPDF({
+          guestName,
+          guestEmail,
+          checkin,
+          checkout,
+          propertyName: property.name,
+          logoUrl: property.logoUrl,
+          primaryColor: null,
+          pdfTemplate: null,
+          pdfFooter: null,
+          travelers: travelersData.map((t) => ({
+            country: t.country,
+            idNumber: t.idNumber,
+            idFiles: t.idFiles,
+          })),
+          rules,
+          signature: signatureData || '',
+          idImages: [],
+          lang: lang === 'FR' || lang === 'SP' ? lang : 'EN',
+          checkinHour: checkinHour || undefined,
+          whatsapp: whatsapp || undefined,
+        });
+
+        pdfAttachment = {
+          filename: `Agreement_${guestName.replace(/\s+/g, '_')}.pdf`,
+          content: Buffer.from(pdfArrayBuffer),
+          contentType: 'application/pdf',
+        };
+        console.log('--- Digital Agreement PDF Generated Successfully ---');
+      } catch (pdfErr) {
+        console.error('--- Non-Fatal: Server-side PDF generation failed:', pdfErr);
+      }
+
       const { mailError } = await sendCheckInEmails({
         guestEmail,
         guestName,
@@ -582,7 +609,7 @@ export async function executeSaveBooking(
         propertyName: property.name,
         checkin,
         checkout,
-        pdfAttachment: undefined, // Legacy PDF removed
+        pdfAttachment,
         guestAttachments: combinedAttachments,
         adminAttachments: combinedAttachments,
         checkinHour,
