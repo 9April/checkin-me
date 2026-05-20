@@ -915,6 +915,23 @@ export default function CheckInForm({
           const A4_W_PX = Math.round(210 * 3.7795);
           const A4_H_PX = Math.round(297 * 3.7795);
 
+          // CRITICAL: LuxuryAgreement applies CSS transform:scale() for mobile viewports.
+          // When offscreen, window.innerWidth is the real (small) mobile width → scale < 1
+          // → PDF appears small/top-left. Force scale=1 before capture, restore after.
+          const printArea = captureElement.querySelector<HTMLElement>('#print-area');
+          const a4Wrapper = captureElement.querySelector<HTMLElement>('.a4-wrapper');
+          const prevTransform = printArea?.style.transform ?? '';
+          const prevWrapperHeight = a4Wrapper?.style.height ?? '';
+          const prevWrapperOverflow = a4Wrapper?.style.overflow ?? '';
+          if (printArea) {
+            printArea.style.transform = 'none';
+            printArea.style.transformOrigin = 'top left';
+          }
+          if (a4Wrapper) {
+            a4Wrapper.style.height = `${A4_H_PX}px`;
+            a4Wrapper.style.overflow = 'hidden';
+          }
+
           console.log('[PDF] Running html2canvas at 3× scale (~288 DPI professional quality)...');
           const canvas = await html2canvas(captureElement, {
             scale: 3,            // 3× = ~288 DPI — sharp, professional quality, payload-safe
@@ -929,6 +946,13 @@ export default function CheckInForm({
             scrollX: 0,
             scrollY: 0,
           });
+
+          // Restore original styles
+          if (printArea) printArea.style.transform = prevTransform;
+          if (a4Wrapper) {
+            a4Wrapper.style.height = prevWrapperHeight;
+            a4Wrapper.style.overflow = prevWrapperOverflow;
+          }
 
           console.log('[PDF] Converting canvas to JPEG 0.95 quality A4 PDF...');
           // JPEG 0.95 = visually near-lossless, ~10× smaller than PNG — safe for email attachment
