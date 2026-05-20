@@ -168,6 +168,7 @@ export default function CameraCapture({
   hasError = false,
   className = '',
   labels,
+  lang,
 }: CameraCaptureProps) {
   const resolvedMode: 'user' | 'environment' =
     mode ?? (guide === 'document' ? 'environment' : 'user');
@@ -294,15 +295,30 @@ export default function CameraCapture({
       ('ontouchstart' in window &&
         window.matchMedia('(pointer: coarse)').matches));
 
+  const isDesktop = !preferNativeDocumentCapture;
+
+  const UPLOAD_LABELS = {
+    EN: {
+      uploadSelfie: "Upload Selfie Photo",
+      uploadDocument: "Upload Document Photo",
+    },
+    FR: {
+      uploadSelfie: "Téléverser une photo de selfie",
+      uploadDocument: "Téléverser une photo du document",
+    },
+    SP: {
+      uploadSelfie: "Subir foto del selfie",
+      uploadDocument: "Subir foto del documento",
+    },
+  };
+
+  const activeLang = (lang as 'EN' | 'FR' | 'SP') || 'EN';
+  const uploadSelfieLabel = UPLOAD_LABELS[activeLang]?.uploadSelfie || "Upload Selfie Photo";
+  const uploadDocumentLabel = UPLOAD_LABELS[activeLang]?.uploadDocument || "Upload Document Photo";
+
   const openCamera = (e: React.MouseEvent) => {
-    if (guide === 'document' && documentVariant) {
-      if (preferNativeDocumentCapture) {
-        openNativePicker(e);
-        return;
-      }
-      void openLiveDocumentCamera(e);
-      return;
-    }
+    // If on mobile (preferNativeDocumentCapture is true), open native picker (which requests native camera app).
+    // If on desktop, we disable real-time live WebRTC camera capture completely and direct them to file selection.
     openNativePicker(e);
   };
 
@@ -484,40 +500,62 @@ export default function CameraCapture({
               <div className="w-8 h-8 border-4 border-white/20 border-t-white rounded-full animate-spin shrink-0" />
             ) : (
               <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2.5}
-                    d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2.5}
-                    d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                </svg>
+                {isDesktop ? (
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2.5}
+                      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                    />
+                  </svg>
+                ) : (
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2.5}
+                      d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2.5}
+                      d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                  </svg>
+                )}
               </div>
             )}
             <span className="text-lg tracking-wide uppercase">
-              {isCompressing ? "Optimizing photo..." : (resolvedMode === 'user' ? labels.takeSelfie : labels.takeDocument)}
+              {isCompressing 
+                ? "Optimizing photo..." 
+                : isDesktop 
+                  ? (resolvedMode === 'user' ? uploadSelfieLabel : uploadDocumentLabel)
+                  : (resolvedMode === 'user' ? labels.takeSelfie : labels.takeDocument)}
             </span>
           </button>
 
-          <button
-            type="button"
-            onClick={openGallery}
-            disabled={disabled || isCompressing}
-            className="w-full py-3 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition-colors disabled:opacity-50 text-sm tracking-widest uppercase border border-gray-200"
-          >
-            {labels.uploadFromDevice}
-          </button>
+          {!isDesktop && (
+            <button
+              type="button"
+              onClick={openGallery}
+              disabled={disabled || isCompressing}
+              className="w-full py-3 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition-colors disabled:opacity-50 text-sm tracking-widest uppercase border border-gray-200"
+            >
+              {labels.uploadFromDevice}
+            </button>
+          )}
         </div>
       )}
 
