@@ -23,6 +23,11 @@ export async function generateAgreementPDF(
     const originalTransform = element.style.transform;
     const originalTransformOrigin = element.style.transformOrigin;
     const originalWidth = element.style.width;
+    const originalMargin = element.style.margin;
+    const originalPosition = element.style.position;
+    const originalTop = element.style.top;
+    const originalLeft = element.style.left;
+    const originalZIndex = element.style.zIndex;
     const originalOverflow = document.body.style.overflow;
     
     // A4 in pixels at 96 dpi
@@ -35,6 +40,12 @@ export async function generateAgreementPDF(
     const prevWrapperHeight = a4Wrapper?.style.height ?? '';
     const prevWrapperOverflow = a4Wrapper?.style.overflow ?? '';
 
+    // Detach from normal document flow and place at exact top-left to avoid scroll/margin offsets resulting in blank captures
+    element.style.position = 'fixed';
+    element.style.top = '0px';
+    element.style.left = '0px';
+    element.style.margin = '0px';
+    element.style.zIndex = '-9999'; // hide behind other elements to avoid flicker
     element.style.transform = 'none';
     element.style.transformOrigin = 'top left';
     element.style.width = `${A4_W_PX}px`;
@@ -42,10 +53,14 @@ export async function generateAgreementPDF(
 
     if (a4Wrapper) {
       a4Wrapper.style.height = `${A4_H_PX}px`;
-      a4Wrapper.style.overflow = 'hidden';
+      a4Wrapper.style.overflow = 'visible';
     }
     
     console.log('[PDF] Running html2canvas at 3× scale (~288 DPI)...');
+    // Scroll window to top temporarily to ensure absolute coordinates match
+    const prevScrollY = window.scrollY;
+    window.scrollTo(0, 0);
+
     const canvas = await html2canvas(element, {
       scale: 3, // High resolution, matching form submission
       useCORS: true,
@@ -58,13 +73,22 @@ export async function generateAgreementPDF(
       allowTaint: false,
       scrollX: 0,
       scrollY: 0,
+      x: 0,
+      y: 0,
     });
+
+    window.scrollTo(0, prevScrollY);
 
     console.log('[PDF] Capture complete, restoring styles...');
     // Restore original styles
     element.style.transform = originalTransform;
     element.style.transformOrigin = originalTransformOrigin;
     element.style.width = originalWidth;
+    element.style.margin = originalMargin;
+    element.style.position = originalPosition;
+    element.style.top = originalTop;
+    element.style.left = originalLeft;
+    element.style.zIndex = originalZIndex;
     document.body.style.overflow = originalOverflow;
     
     if (a4Wrapper) {
