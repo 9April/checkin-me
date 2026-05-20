@@ -67,26 +67,33 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
   const security = property.ruleSecurity || "Les clés sont confiées aux voyageurs ; leur perte entraîne des frais. Toute activité illégale entraînera l'annulation du séjour.";
 
   return (
-    <div className="a4-wrapper no-scrollbar">
+    <div 
+      className="a4-wrapper no-scrollbar"
+      style={{
+        height: scale < 1 ? `${297 * 3.7795275591 * scale}px` : 'auto',
+        overflow: scale < 1 ? 'hidden' : 'visible'
+      }}
+    >
       <div 
         id="print-area" 
         ref={containerRef}
         style={{ 
           transform: `scale(${scale})`, 
           transformOrigin: 'top center',
-          margin: scale < 1 ? '0 auto' : '0 auto'
+          margin: '0 auto'
         }}
         className="a4-container bg-white text-[#1A1A1A] font-sans box-border p-[10mm] shadow-2xl print:shadow-none print:transform-none print:m-0 print:p-[10mm]"
       >
         <style>{`
           @media print {
             @page { 
-              size: A4; 
+              size: A4 portrait; 
               margin: 0 !important; 
             }
             html, body {
               margin: 0 !important;
               padding: 0 !important;
+              width: 210mm !important;
               height: 297mm !important;
               max-height: 297mm !important;
               overflow: hidden !important;
@@ -102,7 +109,7 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
               height: 297mm !important;
               max-height: 297mm !important;
               padding: 10mm !important;
-              position: fixed !important;
+              position: absolute !important;
               top: 0 !important;
               left: 0 !important;
               right: 0 !important;
