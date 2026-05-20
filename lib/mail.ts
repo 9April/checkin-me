@@ -3,6 +3,7 @@ import nodemailer from 'nodemailer';
 
 export interface SendEmailParams {
   to: string | string[];
+  cc?: string | string[];
   subject: string;
   text: string;
   html?: string;
@@ -53,6 +54,7 @@ function getTransporter() {
 
 export async function sendEmail({
   to,
+  cc,
   subject,
   text,
   html,
@@ -77,6 +79,7 @@ export async function sendEmail({
     const info = await activeTransporter.sendMail({
       from,
       to,
+      ...(cc ? { cc } : {}),
       subject,
       text,
       html: html || text,

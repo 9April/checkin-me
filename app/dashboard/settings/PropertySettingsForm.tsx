@@ -9,6 +9,7 @@ interface PropertySettingsFormProps {
     id: string;
     name: string;
     adminEmail?: string | null;
+    ccEmail?: string | null;
     checkinTime: string;
     checkoutTime: string;
     houseRules?: string | null;
@@ -100,7 +101,7 @@ export default function PropertySettingsForm({ property, initialRules }: Propert
               <h2 className="text-lg font-bold">General Information</h2>
             </div>
             <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="space-y-2">
+              <div className="space-y-2 md:col-span-2">
                 <label className="text-sm font-bold text-[#374151]">Property Name</label>
                 <input 
                   name="name"
@@ -118,6 +119,17 @@ export default function PropertySettingsForm({ property, initialRules }: Propert
                   defaultValue={property.adminEmail || ''}
                   className="w-full px-4 py-3 bg-[#F9FAFB] border border-[#E5E7EB] rounded-2xl focus:ring-2 focus:ring-[#EF4444] outline-none transition-all"
                   required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-[#374151]">CC Email (Send Copy)</label>
+                <input 
+                  name="ccEmail"
+                  type="email"
+                  placeholder="e.g. manager@example.com"
+                  defaultValue={property.ccEmail || ''}
+                  className="w-full px-4 py-3 bg-[#F9FAFB] border border-[#E5E7EB] rounded-2xl focus:ring-2 focus:ring-[#EF4444] outline-none transition-all"
                 />
               </div>
               

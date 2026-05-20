@@ -74,6 +74,7 @@ async function sendCheckInEmails(opts: {
   guestEmail: string;
   guestName: string;
   adminEmail: string | null | undefined;
+  ccEmail?: string | null | undefined;
   propertyName: string;
   checkin: string;
   checkout: string;
@@ -106,6 +107,9 @@ async function sendCheckInEmails(opts: {
   const guest = opts.guestEmail.trim();
   const admin =
     (opts.adminEmail && String(opts.adminEmail).trim()) ||
+    '';
+  const cc =
+    (opts.ccEmail && String(opts.ccEmail).trim()) ||
     '';
 
   const pdfNote = opts.pdfFailedNote
@@ -271,6 +275,7 @@ async function sendCheckInEmails(opts: {
     tasks.push(
       sendEmail({
         to: guest,
+        cc: cc || undefined,
         subject: tm.sameSubject(opts.guestName, opts.propertyName),
         text: `${guestBody}${tm.sameAdminSeparator}${adminBody}`,
         html: `${guestBodyHtml}<hr/><p><strong>${escapeHtml(tm.sameAdminCopyHtml)}</strong></p>${adminBodyHtml}`,
@@ -293,6 +298,7 @@ async function sendCheckInEmails(opts: {
       tasks.push(
         sendEmail({
           to: admin,
+          cc: cc || undefined,
           subject: adminSubject,
           text: adminBody,
           html: adminBodyHtml,
@@ -547,6 +553,7 @@ export async function executeSaveBooking(
     try {
       console.log('--- Initiating Email Dispatch ---');
       const adminEmail = property.adminEmail?.trim() || property.host?.email?.trim() || null;
+      const ccEmail = property.ccEmail?.trim() || null;
       
       // Prepare ID doc attachments (Limited to 12 to avoid size issues)
       const idDocKeys = [...new Set(idFiles)].filter(Boolean);
@@ -566,6 +573,7 @@ export async function executeSaveBooking(
         guestEmail,
         guestName,
         adminEmail,
+        ccEmail,
         propertyName: property.name,
         checkin,
         checkout,

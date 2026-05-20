@@ -14,6 +14,7 @@ export async function updateProperty(formData: FormData) {
   const propertyId = formData.get('propertyId') as string;
   const name = formData.get('name') as string;
   const adminEmail = formData.get('adminEmail') as string;
+  const ccEmail = formData.get('ccEmail') as string;
   const checkinTime = formData.get('checkinTime') as string;
   const checkoutTime = formData.get('checkoutTime') as string;
   const houseRulesRaw = formData.get('houseRules') as string;
@@ -42,6 +43,7 @@ export async function updateProperty(formData: FormData) {
         name,
         slug: newSlug,
         adminEmail,
+        ccEmail,
         privacyPolicy,
         // legacy houseRules is kept but we transition to categories
         ruleLogistics,

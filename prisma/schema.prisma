@@ -64,6 +64,7 @@ model Property {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   adminEmail      String?
+  ccEmail         String?
   privacyPolicy   String?
   formTitle       String?
   formSubtitle    String?
