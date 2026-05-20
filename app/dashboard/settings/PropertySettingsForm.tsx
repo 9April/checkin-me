@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Save, Info, ListTodo, Clock, CheckCircle, AlertCircle, X, Palette, Layout, Users, ShieldCheck, Sparkles, History } from 'lucide-react';
-import { updateProperty } from './actions';
+import { Save, Info, ListTodo, Clock, CheckCircle, AlertCircle, X, Palette, Layout, Users, ShieldCheck, Sparkles, History, KeyRound } from 'lucide-react';
+import { updateProperty, updateHostPassword } from './actions';
 
 interface PropertySettingsFormProps {
   property: {
@@ -66,8 +66,9 @@ export default function PropertySettingsForm({ property, initialRules }: Propert
   }
 
   return (
-    <form action={handleSubmit} className="space-y-8 text-[#111827] pb-12">
-      <input type="hidden" name="propertyId" value={property.id} />
+    <>
+      <form action={handleSubmit} className="space-y-8 text-[#111827] pb-12">
+        <input type="hidden" name="propertyId" value={property.id} />
 
       {status && (
         <div className={`fixed top-8 left-1/2 -translate-x-1/2 z-[100] px-6 py-4 rounded-2xl border shadow-2xl flex items-center gap-4 animate-in fade-in slide-in-from-top-6 duration-500 min-w-[320px] max-w-md ${
@@ -375,5 +376,107 @@ export default function PropertySettingsForm({ property, initialRules }: Propert
         </button>
       </div>
     </form>
+    <ChangePasswordForm />
+    </>
+  );
+}
+
+function ChangePasswordForm() {
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+
+  async function handlePasswordSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setErrorMsg(null);
+    setSuccessMsg(null);
+    setIsUpdating(true);
+
+    const fd = new FormData(e.currentTarget);
+    const newPass = fd.get('newPassword') as string;
+    const confirmPass = fd.get('confirmPassword') as string;
+
+    if (newPass !== confirmPass) {
+      setErrorMsg("New passwords do not match.");
+      setIsUpdating(false);
+      return;
+    }
+
+    try {
+      const res = await updateHostPassword(fd);
+      if (res.success) {
+        setSuccessMsg("Password updated successfully!");
+        (e.target as HTMLFormElement).reset();
+      } else {
+        setErrorMsg(res.error || "Failed to update password.");
+      }
+    } catch (err) {
+      setErrorMsg("An unexpected error occurred.");
+    } finally {
+      setIsUpdating(false);
+    }
+  }
+
+  return (
+    <section className="bg-white rounded-3xl border border-[#E5E7EB] shadow-sm overflow-hidden text-black mt-8">
+      <div className="p-6 border-b border-[#E5E7EB] flex items-center gap-3">
+        <div className="w-10 h-10 bg-red-50 text-red-500 rounded-xl flex items-center justify-center">
+          <KeyRound size={20} />
+        </div>
+        <h2 className="text-lg font-bold">Security & Password</h2>
+      </div>
+      <form onSubmit={handlePasswordSubmit} className="p-8 space-y-6">
+        {errorMsg && (
+          <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded-2xl flex items-center gap-3 text-sm font-semibold">
+            <AlertCircle size={18} />
+            <span>{errorMsg}</span>
+          </div>
+        )}
+        {successMsg && (
+          <div className="p-4 bg-green-50 border border-green-200 text-green-700 rounded-2xl flex items-center gap-3 text-sm font-semibold">
+            <CheckCircle size={18} />
+            <span>{successMsg}</span>
+          </div>
+        )}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="space-y-2">
+            <label className="text-sm font-bold text-[#374151]">Current Password</label>
+            <input 
+              name="currentPassword" 
+              type="password"
+              required 
+              className="w-full px-4 py-3 bg-[#F9FAFB] border border-[#E5E7EB] rounded-2xl focus:ring-2 focus:ring-[#EF4444] outline-none transition-all" 
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-bold text-[#374151]">New Password</label>
+            <input 
+              name="newPassword" 
+              type="password"
+              required 
+              className="w-full px-4 py-3 bg-[#F9FAFB] border border-[#E5E7EB] rounded-2xl focus:ring-2 focus:ring-[#EF4444] outline-none transition-all" 
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-bold text-[#374151]">Confirm New Password</label>
+            <input 
+              name="confirmPassword" 
+              type="password"
+              required 
+              className="w-full px-4 py-3 bg-[#F9FAFB] border border-[#E5E7EB] rounded-2xl focus:ring-2 focus:ring-[#EF4444] outline-none transition-all" 
+            />
+          </div>
+        </div>
+        <div className="flex justify-end pt-2">
+          <button 
+            type="submit"
+            disabled={isUpdating}
+            className="px-6 py-3 bg-[#FF385C] hover:bg-[#E31C5F] text-white font-bold rounded-xl transition-all active:scale-95 disabled:opacity-50 text-sm flex items-center gap-2"
+          >
+            {isUpdating ? "Updating..." : "Update Password"}
+          </button>
+        </div>
+      </form>
+    </section>
   );
 }

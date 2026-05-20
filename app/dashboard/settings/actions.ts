@@ -73,3 +73,53 @@ export async function updateProperty(formData: FormData) {
     };
   }
 }
+
+export async function updateHostPassword(formData: FormData) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    throw new Error("Unauthorized");
+  }
+
+  const currentPassword = formData.get('currentPassword') as string;
+  const newPassword = formData.get('newPassword') as string;
+  const confirmPassword = formData.get('confirmPassword') as string;
+
+  if (!currentPassword || !newPassword || !confirmPassword) {
+    return { success: false, error: "Please fill in all password fields." };
+  }
+
+  if (newPassword !== confirmPassword) {
+    return { success: false, error: "New passwords do not match." };
+  }
+
+  if (newPassword.length < 6) {
+    return { success: false, error: "Password must be at least 6 characters long." };
+  }
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id }
+    });
+
+    if (!user) {
+      return { success: false, error: "User not found." };
+    }
+
+    if (user.password !== currentPassword) {
+      return { success: false, error: "Current password is incorrect." };
+    }
+
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: { password: newPassword }
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Update password failed:", error);
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : "Failed to update password." 
+    };
+  }
+}
