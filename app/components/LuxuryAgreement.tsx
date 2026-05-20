@@ -157,20 +157,20 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
                 className="flex flex-col items-center border-r px-3 min-w-0 pb-1"
               >
                 <p className="text-[8px] uppercase tracking-widest opacity-40 mb-1 lg:mb-2">Guest Name</p>
-                <p className="font-serif text-[11pt] sm:text-[12pt] text-center leading-tight truncate w-full font-medium pb-1">{booking.guestName}</p>
+                <p className="font-serif text-[11pt] sm:text-[12pt] text-center leading-normal truncate w-full font-medium pb-1">{booking.guestName}</p>
               </div>
               <div 
                 style={{ borderColor: 'rgba(168, 152, 126, 0.2)' }}
                 className="flex flex-col items-center border-r px-3 min-w-0 pb-1"
               >
                 <p className="text-[8px] uppercase tracking-widest opacity-40 mb-1 lg:mb-2">Email Address</p>
-                <p className="font-serif text-[11pt] sm:text-[12pt] text-center leading-tight w-full truncate font-medium pb-1">
+                <p className="font-serif text-[11pt] sm:text-[12pt] text-center leading-normal w-full truncate font-medium pb-1">
                   {booking.guestEmail}
                 </p>
               </div>
               <div className="flex flex-col items-center px-3 min-w-0">
                 <p className="text-[8px] uppercase tracking-widest opacity-40 mb-1 lg:mb-2">Stay Period</p>
-                <p className="font-serif text-[11pt] sm:text-[12pt] text-center leading-tight whitespace-nowrap font-medium">
+                <p className="font-serif text-[11pt] sm:text-[12pt] text-center leading-normal whitespace-nowrap font-medium pb-1">
                   {formatDate(booking.checkin)} — {formatDate(booking.checkout)}
                 </p>
               </div>
@@ -218,7 +218,7 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
                     </div>
                     <div className="flex flex-col gap-1">
                       <h3 className="text-[10px] uppercase tracking-[0.15em] font-bold text-[#A8987E]">{item.title}</h3>
-                      <p className="text-[11px] sm:text-[12px] leading-relaxed opacity-75 line-clamp-4">
+                      <p className="text-[11px] sm:text-[12px] leading-relaxed opacity-75 pb-1">
                         {item.text}
                       </p>
                     </div>
@@ -246,14 +246,14 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
                 className="border-b pb-2"
               >
                 <p className="text-[8px] uppercase tracking-widest opacity-40 mb-1">Date of Arrival</p>
-                <p className="font-serif text-[11pt] leading-tight font-medium">{formatDate(booking.checkin)}</p>
+                <p className="font-serif text-[11pt] leading-normal font-medium pb-1">{formatDate(booking.checkin)}</p>
               </div>
               <div 
                 style={{ borderColor: 'rgba(168, 152, 126, 0.4)' }}
                 className="border-b pb-2"
               >
                 <p className="text-[8px] uppercase tracking-widest opacity-40 mb-1">Estimated Arrival</p>
-                <p className="font-serif text-[11pt] leading-tight font-medium">{booking.checkinHour || "—"}</p>
+                <p className="font-serif text-[11pt] leading-normal font-medium pb-1">{booking.checkinHour || "—"}</p>
               </div>
               <div 
                 style={{ borderColor: 'rgba(168, 152, 126, 0.4)' }}
