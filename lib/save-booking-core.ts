@@ -290,7 +290,7 @@ async function sendCheckInEmails(opts: {
           subject: guestSubject,
           text: guestBody,
           html: guestBodyHtml,
-          attachments: guestAttach,
+          attachments: undefined, // Travelers only get the Thank you email without attachments
         })
       );
     }
@@ -302,7 +302,7 @@ async function sendCheckInEmails(opts: {
           subject: adminSubject,
           text: adminBody,
           html: adminBodyHtml,
-          attachments: adminAttach,
+          attachments: adminAttach, // Admin & CC receive the registration details and attachments
           replyTo: guest || undefined,
         })
       );
