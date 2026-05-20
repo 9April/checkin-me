@@ -1056,7 +1056,7 @@ export default function CheckInForm({
 
               {/* Map embed section */}
               {(!phoneLayout || wizardStep === 0) && (
-                <div className={`animate-in fade-in slide-in-from-top-4 duration-700 ${phoneLayout ? "mb-8 bg-[#FAFAFA] p-4 rounded-3xl border border-[#EEEEEE]" : "mb-12 md:rounded-2xl md:border md:border-[#EEEEEE] md:bg-[#FAFAFA] md:p-6 lg:p-8"}`}>
+                <div className={`animate-in fade-in slide-in-from-top-4 duration-700 ${phoneLayout ? "mb-3 bg-[#FAFAFA] p-4 rounded-3xl border border-[#EEEEEE]" : "mb-12 md:rounded-2xl md:border md:border-[#EEEEEE] md:bg-[#FAFAFA] md:p-6 lg:p-8"}`}>
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-8 h-8 rounded-full bg-[#FF385C]/10 flex items-center justify-center text-[#FF385C]">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
@@ -1065,7 +1065,7 @@ export default function CheckInForm({
                       {lang === 'FR' ? 'Localisation de la propriété' : lang === 'SP' ? 'Ubicación de la propiedad' : 'Property Location'}
                     </span>
                   </div>
-                  <div className="relative w-full rounded-2xl overflow-hidden border border-[#DDDDDD] shadow-sm bg-white aspect-[4/3] sm:aspect-[16/9] md:h-[350px]">
+                  <div className="relative w-full rounded-2xl overflow-hidden border border-[#DDDDDD] shadow-sm bg-white h-[420px] sm:h-auto sm:aspect-[16/9] md:h-[350px]">
                     <iframe
                       src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d207.6941959499211!2d-7.643220239649545!3d33.60252459972267!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xda7d3000dcc03e9%3A0x4c5bb61126e89176!2s4%20rue%20cemitiere%20complexe%20horizon!5e0!3m2!1sen!2sma!4v1779252658996!5m2!1sen!2sma"
                       className="absolute inset-0 w-full h-full"
