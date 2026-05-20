@@ -537,6 +537,14 @@ export default function CheckInForm({
     document.addEventListener('focusin', handleFocusIn);
     document.addEventListener('focusout', handleFocusOut);
 
+    // 3. Prevent outer window container displacement by holding frame scroll to (0, 0) strictly.
+    const handleWindowScroll = () => {
+      if (window.scrollY !== 0) {
+        window.scrollTo(0, 0);
+      }
+    };
+    window.addEventListener('scroll', handleWindowScroll);
+
     return () => {
       if (vv) {
         vv.removeEventListener('resize', handleViewportChange);
@@ -545,6 +553,7 @@ export default function CheckInForm({
       window.removeEventListener('resize', handleViewportChange);
       document.removeEventListener('focusin', handleFocusIn);
       document.removeEventListener('focusout', handleFocusOut);
+      window.removeEventListener('scroll', handleWindowScroll);
     };
   }, [phoneLayout]);
 
@@ -877,10 +886,10 @@ export default function CheckInForm({
 
   return (
     <main
-      className={`bg-[#F7F7F7] font-sans w-full max-w-full overflow-x-hidden ${
+      className={`font-sans w-full max-w-full overflow-x-hidden ${
         phoneLayout
-          ? "flex flex-col overflow-hidden overscroll-none"
-          : "min-h-screen py-8 px-4 sm:px-6 lg:px-8 pb-24"
+          ? "bg-white flex flex-col overflow-hidden overscroll-none"
+          : "bg-[#F7F7F7] min-h-screen py-8 px-4 sm:px-6 lg:px-8 pb-24"
       }`}
       style={{
         "--primary-color": brandPrimary,
@@ -1491,8 +1500,10 @@ export default function CheckInForm({
             </button>
             </div>
 
-            {phoneLayout && !isKeyboardVisible && (
-              <div className="shrink-0 flex gap-2 checkin-px pt-2.5 pb-safe border-t border-gray-100 bg-white/95 backdrop-blur-md max-w-full min-w-0 touch-none overscroll-none select-none">
+            {phoneLayout && (
+              <div className={`shrink-0 flex gap-2 checkin-px pt-2.5 border-t border-gray-100 bg-white/95 backdrop-blur-md max-w-full min-w-0 touch-none overscroll-none select-none ${
+                isKeyboardVisible ? 'pb-2.5' : 'pb-safe'
+              }`}>
                 {wizardStep > 0 && (
                   <button
                     type="button"
