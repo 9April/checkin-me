@@ -57,6 +57,7 @@ export default async function PropertyCheckInPage({
         ruleOccupants: property.ruleOccupants,
         ruleResponsibility: property.ruleResponsibility,
         ruleSecurity: property.ruleSecurity,
+        logoUrl: property.logoUrl,
         mediaVideoUrl: videoUrl,
         mediaSliderImages: JSON.stringify(images),
       }}

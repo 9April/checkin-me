@@ -13,6 +13,9 @@ import DatePicker from './DatePicker';
 import CameraCapture from './CameraCapture';
 import MediaHeaderPreview from './media-slider/MediaHeaderPreview';
 import type { SliderImage } from './media-slider/StackedCardSlider';
+import LuxuryAgreement from './LuxuryAgreement';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 const TRANSLATIONS = {
   EN: {
@@ -431,6 +434,7 @@ function firstWizardStepForErrors(errors: Record<string, string>): number {
 interface PropertyData {
   id: string;
   name: string;
+  logoUrl?: string | null;
   checkinTime: string;
   checkoutTime: string;
   houseRules?: string | null;
@@ -463,6 +467,19 @@ export default function CheckInForm({
   const brandPrimary = "#FF385C";
   
   const [isLoading, setIsLoading] = useState(false);
+  const [agreementDataForPdf, setAgreementDataForPdf] = useState<{
+    guestEmail: string;
+    checkin: string;
+    checkout: string;
+    checkinHour?: string;
+    signature: string | null;
+    travelers: Array<{
+      name: string;
+      country: string;
+      idNumber: string;
+      type: string;
+    }>;
+  } | null>(null);
   const [adults, setAdults] = useState(1);
   const [kids, setKids] = useState(0);
   const sigRef = useRef<SignaturePad>(null);
@@ -854,6 +871,80 @@ export default function CheckInForm({
       formData.set("signature", signatureData as string);
       formData.set("lang", lang);
       formData.set("propertyId", property.id);
+
+      // 1. Generate Stunning client-side A4 PDF Stay Agreement
+      let pdfBase64: string | undefined;
+      try {
+        console.log('[PDF] Initializing high-fidelity PDF capture pipeline...');
+        
+        // Parse travelers from form details
+        const travelersCount = adults + kids;
+        const parsedTravelers = [];
+        for (let i = 0; i < travelersCount; i++) {
+          const tNameInput = formData.get(`traveler_${i}_name`) as string;
+          const tName = i === 0 && !tNameInput ? guestName || 'Guest' : tNameInput || 'Guest';
+          const country = (formData.get(`traveler_${i}_country`) as string) || 'OTHER';
+          const idNumber = (formData.get(`traveler_${i}_idNumber`) as string) || '—';
+          const passportInput = formData.get(`traveler_${i}_passport`);
+          const docType = (passportInput instanceof File && passportInput.size > 0) ? 'passport' : 'CIN';
+
+          parsedTravelers.push({
+            name: tName,
+            country,
+            idNumber,
+            type: docType,
+          });
+        }
+
+        // Mount hidden, perfectly formatted A4 agreement container offscreen
+        setAgreementDataForPdf({
+          guestEmail: (formData.get('guestEmail') as string) || '',
+          checkin: (formData.get('checkin') as string) || '',
+          checkout: (formData.get('checkout') as string) || '',
+          checkinHour: (formData.get('checkinHour') as string) || undefined,
+          signature: signatureData || null,
+          travelers: parsedTravelers,
+        });
+
+        // Small timeout to let React DOM render and load local/signature image components
+        await new Promise((resolve) => setTimeout(resolve, 600));
+
+        const captureElement = document.getElementById('hidden-agreement-capture');
+        if (captureElement) {
+          console.log('[PDF] Running html2canvas on offscreen element...');
+          const canvas = await html2canvas(captureElement, {
+            scale: 2.2, // High resolution matching PrintButton
+            useCORS: true,
+            logging: false,
+            backgroundColor: '#ffffff',
+            width: (210 * 3.7795) + 2,
+            height: (297 * 3.7795) + 2,
+            allowTaint: false,
+            scrollX: 0,
+            scrollY: 0,
+          });
+
+          console.log('[PDF] Converting canvas to A4 jsPDF layout...');
+          const imgData = canvas.toDataURL('image/jpeg', 0.85);
+          const pdf = new jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: 'a4',
+            compress: true
+          });
+          pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297, undefined, 'FAST');
+          pdfBase64 = pdf.output('datauristring');
+          formData.set('agreementPdf', pdfBase64);
+          console.log('[PDF] Stunning pixel-perfect A4 PDF stay agreement captured successfully!');
+        } else {
+          console.warn('[PDF] Hidden capture element not found, skipping attachment');
+        }
+      } catch (pdfErr) {
+        console.error('[PDF] Non-fatal: Client-side PDF capture failed, proceeding with normal submission:', pdfErr);
+      } finally {
+        // Clear capture state immediately
+        setAgreementDataForPdf(null);
+      }
 
       const result: SaveBookingResult = await saveBooking(formData);
 
@@ -1766,6 +1857,42 @@ export default function CheckInForm({
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Hidden LuxuryAgreement for generating PDF attachment */}
+      {agreementDataForPdf && (
+        <div 
+          id="hidden-agreement-capture" 
+          className="absolute" 
+          style={{ 
+            left: '-9999px', 
+            top: '-9999px', 
+            width: '210mm', 
+            height: '297mm', 
+            overflow: 'hidden',
+            backgroundColor: '#ffffff'
+          }}
+        >
+          <LuxuryAgreement 
+            property={{
+              name: property.name,
+              logoUrl: property.logoUrl,
+              ruleLogistics: property.ruleLogistics,
+              ruleOccupants: property.ruleOccupants,
+              ruleResponsibility: property.ruleResponsibility,
+              ruleSecurity: property.ruleSecurity,
+            } as any} 
+            booking={{
+              guestName,
+              guestEmail: agreementDataForPdf.guestEmail,
+              checkin: agreementDataForPdf.checkin,
+              checkout: agreementDataForPdf.checkout,
+              checkinHour: agreementDataForPdf.checkinHour,
+              signature: agreementDataForPdf.signature,
+              travelers: agreementDataForPdf.travelers,
+            }} 
+          />
         </div>
       )}
 
