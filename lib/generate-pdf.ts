@@ -21,22 +21,40 @@ export async function generateAgreementPDF(
     
     // Store original states
     const originalTransform = element.style.transform;
+    const originalTransformOrigin = element.style.transformOrigin;
     const originalWidth = element.style.width;
     const originalOverflow = document.body.style.overflow;
     
-    // Temporarily force 1:1 scale and fixed width for capture
+    // A4 in pixels at 96 dpi
+    const A4_W_PX = Math.round(210 * 3.7795);
+    const A4_H_PX = Math.round(297 * 3.7795);
+
+    // CRITICAL: LuxuryAgreement applies CSS transform:scale() and wrapper height restrictions for viewports.
+    // We must reset both the print-area and its a4-wrapper parent so html2canvas sees the full 1:1 A4 layout.
+    const a4Wrapper = element.closest('.a4-wrapper') as HTMLElement | null;
+    const prevWrapperHeight = a4Wrapper?.style.height ?? '';
+    const prevWrapperOverflow = a4Wrapper?.style.overflow ?? '';
+
     element.style.transform = 'none';
-    element.style.width = '210mm';
+    element.style.transformOrigin = 'top left';
+    element.style.width = `${A4_W_PX}px`;
     document.body.style.overflow = 'visible';
+
+    if (a4Wrapper) {
+      a4Wrapper.style.height = `${A4_H_PX}px`;
+      a4Wrapper.style.overflow = 'hidden';
+    }
     
-    console.log('[PDF] Running html2canvas...');
+    console.log('[PDF] Running html2canvas at 3× scale (~288 DPI)...');
     const canvas = await html2canvas(element, {
-      scale: 2.5, // High resolution
+      scale: 3, // High resolution, matching form submission
       useCORS: true,
       logging: false,
       backgroundColor: '#ffffff',
-      width: (210 * 3.7795) + 2, // Added 2px safety buffer
-      height: (297 * 3.7795) + 2, // Added 2px safety buffer
+      width: A4_W_PX,
+      height: A4_H_PX,
+      windowWidth: A4_W_PX,
+      windowHeight: A4_H_PX,
       allowTaint: false,
       scrollX: 0,
       scrollY: 0,
@@ -45,8 +63,14 @@ export async function generateAgreementPDF(
     console.log('[PDF] Capture complete, restoring styles...');
     // Restore original styles
     element.style.transform = originalTransform;
+    element.style.transformOrigin = originalTransformOrigin;
     element.style.width = originalWidth;
     document.body.style.overflow = originalOverflow;
+    
+    if (a4Wrapper) {
+      a4Wrapper.style.height = prevWrapperHeight;
+      a4Wrapper.style.overflow = prevWrapperOverflow;
+    }
 
     console.log('[PDF] Converting canvas to image data...');
     const imgData = canvas.toDataURL('image/jpeg', 0.85);

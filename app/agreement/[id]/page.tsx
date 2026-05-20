@@ -63,7 +63,7 @@ export default async function AgreementPage({ params }: PageProps) {
     <div className="min-h-screen bg-white flex flex-col items-center py-6 sm:py-12 px-0 sm:px-4 overflow-x-hidden no-scrollbar print:m-0 print:p-0 print:block print:min-h-0 print:bg-white">
       
       {/* ═══ MOBILE: Show elegant redirect message instead of broken preview ═══ */}
-      <div className="sm:hidden flex flex-col items-center justify-center min-h-screen px-6 text-center bg-[#FCFBF9]">
+      <div className="sm:hidden flex flex-col items-center justify-center min-h-screen px-6 text-center bg-[#FCFBF9] print:hidden">
         <div className="w-20 h-20 rounded-full bg-[#1A1A1A] flex items-center justify-center mb-8 shadow-lg">
           <FileText size={32} className="text-white" />
         </div>
@@ -123,7 +123,7 @@ export default async function AgreementPage({ params }: PageProps) {
       </div>
 
       {/* ═══ DESKTOP: Full agreement viewer with controls ═══ */}
-      <div className="hidden sm:flex flex-col items-center w-full">
+      <div className="hidden sm:flex flex-col items-center w-full print:flex print:!block">
         {/* Controls - Hidden during print */}
         <div className="no-print w-full max-w-screen-md flex justify-between items-center mb-8 bg-white/80 backdrop-blur-md p-5 rounded-2xl shadow-sm border border-gray-100 z-10 sticky top-0">
           <Link 
