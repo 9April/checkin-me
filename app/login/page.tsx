@@ -4,18 +4,47 @@ import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Lock, Mail, Loader2 } from 'lucide-react';
+import { sendPasswordRecovery } from './actions';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [recoveryLoading, setRecoveryLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
   const router = useRouter();
+
+  const handleForgotPassword = async () => {
+    if (!email) {
+      setError('Please enter your email address first.');
+      setSuccessMessage('');
+      return;
+    }
+
+    setRecoveryLoading(true);
+    setError('');
+    setSuccessMessage('');
+
+    try {
+      const res = await sendPasswordRecovery(email);
+      if (res.success) {
+        setSuccessMessage(res.message || 'Recovery email sent successfully!');
+      } else {
+        setError(res.error || 'Failed to send recovery email.');
+      }
+    } catch (err) {
+      setError('An error occurred. Please try again.');
+    } finally {
+      setRecoveryLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setSuccessMessage('');
 
     try {
       const result = await signIn('credentials', {
@@ -54,6 +83,11 @@ export default function LoginPage() {
               {error}
             </div>
           )}
+          {successMessage && (
+            <div className="mb-6 p-4 bg-green-50 text-green-600 rounded-2xl text-sm font-medium border border-green-100 animate-in fade-in slide-in-from-top-3 duration-300">
+              {successMessage}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
@@ -76,9 +110,19 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[#374151] mb-2">
-                Password
-              </label>
+              <div className="flex justify-between items-center mb-2">
+                <label className="block text-sm font-medium text-[#374151]">
+                  Password
+                </label>
+                <button
+                  type="button"
+                  onClick={handleForgotPassword}
+                  disabled={recoveryLoading}
+                  className="text-xs font-semibold text-[#FF385C] hover:text-[#E31C5F] hover:underline disabled:opacity-50 transition-all outline-none"
+                >
+                  {recoveryLoading ? 'Sending...' : 'Forgot Password?'}
+                </button>
+              </div>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-[#9CA3AF]">
                   <Lock size={18} />
