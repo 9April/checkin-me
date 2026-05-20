@@ -45,7 +45,7 @@ export async function generateAgreementPDF(
     element.style.top = '0px';
     element.style.left = '0px';
     element.style.margin = '0px';
-    element.style.zIndex = '-9999'; // hide behind other elements to avoid flicker
+    element.style.zIndex = '9999'; // Positive z-index ensures it renders above background
     element.style.transform = 'none';
     element.style.transformOrigin = 'top left';
     element.style.width = `${A4_W_PX}px`;
