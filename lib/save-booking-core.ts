@@ -163,7 +163,7 @@ async function sendCheckInEmails(opts: {
     opts.adminAttachments && opts.adminAttachments.length > 0
       ? '\n\n' + tm.adminExtraDocumentsAttached
       : '';
-  const adminBody = `${tm.adminBodyIntro}${adminAttachmentLine}${adminDocsLine}${pdfNote}\n\n${tm.adminProperty} ${opts.propertyName}\n${tm.adminGuest} ${opts.guestName}\n${tm.adminEmailLabel} ${guest || tm.adminNotProvided}\n${tm.adminDates} ${opts.checkin} — ${opts.checkout}\n${
+  const adminBody = `${tm.adminBodyIntro}${adminAttachmentLine}${adminDocsLine}${pdfNote}\n\nView Agreement: https://${process.env.VERCEL_URL || 'checkin-me.com'}/agreement/${opts.bookingId}\n\n${tm.adminProperty} ${opts.propertyName}\n${tm.adminGuest} ${opts.guestName}\n${tm.adminEmailLabel} ${guest || tm.adminNotProvided}\n${tm.adminDates} ${opts.checkin} — ${opts.checkout}\n${
     opts.checkinHour ? `Check-in time: ${opts.checkinHour}\n` : ''
   }${opts.whatsapp ? `WhatsApp: ${opts.whatsapp}\n` : ''}${
     typeof opts.totalTravelers === 'number'
@@ -206,6 +206,11 @@ async function sendCheckInEmails(opts: {
             ${opts.checkinHour ? `<div><strong>Check-in time:</strong> ${escapeHtml(opts.checkinHour)}</div>` : ''}
             ${opts.whatsapp ? `<div><strong>WhatsApp:</strong> ${escapeHtml(opts.whatsapp)}</div>` : ''}
             ${typeof opts.totalTravelers === 'number' ? `<div><strong>Travelers:</strong> ${opts.totalTravelers}</div>` : ''}
+          </div>
+          <div style="margin-top:16px;text-align:left">
+            <a href="https://${process.env.VERCEL_URL || 'checkin-me.com'}/agreement/${opts.bookingId}" style="display:inline-block;background:linear-gradient(135deg,#0f172a,#1e293b);color:#ffffff;padding:12px 20px;text-decoration:none;font-size:12px;font-weight:700;letter-spacing:0.05em;border-radius:8px;box-shadow:0 4px 6px rgba(15,23,42,0.1)">
+              📄 View & Download Signed Agreement
+            </a>
           </div>
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap">
