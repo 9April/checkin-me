@@ -17,51 +17,34 @@ export async function generateAgreementPDF(
 
   try {
     // 1. Capture the element with high resolution
-    console.log('[PDF] Preparing element for capture...');
-    
-    // Store original states
-    const originalTransform = element.style.transform;
-    const originalTransformOrigin = element.style.transformOrigin;
-    const originalWidth = element.style.width;
-    const originalMargin = element.style.margin;
-    const originalPosition = element.style.position;
-    const originalTop = element.style.top;
-    const originalLeft = element.style.left;
-    const originalZIndex = element.style.zIndex;
-    const originalOverflow = document.body.style.overflow;
+    console.log('[PDF] Preparing element clone for capture...');
     
     // A4 in pixels at 96 dpi
     const A4_W_PX = Math.round(210 * 3.7795);
     const A4_H_PX = Math.round(297 * 3.7795);
 
-    // CRITICAL: LuxuryAgreement applies CSS transform:scale() and wrapper height restrictions for viewports.
-    // We must reset both the print-area and its a4-wrapper parent so html2canvas sees the full 1:1 A4 layout.
-    const a4Wrapper = element.closest('.a4-wrapper') as HTMLElement | null;
-    const prevWrapperHeight = a4Wrapper?.style.height ?? '';
-    const prevWrapperOverflow = a4Wrapper?.style.overflow ?? '';
-
-    // Detach from normal document flow and place at exact top-left to avoid scroll/margin offsets resulting in blank captures
-    element.style.position = 'fixed';
-    element.style.top = '0px';
-    element.style.left = '0px';
-    element.style.margin = '0px';
-    element.style.zIndex = '9999'; // Positive z-index ensures it renders above background
-    element.style.transform = 'none';
-    element.style.transformOrigin = 'top left';
-    element.style.width = `${A4_W_PX}px`;
-    document.body.style.overflow = 'visible';
-
-    if (a4Wrapper) {
-      a4Wrapper.style.height = `${A4_H_PX}px`;
-      a4Wrapper.style.overflow = 'visible';
-    }
+    // Create a clone of the element to avoid any live-DOM interference (scroll, z-index, wrapper overflow)
+    const clone = element.cloneNode(true) as HTMLElement;
     
-    console.log('[PDF] Running html2canvas at 3× scale (~288 DPI)...');
-    // Scroll window to top temporarily to ensure absolute coordinates match
-    const prevScrollY = window.scrollY;
-    window.scrollTo(0, 0);
-
-    const canvas = await html2canvas(element, {
+    // Force the clone to render off-screen with exact A4 dimensions at 1:1 scale
+    clone.style.position = 'absolute';
+    clone.style.top = '0px';
+    clone.style.left = '-9999px';
+    clone.style.margin = '0px';
+    clone.style.transform = 'none';
+    clone.style.width = `${A4_W_PX}px`;
+    clone.style.height = `${A4_H_PX}px`;
+    clone.style.overflow = 'visible';
+    
+    // Append clone to body so it escapes all parent wrappers with overflow: hidden
+    document.body.appendChild(clone);
+    
+    // Wait a brief moment to ensure fonts/images in the clone are ready
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    
+    console.log('[PDF] Running html2canvas on clone at 3× scale (~288 DPI)...');
+    
+    const canvas = await html2canvas(clone, {
       scale: 3, // High resolution, matching form submission
       useCORS: true,
       logging: false,
@@ -73,28 +56,10 @@ export async function generateAgreementPDF(
       allowTaint: false,
       scrollX: 0,
       scrollY: 0,
-      x: 0,
-      y: 0,
     });
 
-    window.scrollTo(0, prevScrollY);
-
-    console.log('[PDF] Capture complete, restoring styles...');
-    // Restore original styles
-    element.style.transform = originalTransform;
-    element.style.transformOrigin = originalTransformOrigin;
-    element.style.width = originalWidth;
-    element.style.margin = originalMargin;
-    element.style.position = originalPosition;
-    element.style.top = originalTop;
-    element.style.left = originalLeft;
-    element.style.zIndex = originalZIndex;
-    document.body.style.overflow = originalOverflow;
-    
-    if (a4Wrapper) {
-      a4Wrapper.style.height = prevWrapperHeight;
-      a4Wrapper.style.overflow = prevWrapperOverflow;
-    }
+    // Cleanup clone
+    document.body.removeChild(clone);
 
     console.log('[PDF] Converting canvas to image data...');
     const imgData = canvas.toDataURL('image/jpeg', 0.85);
