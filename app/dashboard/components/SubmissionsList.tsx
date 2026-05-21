@@ -14,6 +14,22 @@ import {
 } from 'lucide-react';
 import TrashAction from './TrashAction';
 import { formatSubmittedAt } from '@/lib/format-submitted-at';
+import { motion, AnimatePresence } from 'framer-motion';
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 10 },
+  show: { opacity: 1, y: 0 }
+};
 
 interface Booking {
   id: string;
@@ -131,25 +147,6 @@ export default function SubmissionsList({
 
       {/* Main Container */}
       <div className="bg-white rounded-3xl border border-[#E5E7EB] shadow-sm overflow-hidden min-w-0">
-        
-import { motion, AnimatePresence } from 'framer-motion';
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1
-    }
-  }
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 10 },
-  show: { opacity: 1, y: 0 }
-};
-
-// ... inside the mobile card layout mapping ...
         <div className="md:hidden divide-y divide-[#E5E7EB]">
           <AnimatePresence>
             {paginatedBookings.length > 0 ? (
