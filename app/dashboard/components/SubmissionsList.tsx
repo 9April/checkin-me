@@ -132,59 +132,89 @@ export default function SubmissionsList({
       {/* Main Container */}
       <div className="bg-white rounded-3xl border border-[#E5E7EB] shadow-sm overflow-hidden min-w-0">
         
-        {/* Mobile card-based layout */}
+import { motion, AnimatePresence } from 'framer-motion';
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 10 },
+  show: { opacity: 1, y: 0 }
+};
+
+// ... inside the mobile card layout mapping ...
         <div className="md:hidden divide-y divide-[#E5E7EB]">
-          {paginatedBookings.length > 0 ? (
-            paginatedBookings.map((booking) => (
-              <div key={booking.id} className="p-4 space-y-3 min-w-0 animate-in fade-in duration-200">
-                <div className="min-w-0">
-                  <div className="font-bold text-[#111827] break-words">{booking.guestName}</div>
-                  <div className="text-xs text-[#6B7280] break-all">{booking.guestEmail}</div>
-                </div>
-                <div className="text-sm text-[#374151]">
-                  {booking.checkin} → {booking.checkout}
-                </div>
-                <div className="text-xs text-[#6B7280]">
-                  Submitted {formatSubmittedAt(new Date(booking.createdAt))}
-                </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">
-                    {booking.travelers.length} persons
-                  </span>
-                </div>
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-1 border-t border-gray-50">
-                  <Link
-                    href={`/agreement/${booking.id}`}
-                    target="_blank"
-                    className="text-sm font-bold text-blue-600 flex items-center gap-1 hover:underline"
+          <AnimatePresence>
+            {paginatedBookings.length > 0 ? (
+              <motion.div
+                variants={containerVariants}
+                initial="hidden"
+                animate="show"
+                className="flex flex-col"
+              >
+                {paginatedBookings.map((booking) => (
+                  <motion.div 
+                    key={booking.id} 
+                    variants={itemVariants}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    className="p-4 space-y-3 min-w-0"
                   >
-                    View
-                  </Link>
-                  <Link 
-                    href={`/agreement/${booking.id}`} 
-                    target="_blank" 
-                    className="text-sm text-gray-600 inline-flex items-center gap-1 hover:text-gray-950 transition-colors"
-                  >
-                    <Printer size={16} /> Print
-                  </Link>
-                  <Link
-                    href={`/agreement/${booking.id}?download=1`}
-                    target="_blank"
-                    className="text-sm text-gray-500 font-medium hover:text-gray-800 transition-colors"
-                  >
-                    Download
-                  </Link>
-                  <div className="ml-auto">
-                    <TrashAction 
-                      bookingId={booking.id} 
-                      mode="soft" 
-                      onAction={() => handleDeleteSuccess(booking.id)} 
-                    />
-                  </div>
-                </div>
-              </div>
-            ))
-          ) : (
+                    <div className="min-w-0">
+                      <div className="font-bold text-[#111827] break-words">{booking.guestName}</div>
+                      <div className="text-xs text-[#6B7280] break-all">{booking.guestEmail}</div>
+                    </div>
+                    <div className="text-sm text-[#374151]">
+                      {booking.checkin} → {booking.checkout}
+                    </div>
+                    <div className="text-xs text-[#6B7280]">
+                      Submitted {formatSubmittedAt(new Date(booking.createdAt))}
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">
+                        {booking.travelers.length} persons
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-1 border-t border-gray-50">
+                      <Link
+                        href={`/agreement/${booking.id}`}
+                        target="_blank"
+                        className="text-sm font-bold text-blue-600 flex items-center gap-1 hover:underline"
+                      >
+                        View
+                      </Link>
+                      <Link 
+                        href={`/agreement/${booking.id}`} 
+                        target="_blank" 
+                        className="text-sm text-gray-600 inline-flex items-center gap-1 hover:text-gray-950 transition-colors"
+                      >
+                        <Printer size={16} /> Print
+                      </Link>
+                      <Link
+                        href={`/agreement/${booking.id}?download=1`}
+                        target="_blank"
+                        className="text-sm text-gray-500 font-medium hover:text-gray-800 transition-colors"
+                      >
+                        Download
+                      </Link>
+                      <div className="ml-auto">
+                        <TrashAction 
+                          bookingId={booking.id} 
+                          mode="soft" 
+                          onAction={() => handleDeleteSuccess(booking.id)} 
+                        />
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </motion.div>
+            ) : (
             <div className="px-4 py-12 text-center text-[#6B7280]">
               <div className="flex flex-col items-center gap-3">
                 <FileText size={48} className="text-gray-200" />

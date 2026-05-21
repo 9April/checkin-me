@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
+import { Toaster } from "react-hot-toast";
 import CookieConsent from "./components/CookieConsent";
 
 const inter = Inter({
@@ -40,6 +41,18 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         {children}
+        <Toaster 
+          position="bottom-center"
+          toastOptions={{
+            duration: 4000,
+            style: {
+              background: '#333',
+              color: '#fff',
+              fontSize: '14px',
+              borderRadius: '8px',
+            },
+          }}
+        />
         <CookieConsent />
       </body>
     </html>

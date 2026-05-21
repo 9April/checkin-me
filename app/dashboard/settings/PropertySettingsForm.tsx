@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Save, Info, ListTodo, Clock, CheckCircle, AlertCircle, X, Palette, Layout, Users, ShieldCheck, Sparkles, History, KeyRound } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { updateProperty, updateHostPassword } from './actions';
 
 interface PropertySettingsFormProps {
@@ -30,7 +31,6 @@ interface PropertySettingsFormProps {
 
 export default function PropertySettingsForm({ property, initialRules }: PropertySettingsFormProps) {
   const [isSaving, setIsSaving] = useState(false);
-  const [status, setStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
   const [primaryColor, setPrimaryColor] = useState(property.primaryColor || '#FF385C');
 
   // Multi-Slot House Rules Management
@@ -44,23 +44,21 @@ export default function PropertySettingsForm({ property, initialRules }: Propert
     const adminEmail = formData.get('adminEmail') as string;
     
     if (!name || !adminEmail) {
-      setStatus({ type: 'error', message: 'Please fill in all required fields.' });
+      toast.error('Please fill in all required fields.');
       return;
     }
 
     setIsSaving(true);
-    setStatus(null);
     try {
       const result = await updateProperty(formData);
       if (result.success) {
-        setStatus({ type: 'success', message: 'Settings saved successfully!' });
-        setTimeout(() => setStatus(null), 3000);
+        toast.success('Settings saved successfully!');
       } else {
-        setStatus({ type: 'error', message: result.error || 'Failed to save settings.' });
+        toast.error(result.error || 'Failed to save settings.');
       }
     } catch (error) {
       console.error('Action failed:', error);
-      setStatus({ type: 'error', message: 'An unexpected error occurred. Please try again.' });
+      toast.error('An unexpected error occurred. Please try again.');
     } finally {
       setIsSaving(false);
     }
@@ -70,25 +68,6 @@ export default function PropertySettingsForm({ property, initialRules }: Propert
     <>
       <form action={handleSubmit} className="space-y-8 text-[#111827] pb-12">
         <input type="hidden" name="propertyId" value={property.id} />
-
-      {status && (
-        <div className={`fixed top-8 left-1/2 -translate-x-1/2 z-[100] px-6 py-4 rounded-2xl border shadow-2xl flex items-center gap-4 animate-in fade-in slide-in-from-top-6 duration-500 min-w-[320px] max-w-md ${
-          status.type === 'success' ? 'bg-white border-green-100 text-green-700' : 'bg-white border-red-100 text-red-700'
-        }`}>
-          {status.type === 'success' ? <CheckCircle className="text-green-500" size={24} /> : <AlertCircle className="text-red-500" size={24} />}
-          <div className="flex flex-col flex-1">
-            <span className="font-bold text-sm tracking-tight">{status.type === 'success' ? 'Changes Saved' : 'Action Required'}</span>
-            <span className="text-xs opacity-80 leading-relaxed font-medium">{status.message}</span>
-          </div>
-          <button 
-            type="button"
-            onClick={() => setStatus(null)}
-            className="p-1 hover:bg-gray-100 rounded-full transition-colors text-gray-400"
-          >
-            <X size={18} />
-          </button>
-        </div>
-      )}
 
       {/* Property Info & Branding Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -395,13 +374,9 @@ export default function PropertySettingsForm({ property, initialRules }: Propert
 
 function ChangePasswordForm() {
   const [isUpdating, setIsUpdating] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   async function handlePasswordSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setErrorMsg(null);
-    setSuccessMsg(null);
     setIsUpdating(true);
 
     const fd = new FormData(e.currentTarget);
@@ -409,7 +384,7 @@ function ChangePasswordForm() {
     const confirmPass = fd.get('confirmPassword') as string;
 
     if (newPass !== confirmPass) {
-      setErrorMsg("New passwords do not match.");
+      toast.error("New passwords do not match.");
       setIsUpdating(false);
       return;
     }
@@ -417,13 +392,13 @@ function ChangePasswordForm() {
     try {
       const res = await updateHostPassword(fd);
       if (res.success) {
-        setSuccessMsg("Password updated successfully!");
+        toast.success("Password updated successfully!");
         (e.target as HTMLFormElement).reset();
       } else {
-        setErrorMsg(res.error || "Failed to update password.");
+        toast.error(res.error || "Failed to update password.");
       }
     } catch (err) {
-      setErrorMsg("An unexpected error occurred.");
+      toast.error("An unexpected error occurred.");
     } finally {
       setIsUpdating(false);
     }
@@ -438,18 +413,6 @@ function ChangePasswordForm() {
         <h2 className="text-lg font-bold">Security & Password</h2>
       </div>
       <form onSubmit={handlePasswordSubmit} className="p-8 space-y-6">
-        {errorMsg && (
-          <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded-2xl flex items-center gap-3 text-sm font-semibold">
-            <AlertCircle size={18} />
-            <span>{errorMsg}</span>
-          </div>
-        )}
-        {successMsg && (
-          <div className="p-4 bg-green-50 border border-green-200 text-green-700 rounded-2xl flex items-center gap-3 text-sm font-semibold">
-            <CheckCircle size={18} />
-            <span>{successMsg}</span>
-          </div>
-        )}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="space-y-2">
             <label className="text-sm font-bold text-[#374151]">Current Password</label>
