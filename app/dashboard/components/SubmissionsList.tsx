@@ -222,6 +222,7 @@ export default function SubmissionsList({
               </div>
             </div>
           )}
+          </AnimatePresence>
         </div>
 
         {/* Desktop tabular layout */}
