@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { Building, Plus, Settings2, Power, PowerOff } from 'lucide-react';
 import { togglePropertyStatus, createNewProperty } from './actions';
 import { setActiveProperty } from '@/lib/property-actions';
+import Link from 'next/link';
+import { publicCheckInPath } from '@/lib/property-slug';
 
 export default function PropertiesList({ initialProperties }: { initialProperties: any[] }) {
   const [properties, setProperties] = useState(initialProperties);
@@ -76,6 +78,25 @@ export default function PropertiesList({ initialProperties }: { initialPropertie
               </div>
               <h3 className="font-bold text-lg text-gray-900 mb-1">{property.name}</h3>
               <p className="text-sm text-gray-500 mb-4">{property.isActive ? 'Active' : 'Disabled'}</p>
+
+              <div className="mt-4 pt-4 border-t border-gray-100">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Check-in Link</span>
+                </div>
+                <div className="flex flex-col sm:flex-row items-center gap-2">
+                  <code className={`px-3 py-1.5 rounded-lg text-xs font-mono flex-1 truncate w-full ${property.isActive ? 'bg-gray-50 border border-gray-200 text-[#EF4444]' : 'bg-gray-50 text-gray-400 border border-gray-100'}`}>
+                    {publicCheckInPath(property)}
+                  </code>
+                  <Link
+                    href={property.isActive ? publicCheckInPath(property) : '#'}
+                    target={property.isActive ? "_blank" : "_self"}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-colors shrink-0 ${property.isActive ? 'bg-[#EF4444] text-white hover:bg-[#DC2626]' : 'bg-gray-200 text-gray-400 cursor-not-allowed pointer-events-none'}`}
+                    onClick={(e) => !property.isActive && e.preventDefault()}
+                  >
+                    Open Form
+                  </Link>
+                </div>
+              </div>
             </div>
             
             <div className="bg-gray-50 px-6 py-4 border-t border-gray-100">

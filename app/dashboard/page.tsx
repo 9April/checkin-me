@@ -2,14 +2,12 @@ import { prisma } from "@/lib/prisma";
 import { getHostUserId } from "@/lib/session-host-id";
 import {
   attachSlugToNewProperty,
-  publicCheckInPath,
 } from "@/lib/property-slug";
 import {
   Users,
   ClipboardCheck,
   History,
   ArrowUpRight,
-  UserPlus,
   Printer
 } from 'lucide-react';
 import Link from 'next/link';
@@ -78,35 +76,8 @@ export default async function DashboardPage() {
     { name: 'Properties', value: property ? 1 : 0, icon: ArrowUpRight, color: 'bg-green-500' },
   ];
 
-  // We'll use a relative path for the frontend link to ensure it works on any host (localhost, ngrok, local IP)
-  const checkInPath = property ? publicCheckInPath(property) : "/check-in";
-
   return (
     <div className="space-y-8 min-w-0 max-w-full">
-      {/* Property Link Card */}
-      <div className="bg-[#FEF2F2] p-4 sm:p-6 rounded-3xl border border-[#FEE2E2] flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 md:gap-6 min-w-0">
-        <div className="flex items-center gap-4 min-w-0">
-          <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-[#EF4444] shadow-sm">
-            <UserPlus size={24} />
-          </div>
-          <div>
-            <h3 className="font-bold text-[#111827]">Fast Check-in Link</h3>
-            <p className="text-sm text-[#6B7280]">Share this link with your guests before they arrive.</p>
-          </div>
-        </div>
-        <div className="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto overflow-hidden">
-          <code className="bg-white px-4 py-2 rounded-xl text-xs sm:text-sm border border-[#E5E7EB] text-[#EF4444] font-mono flex-1 md:flex-none truncate">
-            {checkInPath}
-          </code>
-          <Link
-            href={checkInPath}
-            target="_blank"
-            className="px-4 py-2 bg-[#EF4444] text-white rounded-xl text-sm font-bold shadow-sm hover:bg-[#DC2626] transition-colors"
-          >
-            Open Form
-          </Link>
-        </div>
-      </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
