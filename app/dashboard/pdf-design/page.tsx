@@ -4,13 +4,13 @@ import { prisma } from '@/lib/prisma';
 import PdfEditor from './PdfEditor';
 import { FileText } from 'lucide-react';
 
+import { getActiveProperty } from '@/lib/active-property';
+
 export default async function PdfDesignPage() {
   const session = await auth();
   if (!session?.user?.id) redirect('/login');
 
-  const property = await prisma.property.findFirst({
-    where: { hostId: session.user.id }
-  });
+  const property = await getActiveProperty(session.user.id);
 
   if (!property) redirect('/dashboard/settings');
 

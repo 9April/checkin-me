@@ -4,6 +4,7 @@ import { attachSlugToNewProperty } from "@/lib/property-slug";
 import { redirect } from "next/navigation";
 import { updateProperty } from "./actions";
 import PropertySettingsForm from "./PropertySettingsForm";
+import { getActiveProperty } from "@/lib/active-property";
 
 export default async function SettingsPage() {
   const session = await auth();
@@ -21,9 +22,7 @@ export default async function SettingsPage() {
     redirect("/login");
   }
 
-  let property = await prisma.property.findFirst({
-    where: { hostId: session.user.id }
-  });
+  let property = await getActiveProperty(session.user.id);
   
   if (!property) {
     const created = await prisma.property.create({

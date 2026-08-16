@@ -7,6 +7,7 @@ import {
   Info
 } from 'lucide-react';
 import TrashList from "../components/TrashList";
+import { getActiveProperty } from "@/lib/active-property";
 
 export default async function TrashPage() {
   const hostId = await getHostUserId();
@@ -14,9 +15,7 @@ export default async function TrashPage() {
     redirect("/login");
   }
 
-  const property = await prisma.property.findFirst({
-    where: { hostId },
-  });
+  const property = await getActiveProperty(hostId);
 
   const deletedBookings = property
     ? await prisma.booking.findMany({

@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import Link from 'next/link';
 import { ChevronLeft } from 'lucide-react';
 import SubmissionsList from "../components/SubmissionsList";
+import { getActiveProperty } from "@/lib/active-property";
 
 export default async function BookingsPage() {
   const hostId = await getHostUserId();
@@ -11,9 +12,7 @@ export default async function BookingsPage() {
     redirect("/login");
   }
 
-  const property = await prisma.property.findFirst({
-    where: { hostId },
-  });
+  const property = await getActiveProperty(hostId);
 
   const bookings = property
     ? await prisma.booking.findMany({

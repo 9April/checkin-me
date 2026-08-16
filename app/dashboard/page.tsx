@@ -15,6 +15,7 @@ import {
 import Link from 'next/link';
 import { redirect } from "next/navigation";
 import SubmissionsList from "./components/SubmissionsList";
+import { getActiveProperty } from "@/lib/active-property";
 
 export default async function DashboardPage() {
   const hostId = await getHostUserId();
@@ -32,9 +33,7 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  let property = await prisma.property.findFirst({
-    where: { hostId }
-  });
+  let property = await getActiveProperty(hostId);
 
   // Auto-initialize a property if none exists
   if (!property) {

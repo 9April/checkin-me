@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import PrivacyEditor from "./PrivacyEditor";
 import { DEFAULT_PRIVACY_POLICY } from "@/lib/constants";
+import { getActiveProperty } from "@/lib/active-property";
 
 export default async function DashboardPrivacyPage() {
   const session = await auth();
@@ -10,9 +11,7 @@ export default async function DashboardPrivacyPage() {
     redirect("/login");
   }
 
-  const property = await prisma.property.findFirst({
-    where: { hostId: session.user.id },
-  });
+  const property = await getActiveProperty(session.user.id);
 
   if (!property) {
     redirect("/dashboard/settings");

@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
+    "build:hostinger": "npm run build && cp -r public .next/standalone/ && cp -r .next/static .next/standalone/.next/ && cp .env .next/standalone/ 2>/dev/null || : && cd .next/standalone && zip -r ../../hostinger-deploy.zip .",
     "start": "next start"
   },
   "dependencies": {
