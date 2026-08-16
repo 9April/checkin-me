@@ -23,7 +23,7 @@ export default async function PropertyCheckInPage({
     },
   });
 
-  if (!property) {
+  if (!property || !property.isActive) {
     notFound();
   }
 
