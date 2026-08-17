@@ -42,18 +42,12 @@ export async function resendBookingEmailsAction(bookingId: string) {
 
   for (const t of booking.travelers) {
     if (t.idImages) {
-      try {
-        const parsed = JSON.parse(t.idImages);
-        if (Array.isArray(parsed)) {
-          for (const img of parsed) {
-            adminAttachments.push({
-              name: img,
-              url: `${supabaseUrl}/storage/v1/object/public/checkin-me/${img}`
-            });
-          }
-        }
-      } catch (e) {
-        // ignore JSON parse error
+      const parsed = t.idImages.split(',').map(s => s.trim()).filter(Boolean);
+      for (const img of parsed) {
+        adminAttachments.push({
+          name: img,
+          url: `${supabaseUrl}/storage/v1/object/public/checkin-me/${img}`
+        });
       }
     }
   }
@@ -83,7 +77,7 @@ export async function resendBookingEmailsAction(bookingId: string) {
     country: t.country,
     idNumber: t.idNumber || 'N/A',
     type: t.type || 'ID',
-    idFiles: t.idImages ? JSON.parse(t.idImages) : []
+    idFiles: t.idImages ? t.idImages.split(',').map(s => s.trim()).filter(Boolean) : []
   }));
 
   const { mailError } = await sendCheckInEmails({
