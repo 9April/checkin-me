@@ -9,11 +9,12 @@ import Link from "next/link";
 
 interface MediaPreviewClientProps {
   propertyId: string;
+  propertyName: string;
   initialVideoUrl: string | null;
   initialImages: { url: string; id: string; name: string; role: string }[];
 }
 
-export default function MediaPreviewClient({ propertyId, initialVideoUrl, initialImages }: MediaPreviewClientProps) {
+export default function MediaPreviewClient({ propertyId, propertyName, initialVideoUrl, initialImages }: MediaPreviewClientProps) {
   const [showPreview, setShowPreview] = useState(false);
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [videoUrl, setVideoUrl] = useState<string | null>(initialVideoUrl);
@@ -35,7 +36,7 @@ export default function MediaPreviewClient({ propertyId, initialVideoUrl, initia
             <ArrowLeft size={16} /> Dashboard
           </Link>
           <div className="h-4 w-[1px] bg-gray-200 hidden sm:block"></div>
-          <span className="font-serif text-xl italic hidden sm:block">Media Studio</span>
+          <span className="font-serif text-xl italic hidden sm:block">Media Studio : {propertyName}</span>
         </div>
         {showPreview && (
           <div className="flex gap-3">

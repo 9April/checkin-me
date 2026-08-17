@@ -1,8 +1,11 @@
 import { prisma } from "@/lib/prisma";
 import { getHostUserId } from "@/lib/session-host-id";
+import { getActiveProperty } from "@/lib/active-property";
 import { redirect } from "next/navigation";
 import MediaPreviewClient from "@/app/components/media-slider/MediaPreviewClient";
 import { signPropertyMedia } from "@/lib/sign-media";
+
+export const dynamic = 'force-dynamic';
 
 export default async function MediaPreviewPage() {
   const hostId = await getHostUserId();
@@ -10,9 +13,7 @@ export default async function MediaPreviewPage() {
     redirect("/login");
   }
 
-  const property = await prisma.property.findFirst({
-    where: { hostId }
-  });
+  const property = await getActiveProperty(hostId);
 
   if (!property) {
     redirect("/dashboard");
@@ -26,6 +27,7 @@ export default async function MediaPreviewPage() {
   return (
     <MediaPreviewClient 
       propertyId={property.id} 
+      propertyName={property.name}
       initialVideoUrl={videoUrl} 
       initialImages={images} 
     />
