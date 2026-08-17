@@ -157,15 +157,8 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
                 style={{ borderColor: 'rgba(168, 152, 126, 0.2)' }}
                 className="flex flex-col items-center border-r px-3 min-w-0 pb-1"
               >
-                <p className="text-[8px] uppercase tracking-widest opacity-40 mb-1 lg:mb-2">Guest Name & ID</p>
-                <p className="font-serif text-[11pt] sm:text-[12pt] text-center leading-loose w-full font-medium pb-2">
-                  {booking.guestName}
-                  {booking.travelers && booking.travelers.length > 0 && (
-                    <span className="block text-[10px] sm:text-[11px] font-sans font-normal opacity-70 mt-[-5px]">
-                      {booking.travelers[0].type === 'passport' ? 'Passport' : 'ID'}: {booking.travelers[0].idNumber}
-                    </span>
-                  )}
-                </p>
+                <p className="text-[8px] uppercase tracking-widest opacity-40 mb-1 lg:mb-2">Guest Name</p>
+                <p className="font-serif text-[11pt] sm:text-[12pt] text-center leading-loose w-full font-medium pb-2">{booking.guestName}</p>
               </div>
               <div 
                 style={{ borderColor: 'rgba(168, 152, 126, 0.2)' }}
@@ -184,20 +177,19 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
               </div>
             </section>
 
-            {/* Accompanying Guests */}
-            {booking.travelers && booking.travelers.length > 1 && (
+            {/* Travelers & IDs */}
+            {booking.travelers && booking.travelers.length > 0 && (
               <div 
                 style={{ borderColor: 'rgba(168, 152, 126, 0.15)', backgroundColor: 'rgba(252, 251, 249, 0.5)' }}
-                className="rounded-xl border p-3.5 text-center max-w-xl mx-auto mb-2 flex flex-col gap-1"
+                className="rounded-xl border p-3.5 text-center max-w-xl mx-auto mb-2 flex flex-col gap-1 w-full"
               >
                 <p className="text-[8px] uppercase tracking-[0.25em] text-[#A8987E] font-bold">
-                  Accompanying Guests • Voyageurs accompagnants
+                  Guest & Travelers Details • Détails des Voyageurs
                 </p>
                 <p className="font-serif text-[11px] sm:text-[12px] italic opacity-85 leading-relaxed">
                   {booking.travelers
-                    .slice(1) // skip the primary guest (index 0)
                     .map((t) => `${t.name} (${t.type === 'passport' ? 'Passport' : 'ID'}: ${t.idNumber})`)
-                    .join(', ')}
+                    .join('  •  ')}
                 </p>
               </div>
             )}
