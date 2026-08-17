@@ -12,7 +12,7 @@ export const DEFAULT_PRIVACY_POLICY = `<!DOCTYPE html>
 <body>
     <header>
         <div class="header-content">
-            <div class="logo">Mamounia Check-In Services</div>
+            <div class="logo">El Khouzama Check-In Services</div>
             <div class="last-updated">Last updated: April 1, 2026</div>
         </div>
     </header>
@@ -71,10 +71,10 @@ export const DEFAULT_PRIVACY_POLICY = `<!DOCTYPE html>
         <section id="who-we-are" class="section">
             <span class="section-number">01</span>
             <h2>Who we are</h2>
-            <p>Mamounia Check-In Services is operated by Mamounia, an independent service provider offering digital guest check-in solutions for short-term rental hosts.</p>
+            <p>El Khouzama Check-In Services is operated by El Khouzama, an independent service provider offering digital guest check-in solutions for short-term rental hosts.</p>
             <p><strong>Details:</strong></p>
             <ul>
-                <li>Operator: Mamounia</li>
+                <li>Operator: El Khouzama</li>
                 <li>Business Type: Independent Service Provider</li>
                 <li>Location: Casablanca, Morocco</li>
                 <li>Email: [admin email]</li>

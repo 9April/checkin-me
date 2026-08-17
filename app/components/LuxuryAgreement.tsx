@@ -140,7 +140,7 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
             {/* Header */}
             <header className="text-center py-2 sm:py-4">
               <h1 className="font-serif text-4xl sm:text-5xl tracking-[0.2em] uppercase mb-2 sm:mb-3 text-[#1A1A1A]">
-                {property.name || "MAMOUNIA 08"}
+                {property.name || "EL KHOUZAMA 08"}
               </h1>
               <p className="font-sans text-[9px] sm:text-xs tracking-[0.4em] uppercase opacity-50 text-[#A8987E]">
                 Guest Stay Agreement
@@ -279,7 +279,7 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
             {/* Footer */}
             <footer className="pt-2 text-center">
               <p className="text-[8px] uppercase tracking-[0.3em] opacity-40">
-                2026 {property.name || "Mamounia 08"} | Secure Digital Registration
+                2026 {property.name || "El Khouzama 08"} | Secure Digital Registration
               </p>
             </footer>
           </div>

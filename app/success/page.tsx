@@ -75,7 +75,7 @@ export default async function Success({
         </div>
 
         <p className="text-xs text-[#9CA3AF] pt-4">
-          © 2026 Mamounia 08 | Secure Digital Registration
+          © 2026 El Khouzama 08 | Secure Digital Registration
         </p>
       </div>
     </main>

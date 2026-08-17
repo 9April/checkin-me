@@ -13,7 +13,7 @@ export const DEFAULT_PRIVACY_POLICY_FR = `<!DOCTYPE html>
 <body>
     <header>
         <div class="header-content">
-            <div class="logo">Mamounia Check-In Services</div>
+            <div class="logo">El Khouzama Check-In Services</div>
             <div class="last-updated">Dernière mise à jour : 1er avril 2026</div>
         </div>
     </header>
@@ -72,10 +72,10 @@ export const DEFAULT_PRIVACY_POLICY_FR = `<!DOCTYPE html>
         <section id="who-we-are" class="section">
             <span class="section-number">01</span>
             <h2>Qui sommes-nous</h2>
-            <p>Mamounia Check-In Services est exploité par Mamounia, prestataire indépendant proposant des solutions d'enregistrement numérique des voyageurs pour les hôtes de locations de courte durée.</p>
+            <p>El Khouzama Check-In Services est exploité par El Khouzama, prestataire indépendant proposant des solutions d'enregistrement numérique des voyageurs pour les hôtes de locations de courte durée.</p>
             <p><strong>Informations :</strong></p>
             <ul>
-                <li>Exploitant : Mamounia</li>
+                <li>Exploitant : El Khouzama</li>
                 <li>Type d'activité : Prestataire de services indépendant</li>
                 <li>Siège : Casablanca, Maroc</li>
                 <li>E-mail : [e-mail administrateur]</li>
