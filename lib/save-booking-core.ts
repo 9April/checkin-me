@@ -6,6 +6,7 @@ import { normalizeLang } from '@/lib/lang';
 import { prisma } from '@/lib/prisma';
 import { sendEmail } from '@/lib/mail';
 import { supabaseAdmin } from '@/lib/supabase';
+import { validateImageFile } from '@/lib/file-validation';
 
 type PdfAttachment = {
   filename: string;
@@ -359,6 +360,12 @@ export async function executeSaveBooking(
     const timestamp = Date.now();
     const saveToCloud = async (f: File, name: string) => {
       console.log('--- Uploading PLAIN image:', name, 'Size:', f.size);
+      // Validate the file server-side to prevent malicious uploads (executables, HTML, etc)
+      const isValid = await validateImageFile(f);
+      if (!isValid) {
+        throw new Error(`Invalid file type or size exceeded for ${name}. Only JPEG, PNG, and WEBP images under 5MB are allowed.`);
+      }
+
       const bytes = await f.arrayBuffer();
 
       // Check if service key is missing — this is a common cause of failure
@@ -385,6 +392,12 @@ export async function executeSaveBooking(
     const queueUpload = (file: File, prefix: string) => {
       const fileName = `${timestamp}_${prefix}.${file.name.split('.').pop() || 'jpg'}`;
       const task = (async () => {
+        // Validate the file server-side to prevent malicious uploads (executables, HTML, etc)
+        const isValid = await validateImageFile(file);
+        if (!isValid) {
+          throw new Error(`Invalid file type or size exceeded for ${prefix}. Only JPEG, PNG, and WEBP images under 5MB are allowed.`);
+        }
+
         const bytes = await file.arrayBuffer();
         const buffer = Buffer.from(bytes);
         
