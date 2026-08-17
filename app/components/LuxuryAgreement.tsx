@@ -157,8 +157,15 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
                 style={{ borderColor: 'rgba(168, 152, 126, 0.2)' }}
                 className="flex flex-col items-center border-r px-3 min-w-0 pb-1"
               >
-                <p className="text-[8px] uppercase tracking-widest opacity-40 mb-1 lg:mb-2">Guest Name</p>
-                <p className="font-serif text-[11pt] sm:text-[12pt] text-center leading-loose w-full font-medium pb-2">{booking.guestName}</p>
+                <p className="text-[8px] uppercase tracking-widest opacity-40 mb-1 lg:mb-2">Guest Name & ID</p>
+                <p className="font-serif text-[11pt] sm:text-[12pt] text-center leading-loose w-full font-medium pb-2">
+                  {booking.guestName}
+                  {booking.travelers && booking.travelers.length > 0 && (
+                    <span className="block text-[10px] sm:text-[11px] font-sans font-normal opacity-70 mt-[-5px]">
+                      {booking.travelers[0].type === 'passport' ? 'Passport' : 'ID'}: {booking.travelers[0].idNumber}
+                    </span>
+                  )}
+                </p>
               </div>
               <div 
                 style={{ borderColor: 'rgba(168, 152, 126, 0.2)' }}

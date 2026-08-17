@@ -262,47 +262,30 @@ async function sendCheckInEmails(opts: {
 
   const tasks: Promise<{ success: boolean; error?: string }>[] = [];
 
-  const same =
-    guest &&
-    admin &&
-    guest.toLowerCase() === admin.toLowerCase();
-
-  if (same) {
+  if (guest) {
     tasks.push(
       sendEmail({
         to: guest,
-        cc: cc || undefined,
-        subject: tm.sameSubject(opts.guestName, opts.propertyName),
-        text: `${guestBody}${tm.sameAdminSeparator}${adminBody}`,
-        html: `${guestBodyHtml}<hr/><p><strong>${escapeHtml(tm.sameAdminCopyHtml)}</strong></p>${adminBodyHtml}`,
-        attachments: adminAttach.length > 0 ? adminAttach : undefined,
+        subject: guestSubject,
+        text: guestBody,
+        html: guestBodyHtml,
+        attachments: guestAttach, // Guest gets ONLY the signed A4 PDF stay agreement!
       })
     );
-  } else {
-    if (guest) {
-      tasks.push(
-        sendEmail({
-          to: guest,
-          subject: guestSubject,
-          text: guestBody,
-          html: guestBodyHtml,
-          attachments: guestAttach, // Guest gets ONLY the signed A4 PDF stay agreement!
-        })
-      );
-    }
-    if (admin) {
-      tasks.push(
-        sendEmail({
-          to: admin,
-          cc: cc || undefined,
-          subject: adminSubject,
-          text: adminBody,
-          html: adminBodyHtml,
-          attachments: adminAttach.length > 0 ? adminAttach : undefined, // Admin & CC receive the signed PDF + ID docs
-          replyTo: guest || undefined,
-        })
-      );
-    }
+  }
+  
+  if (admin) {
+    tasks.push(
+      sendEmail({
+        to: admin,
+        cc: cc || undefined,
+        subject: adminSubject,
+        text: adminBody,
+        html: adminBodyHtml,
+        attachments: adminAttach.length > 0 ? adminAttach : undefined, // Admin & CC receive the signed PDF + ID docs
+        replyTo: guest || undefined,
+      })
+    );
   }
 
   if (tasks.length === 0) {
