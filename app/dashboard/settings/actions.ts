@@ -24,6 +24,7 @@ export async function updateProperty(formData: FormData) {
   const primaryColor = formData.get('primaryColor') as string;
   const companyName = formData.get('companyName') as string;
   const locationEmbedUrl = formData.get('locationEmbedUrl') as string;
+  const whatsappNumber = formData.get('whatsappNumber') as string;
   const showWhatsApp = formData.get('showWhatsApp') === 'true';
   const requireSelfie = formData.get('requireSelfie') === 'true';
   const requireIdPhotos = formData.get('requireIdPhotos') === 'true';
@@ -59,6 +60,7 @@ export async function updateProperty(formData: FormData) {
         primaryColor,
         companyName,
         locationEmbedUrl,
+        whatsappNumber,
         showWhatsApp,
         requireSelfie,
         requireIdPhotos,

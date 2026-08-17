@@ -23,6 +23,7 @@ interface PropertySettingsFormProps {
     formSubtitle?: string | null;
     primaryColor?: string | null;
     showWhatsApp: boolean;
+    whatsappNumber?: string | null;
     requireSelfie: boolean;
     requireIdPhotos: boolean;
     companyName?: string | null;
@@ -131,6 +132,17 @@ export default function PropertySettingsForm({ property, initialRules }: Propert
                   placeholder="e.g. manager@example.com"
                   defaultValue={property.ccEmail || ''}
                   className="w-full px-4 py-3 bg-[#F9FAFB] border border-[#E5E7EB] rounded-2xl focus:ring-2 focus:ring-[#EF4444] outline-none transition-all"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-[#374151]">WhatsApp Support Number</label>
+                <input 
+                  name="whatsappNumber"
+                  type="tel"
+                  placeholder="e.g. +212 633-164985"
+                  defaultValue={property.whatsappNumber || ''}
+                  className="w-full px-4 py-3 bg-[#F9FAFB] border border-[#E5E7EB] rounded-2xl focus:ring-2 focus:ring-[#EF4444] outline-none transition-all font-mono"
                 />
               </div>
               

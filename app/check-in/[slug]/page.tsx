@@ -60,6 +60,9 @@ export default async function PropertyCheckInPage({
         logoUrl: property.logoUrl,
         mediaVideoUrl: videoUrl,
         mediaSliderImages: JSON.stringify(images),
+        whatsappNumber: property.whatsappNumber,
+        companyName: property.companyName,
+        locationEmbedUrl: property.locationEmbedUrl,
       }}
     />
   );

@@ -71,6 +71,7 @@ model Property {
   formSubtitle    String?
   primaryColor    String?   @default("#FF385C")
   showWhatsApp    Boolean   @default(true)
+  whatsappNumber  String?
   requireSelfie   Boolean   @default(true)
   requireIdPhotos Boolean   @default(true)
   pdfTemplate     String?
