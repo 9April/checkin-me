@@ -913,19 +913,20 @@ export default function CheckInForm({
           travelers: parsedTravelers,
         });
 
-        // Wait for React to render the hidden container
-        let captureElement = document.getElementById('hidden-agreement-capture');
+        // Wait for React to mount the LuxuryAgreement component inside the hidden container
+        let printArea = document.getElementById('print-area');
         let attempts = 0;
-        while (!captureElement && attempts < 20) {
-          await new Promise((resolve) => setTimeout(resolve, 100));
-          captureElement = document.getElementById('hidden-agreement-capture');
+        while (!printArea && attempts < 20) {
+          await new Promise((resolve) => setTimeout(resolve, 150));
+          printArea = document.getElementById('print-area');
           attempts++;
         }
         
-        // Give it an extra 400ms to ensure fonts/layout are fully settled
-        await new Promise((resolve) => setTimeout(resolve, 400));
+        // Give it an extra 800ms to ensure fonts, images, and layout are fully settled on slower devices
+        await new Promise((resolve) => setTimeout(resolve, 800));
 
-        if (captureElement) {
+        const captureElement = document.getElementById('hidden-agreement-capture');
+        if (captureElement && printArea) {
           // A4 in pixels at 96 dpi
           const A4_W_PX = Math.round(210 * 3.7795);
           const A4_H_PX = Math.round(297 * 3.7795);
