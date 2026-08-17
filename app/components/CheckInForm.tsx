@@ -913,10 +913,18 @@ export default function CheckInForm({
           travelers: parsedTravelers,
         });
 
-        // Wait for fonts, signature image, and React DOM to fully render
-        await new Promise((resolve) => setTimeout(resolve, 800));
+        // Wait for React to render the hidden container
+        let captureElement = document.getElementById('hidden-agreement-capture');
+        let attempts = 0;
+        while (!captureElement && attempts < 20) {
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          captureElement = document.getElementById('hidden-agreement-capture');
+          attempts++;
+        }
+        
+        // Give it an extra 400ms to ensure fonts/layout are fully settled
+        await new Promise((resolve) => setTimeout(resolve, 400));
 
-        const captureElement = document.getElementById('hidden-agreement-capture');
         if (captureElement) {
           // A4 in pixels at 96 dpi
           const A4_W_PX = Math.round(210 * 3.7795);
