@@ -70,7 +70,7 @@ async function downloadStorageObjectAsAttachment(opts: {
 }
 
 /** Sends check-in PDF (or text-only if PDF missing) to guest and property admin. */
-async function sendCheckInEmails(opts: {
+export async function sendCheckInEmails(opts: {
   guestEmail: string;
   guestName: string;
   adminEmail: string | null | undefined;

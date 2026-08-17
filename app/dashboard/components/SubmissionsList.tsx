@@ -13,6 +13,7 @@ import {
   X
 } from 'lucide-react';
 import TrashAction from './TrashAction';
+import ResendEmailAction from './ResendEmailAction';
 import { formatSubmittedAt } from '@/lib/format-submitted-at';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -186,6 +187,7 @@ export default function SubmissionsList({
                       >
                         View
                       </Link>
+                      <ResendEmailAction bookingId={booking.id} />
                       <Link 
                         href={`/agreement/${booking.id}`} 
                         target="_blank" 
@@ -272,6 +274,7 @@ export default function SubmissionsList({
                           <ExternalLink size={18} />
                           View
                         </Link>
+                        <ResendEmailAction bookingId={booking.id} />
                         <Link
                           href={`/agreement/${booking.id}`}
                           target="_blank"
