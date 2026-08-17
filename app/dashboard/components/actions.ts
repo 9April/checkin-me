@@ -21,50 +21,44 @@ export async function resendBookingEmailsAction(bookingId: string) {
       return { success: false, error: "Not found" };
     }
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+  const { supabaseAdmin } = await import('@/lib/supabase-admin');
 
   // Get Admin Attachments (Passport/ID photos, Selfies)
-  const adminAttachments: { name: string, url: string }[] = [];
+  const adminAttachmentNames: string[] = [];
   
   if (booking.selfieUrl) {
-    adminAttachments.push({
-      name: booking.selfieUrl,
-      url: `${supabaseUrl}/storage/v1/object/public/checkin-me/${booking.selfieUrl}`
-    });
+    adminAttachmentNames.push(booking.selfieUrl);
   }
   
   if (booking.signatureUrl) {
-    adminAttachments.push({
-      name: booking.signatureUrl,
-      url: `${supabaseUrl}/storage/v1/object/public/checkin-me/${booking.signatureUrl}`
-    });
+    adminAttachmentNames.push(booking.signatureUrl);
   }
 
   for (const t of booking.travelers) {
     if (t.idImages) {
       const parsed = t.idImages.split(',').map(s => s.trim()).filter(Boolean);
       for (const img of parsed) {
-        adminAttachments.push({
-          name: img,
-          url: `${supabaseUrl}/storage/v1/object/public/checkin-me/${img}`
-        });
+        adminAttachmentNames.push(img);
       }
     }
   }
 
   const downloadedAttachments = await Promise.all(
-    adminAttachments.map(async (doc) => {
+    adminAttachmentNames.map(async (fileName) => {
       try {
-        const res = await fetch(doc.url);
-        if (!res.ok) return null;
-        const arrayBuffer = await res.arrayBuffer();
+        const { data, error } = await supabaseAdmin.storage.from('checkin-me').download(fileName);
+        if (error || !data) {
+          console.warn(`Failed to securely download ${fileName}:`, error);
+          return null;
+        }
+        const arrayBuffer = await data.arrayBuffer();
         return {
-          filename: doc.name,
+          filename: fileName,
           content: Buffer.from(arrayBuffer),
-          contentType: res.headers.get('content-type') || 'application/octet-stream'
+          contentType: data.type || 'application/octet-stream'
         };
       } catch (e) {
-        console.error("Failed to download attachment for email:", doc.url);
+        console.error("Failed to download attachment for email:", fileName);
         return null;
       }
     })

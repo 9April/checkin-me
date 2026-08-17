@@ -14,8 +14,7 @@ import CameraCapture from './CameraCapture';
 import MediaHeaderPreview from './media-slider/MediaHeaderPreview';
 import type { SliderImage } from './media-slider/StackedCardSlider';
 import LuxuryAgreement from './LuxuryAgreement';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
+import imageCompression from 'browser-image-compression';
 
 const TRANSLATIONS = {
   EN: {
@@ -868,6 +867,23 @@ export default function CheckInForm({
       return;
     }
 
+    const compressImage = async (file: File) => {
+      if (!file.type.startsWith('image/')) return file;
+      try {
+        const options = {
+          maxSizeMB: 0.5,
+          maxWidthOrHeight: 1600,
+          useWebWorker: true,
+          initialQuality: 0.7
+        };
+        const compressedBlob = await imageCompression(file, options);
+        return new File([compressedBlob], file.name, { type: file.type });
+      } catch (error) {
+        console.error("Compression failed:", error);
+        return file;
+      }
+    };
+
     setIsLoading(true);
     try {
       const signatureData = sigRef.current?.getTrimmedCanvas().toDataURL("image/png");
@@ -875,6 +891,30 @@ export default function CheckInForm({
         throw new Error(t.provideSignature);
       }
       const formData = new FormData(e.currentTarget);
+      
+      // Process files for travelers with compression
+      const selfie = formData.get('selfie');
+      if (selfie instanceof File && selfie.size > 0) {
+          formData.set('selfie', await compressImage(selfie));
+      }
+
+      const travelersCount = adults + kids;
+      for (let i = 0; i < travelersCount; i++) {
+        const passport = formData.get(`traveler_${i}_passport`);
+        const cinFront = formData.get(`traveler_${i}_cinFront`);
+        const cinBack = formData.get(`traveler_${i}_cinBack`);
+        
+        if (passport instanceof File && passport.size > 0) {
+            formData.set(`traveler_${i}_passport`, await compressImage(passport));
+        }
+        if (cinFront instanceof File && cinFront.size > 0) {
+            formData.set(`traveler_${i}_cinFront`, await compressImage(cinFront));
+        }
+        if (cinBack instanceof File && cinBack.size > 0) {
+            formData.set(`traveler_${i}_cinBack`, await compressImage(cinBack));
+        }
+      }
+
       formData.set("signature", signatureData as string);
       formData.set("lang", lang);
       formData.set("propertyId", property.id);
@@ -947,6 +987,14 @@ export default function CheckInForm({
             a4Wrapper.style.height = `${A4_H_PX}px`;
             a4Wrapper.style.overflow = 'hidden';
           }
+
+          console.log('[PDF] Lazy-loading html2canvas and jspdf...');
+          const [html2canvasModule, jsPDFModule] = await Promise.all([
+            import('html2canvas'),
+            import('jspdf')
+          ]);
+          const html2canvas = html2canvasModule.default;
+          const jsPDF = jsPDFModule.default;
 
           console.log('[PDF] Running html2canvas at 3× scale (~288 DPI professional quality)...');
           const canvas = await html2canvas(captureElement, {

@@ -53,22 +53,23 @@ export default async function DashboardPage() {
     property = await attachSlugToNewProperty(prisma, property.id, property.name);
   }
 
-  const bookings = await prisma.booking.findMany({
-    where: {
-      propertyId: property.id,
-      deletedAt: null,
-    },
-    orderBy: { createdAt: 'desc' },
-    take: 5,
-    include: { travelers: true }
-  });
-
-  const totalBookings = await prisma.booking.count({
-    where: {
-      propertyId: property.id,
-      deletedAt: null,
-    },
-  });
+  const [bookings, totalBookings] = await Promise.all([
+    prisma.booking.findMany({
+      where: {
+        propertyId: property.id,
+        deletedAt: null,
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 5,
+      include: { travelers: true }
+    }),
+    prisma.booking.count({
+      where: {
+        propertyId: property.id,
+        deletedAt: null,
+      },
+    })
+  ]);
 
   const stats = [
     { name: 'Total Bookings', value: totalBookings, icon: ClipboardCheck, color: 'bg-blue-500' },

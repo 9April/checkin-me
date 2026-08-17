@@ -90,10 +90,40 @@ export async function permanentlyDeleteBooking(bookingId: string) {
       id: bookingId,
       property: { hostId },
     },
+    include: {
+      travelers: true,
+    }
   });
 
   if (!booking) {
     return { success: true };
+  }
+
+  // 1. Collect all files associated with this booking from Supabase Storage
+  const filesToDelete: string[] = [];
+  if (booking.selfieUrl) filesToDelete.push(booking.selfieUrl);
+  if (booking.signatureUrl) filesToDelete.push(booking.signatureUrl);
+
+  for (const t of booking.travelers) {
+    if (t.idImages) {
+      const parsed = t.idImages.split(',').map(s => s.trim()).filter(Boolean);
+      filesToDelete.push(...parsed);
+    }
+  }
+
+  // 2. Wipe from Supabase
+  if (filesToDelete.length > 0) {
+    try {
+      const { supabaseAdmin } = await import("@/lib/supabase-admin");
+      const { error } = await supabaseAdmin.storage.from('checkin-me').remove(filesToDelete);
+      if (error) {
+        console.warn("Non-fatal: Failed to delete some files from Supabase", error);
+      } else {
+        console.log(`Successfully wiped ${filesToDelete.length} files from storage for booking ${bookingId}`);
+      }
+    } catch (e) {
+      console.warn("Non-fatal: Error wiping files from Supabase", e);
+    }
   }
 
   if (booking.pdfUrl) {
