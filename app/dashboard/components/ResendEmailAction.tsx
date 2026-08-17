@@ -11,7 +11,14 @@ export default function ResendEmailAction({ bookingId }: { bookingId: string }) 
     if (status === 'loading') return;
     setStatus('loading');
     try {
-      await resendBookingEmailsAction(bookingId);
+      const res = await resendBookingEmailsAction(bookingId);
+      if (res && !res.success) {
+        console.error("Resend failed:", res.error);
+        alert(`Failed to resend: ${res.error}`);
+        setStatus('error');
+        setTimeout(() => setStatus('idle'), 3000);
+        return;
+      }
       setStatus('success');
       setTimeout(() => setStatus('idle'), 3000);
     } catch (e) {

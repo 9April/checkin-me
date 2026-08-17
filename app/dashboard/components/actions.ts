@@ -5,10 +5,11 @@ import { sendCheckInEmails } from '@/lib/save-booking-core';
 import { getHostUserId } from '@/lib/session-host-id';
 
 export async function resendBookingEmailsAction(bookingId: string) {
-  const hostId = await getHostUserId();
-  if (!hostId) throw new Error("Unauthorized");
+  try {
+    const hostId = await getHostUserId();
+    if (!hostId) return { success: false, error: "Unauthorized" };
 
-  const booking = await prisma.booking.findUnique({
+    const booking = await prisma.booking.findUnique({
     where: { id: bookingId },
     include: {
       property: true,
@@ -16,9 +17,9 @@ export async function resendBookingEmailsAction(bookingId: string) {
     }
   });
 
-  if (!booking || booking.property.hostId !== hostId) {
-    throw new Error("Not found");
-  }
+    if (!booking || booking.property.hostId !== hostId) {
+      return { success: false, error: "Not found" };
+    }
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 
@@ -105,9 +106,13 @@ export async function resendBookingEmailsAction(bookingId: string) {
     pdfFailedNote: "The Guest Stay Agreement PDF is not attached to this resent email. You can view it securely via the link above.",
   });
 
-  if (mailError) {
-    throw new Error(mailError);
-  }
+    if (mailError) {
+      return { success: false, error: mailError };
+    }
 
-  return { success: true };
+    return { success: true };
+  } catch (error: any) {
+    console.error("Resend error:", error);
+    return { success: false, error: error.message || String(error) };
+  }
 }
