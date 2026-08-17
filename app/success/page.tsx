@@ -1,6 +1,7 @@
 // app/success/page.tsx
 
 import Link from 'next/link';
+import { prisma } from '@/lib/prisma';
 
 export default async function Success({
   searchParams,
@@ -10,6 +11,17 @@ export default async function Success({
   const params = await searchParams;
   const bookingId = params.id;
   
+  let companyName = "El Khouzama 08";
+  if (bookingId) {
+    const booking = await prisma.booking.findUnique({
+      where: { id: bookingId },
+      include: { property: true }
+    });
+    if (booking?.property?.companyName) {
+      companyName = booking.property.companyName;
+    }
+  }
+
   const emailFailed = Boolean(params.mailError);
   const emailSent = params.emailSent === '1';
 
@@ -75,7 +87,7 @@ export default async function Success({
         </div>
 
         <p className="text-xs text-[#9CA3AF] pt-4">
-          © 2026 El Khouzama 08 | Secure Digital Registration
+          © 2026 {companyName} | Secure Digital Registration
         </p>
       </div>
     </main>

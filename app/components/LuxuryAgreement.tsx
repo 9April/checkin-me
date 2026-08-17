@@ -16,6 +16,7 @@ interface LuxuryAgreementProps {
     ruleOccupants?: string | null;
     ruleResponsibility?: string | null;
     ruleSecurity?: string | null;
+    companyName?: string | null;
   };
   booking: {
     guestName: string;
@@ -279,7 +280,7 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
             {/* Footer */}
             <footer className="pt-2 text-center">
               <p className="text-[8px] uppercase tracking-[0.3em] opacity-40">
-                2026 {property.name || "El Khouzama 08"} | Secure Digital Registration
+                2026 {property.companyName || "El Khouzama 08"} | Secure Digital Registration
               </p>
             </footer>
           </div>

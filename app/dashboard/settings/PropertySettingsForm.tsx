@@ -25,6 +25,8 @@ interface PropertySettingsFormProps {
     showWhatsApp: boolean;
     requireSelfie: boolean;
     requireIdPhotos: boolean;
+    companyName?: string | null;
+    locationEmbedUrl?: string | null;
   };
   initialRules: string;
 }
@@ -98,6 +100,26 @@ export default function PropertySettingsForm({ property, initialRules }: Propert
                   defaultValue={property.adminEmail || ''}
                   className="w-full px-4 py-3 bg-[#F9FAFB] border border-[#E5E7EB] rounded-2xl focus:ring-2 focus:ring-[#EF4444] outline-none transition-all"
                   required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-[#374151]">Company Name (Footer / Legal)</label>
+                <input 
+                  name="companyName"
+                  placeholder="e.g. El Khouzama Check-In Services"
+                  defaultValue={property.companyName || ''}
+                  className="w-full px-4 py-3 bg-[#F9FAFB] border border-[#E5E7EB] rounded-2xl focus:ring-2 focus:ring-[#EF4444] outline-none transition-all"
+                />
+              </div>
+
+              <div className="space-y-2 md:col-span-2">
+                <label className="text-sm font-bold text-[#374151]">Location Embed URL (Google Maps iframe src)</label>
+                <input 
+                  name="locationEmbedUrl"
+                  placeholder='e.g. https://www.google.com/maps/embed?pb=...'
+                  defaultValue={property.locationEmbedUrl || ''}
+                  className="w-full px-4 py-3 bg-[#F9FAFB] border border-[#E5E7EB] rounded-2xl focus:ring-2 focus:ring-[#EF4444] outline-none transition-all font-mono text-xs"
                 />
               </div>
 

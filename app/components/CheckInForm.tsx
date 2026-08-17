@@ -1192,7 +1192,7 @@ export default function CheckInForm({
                   </div>
                   <div className="relative w-full rounded-2xl overflow-hidden border border-[#DDDDDD] shadow-sm bg-white h-[420px] sm:h-auto sm:aspect-[16/9] md:h-[350px]">
                     <iframe
-                      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3325.6476377498725!2d-7.671252700000001!3d33.5365458!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xda62df7b6fc8b5d%3A0x702af993385e12e1!2sKhouzama%207!5e0!3m2!1sen!2sma!4v1786975585531!5m2!1sen!2sma"
+                      src={property.locationEmbedUrl || "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3325.6476377498725!2d-7.671252700000001!3d33.5365458!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xda62df7b6fc8b5d%3A0x702af993385e12e1!2sKhouzama%207!5e0!3m2!1sen!2sma!4v1786975585531!5m2!1sen!2sma"}
                       className="absolute inset-0 w-full h-full"
                       style={{ border: 0 }}
                       allowFullScreen={true}
@@ -1651,7 +1651,7 @@ export default function CheckInForm({
 
             {showFinish && phoneLayout && (
               <p className="text-center text-[9px] font-bold text-[#222222]/50 uppercase tracking-widest pt-2">
-                El Khouzama Check-In · Casablanca
+                {property.companyName || "El Khouzama"} Check-In · Casablanca
               </p>
             )}
 
@@ -1667,7 +1667,7 @@ export default function CheckInForm({
               </button>
 
               <a
-                href={`https://wa.me/212661420314?text=${encodeURIComponent(`Hello! I'm contacting you from the El Khouzama online check-in form for "${property.name}". I need help with my pre-registration.`)}`}
+                href={`https://wa.me/212661420314?text=${encodeURIComponent(`Hello! I'm contacting you from the ${property.companyName || "El Khouzama"} online check-in form for "${property.name}". I need help with my pre-registration.`)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-6 rounded-xl md:rounded-2xl bg-[#25D366] hover:bg-[#20ba59] text-white shadow-lg shadow-[#25D366]/20 active:scale-[0.97] transition-all flex items-center justify-center gap-2 text-sm md:text-base font-bold uppercase tracking-wider"
@@ -1704,7 +1704,7 @@ export default function CheckInForm({
                       {wizardStep === 0 ? t.reserve : t.continue}
                     </button>
                     <a
-                      href={`https://wa.me/212661420314?text=${encodeURIComponent(`Hello! I'm contacting you from the El Khouzama online check-in form for "${property.name}". I need help with my pre-registration.`)}`}
+                      href={`https://wa.me/212661420314?text=${encodeURIComponent(`Hello! I'm contacting you from the ${property.companyName || "El Khouzama"} online check-in form for "${property.name}". I need help with my pre-registration.`)}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="shrink-0 px-4 rounded-2xl bg-[#25D366] hover:bg-[#20ba59] text-white shadow-lg shadow-[#25D366]/20 active:scale-[0.97] transition-all flex items-center justify-center"
@@ -1726,7 +1726,7 @@ export default function CheckInForm({
                       {isLoading ? t.processingBtn : t.submit}
                     </button>
                     <a
-                      href={`https://wa.me/212661420314?text=${encodeURIComponent(`Hello! I'm contacting you from the El Khouzama online check-in form for "${property.name}". I need help with my pre-registration.`)}`}
+                      href={`https://wa.me/212661420314?text=${encodeURIComponent(`Hello! I'm contacting you from the ${property.companyName || "El Khouzama"} online check-in form for "${property.name}". I need help with my pre-registration.`)}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="shrink-0 px-4 rounded-2xl bg-[#25D366] hover:bg-[#20ba59] text-white shadow-lg shadow-[#25D366]/20 active:scale-[0.97] transition-all flex items-center justify-center"
@@ -1749,7 +1749,7 @@ export default function CheckInForm({
             <div className="h-0.5 w-12 bg-gradient-to-r from-transparent via-[#FF385C] to-transparent opacity-40" />
             
             <div className="space-y-4">
-              <h3 className="text-[10px] font-bold text-[#222222] tracking-[0.4em] uppercase">El Khouzama Check-In Services</h3>
+              <h3 className="text-[10px] font-bold text-[#222222] tracking-[0.4em] uppercase">{property.companyName || "El Khouzama"} Check-In Services</h3>
               <p className="text-[10px] font-medium text-[#717171] opacity-60 tracking-wider max-w-xs mx-auto leading-relaxed">Making guest check-in simple, secure, and compliant for short-term rental hosts worldwide.</p>
             </div>
 
@@ -1760,7 +1760,7 @@ export default function CheckInForm({
             </div>
 
             <div className="text-[9px] font-bold text-[#222222] opacity-40 uppercase tracking-[0.2em] space-y-1">
-              <p>© 2026 El Khouzama Check-In Services • Casablanca, Morocco</p>
+              <p>© 2026 {property.companyName || "El Khouzama Check-In Services"} • Casablanca, Morocco</p>
             </div>
           </div>
         </footer>
