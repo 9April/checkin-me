@@ -33,7 +33,7 @@ export default function PropertiesList({ initialProperties }: { initialPropertie
 
   const goToSettings = async (id: string) => {
     await setActiveProperty(id);
-    router.push('/dashboard/settings');
+    router.push(`/dashboard/settings/${id}`);
   };
 
   return (
