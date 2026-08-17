@@ -452,6 +452,8 @@ interface PropertyData {
   ruleSecurity?: string | null;
   mediaVideoUrl?: string | null;
   mediaSliderImages?: string | null;
+  locationEmbedUrl?: string | null;
+  companyName?: string | null;
 }
 
 export default function CheckInForm({
