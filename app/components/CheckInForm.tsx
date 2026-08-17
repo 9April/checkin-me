@@ -1192,7 +1192,7 @@ export default function CheckInForm({
                   </div>
                   <div className="relative w-full rounded-2xl overflow-hidden border border-[#DDDDDD] shadow-sm bg-white h-[420px] sm:h-auto sm:aspect-[16/9] md:h-[350px]">
                     <iframe
-                      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d16615.52!2d-7.643220239649545!3d33.60252459972267!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xda7d3000dcc03e9%3A0x4c5bb61126e89176!2s4%20rue%20cemitiere%20complexe%20horizon!5e0!3m2!1sen!2sma!4v1779252658996!5m2!1sen!2sma"
+                      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3325.6476377498725!2d-7.671252700000001!3d33.5365458!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xda62df7b6fc8b5d%3A0x702af993385e12e1!2sKhouzama%207!5e0!3m2!1sen!2sma!4v1786975585531!5m2!1sen!2sma"
                       className="absolute inset-0 w-full h-full"
                       style={{ border: 0 }}
                       allowFullScreen={true}

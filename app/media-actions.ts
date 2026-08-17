@@ -152,7 +152,8 @@ export async function saveMediaStudio(formData: FormData) {
     });
 
     // Revalidate paths to clear Next.js client-side caches
-    revalidatePath("/media-preview");
+    revalidatePath(`/media-preview/${propertyId}`);
+    revalidatePath("/dashboard/media-preview");
     if (updatedProperty.slug) {
       revalidatePath(`/check-in/${updatedProperty.slug}`);
     }
