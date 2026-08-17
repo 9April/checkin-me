@@ -114,7 +114,8 @@ export async function permanentlyDeleteBooking(bookingId: string) {
   // 2. Wipe from Supabase
   if (filesToDelete.length > 0) {
     try {
-      const { supabaseAdmin } = await import("@/lib/supabase-admin");
+      const { getSupabaseAdmin } = await import("@/lib/supabase");
+      const supabaseAdmin = getSupabaseAdmin();
       const { error } = await supabaseAdmin.storage.from('checkin-me').remove(filesToDelete);
       if (error) {
         console.warn("Non-fatal: Failed to delete some files from Supabase", error);

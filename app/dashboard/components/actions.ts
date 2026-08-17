@@ -21,7 +21,8 @@ export async function resendBookingEmailsAction(bookingId: string) {
       return { success: false, error: "Not found" };
     }
 
-  const { supabaseAdmin } = await import('@/lib/supabase-admin');
+  const { getSupabaseAdmin } = await import('@/lib/supabase');
+  const supabaseAdmin = getSupabaseAdmin();
 
   // Get Admin Attachments (Passport/ID photos, Selfies)
   const adminAttachmentNames: string[] = [];
