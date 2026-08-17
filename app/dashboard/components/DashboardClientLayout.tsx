@@ -40,7 +40,7 @@ export default function DashboardClientLayout({
     { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Properties', href: '/dashboard/properties', icon: Building },
     { name: 'Bookings', href: '/dashboard/bookings', icon: ClipboardList },
-    { name: 'Media Studio', href: '/media-preview', icon: Film },
+    { name: 'Media Studio', href: '/dashboard/media-preview', icon: Film },
     { name: 'Privacy Policy', href: '/dashboard/privacy', icon: ShieldCheck },
     { name: 'PDF Designer', href: '/dashboard/pdf-design', icon: FileText },
     { name: 'Settings', href: '/dashboard/settings', icon: Settings },

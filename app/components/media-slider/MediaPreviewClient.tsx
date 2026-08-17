@@ -32,8 +32,8 @@ export default function MediaPreviewClient({ propertyId, propertyName, initialVi
       {/* Top Nav */}
       <div className="w-full bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between sticky top-0 z-50">
         <div className="flex items-center gap-4">
-          <Link href="/dashboard" className="text-gray-400 hover:text-black transition-colors flex items-center gap-2 text-sm uppercase tracking-widest font-semibold">
-            <ArrowLeft size={16} /> Dashboard
+          <Link href="/dashboard/media-preview" className="text-gray-400 hover:text-black transition-colors flex items-center gap-2 text-sm uppercase tracking-widest font-semibold">
+            <ArrowLeft size={16} /> Back
           </Link>
           <div className="h-4 w-[1px] bg-gray-200 hidden sm:block"></div>
           <span className="font-serif text-xl italic hidden sm:block">Media Studio : {propertyName}</span>
