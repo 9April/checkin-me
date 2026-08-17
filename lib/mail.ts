@@ -72,7 +72,12 @@ export async function sendEmail({
     return { success: false, error: msg };
   }
 
-  const from = process.env.SMTP_FROM || process.env.SMTP_USER || '"Checkin Me" <noreply@checkin-me.com>';
+  // Safe 'from' object to prevent syntax errors or spoofing rejections (553 5.7.1)
+  const fromName = process.env.SMTP_FROM_NAME || "Check-in Me";
+  const from = {
+    name: fromName,
+    address: user
+  };
   
   try {
     const activeTransporter = getTransporter();
