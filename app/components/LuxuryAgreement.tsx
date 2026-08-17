@@ -287,7 +287,7 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
             {/* Footer */}
             <footer className="pt-2 text-center">
               <p className="text-[8px] uppercase tracking-[0.3em] opacity-40">
-                2026 {property.companyName || "El Khouzama 08"} | Secure Digital Registration
+                2026 {property.companyName || property.name || "El Khouzama 07"} | Secure Digital Registration
               </p>
             </footer>
           </div>

@@ -11,14 +11,14 @@ export default async function Success({
   const params = await searchParams;
   const bookingId = params.id;
   
-  let companyName = "El Khouzama 08";
+  let companyName = "El Khouzama 07";
   if (bookingId) {
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
       include: { property: true }
     });
-    if (booking?.property?.companyName) {
-      companyName = booking.property.companyName;
+    if (booking?.property) {
+      companyName = booking.property.companyName || booking.property.name || "El Khouzama 07";
     }
   }
 
