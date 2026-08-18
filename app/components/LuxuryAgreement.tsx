@@ -188,7 +188,7 @@ export default function LuxuryAgreement({ property, booking }: LuxuryAgreementPr
                 </p>
                 <p className="font-serif text-[11px] sm:text-[12px] italic opacity-85 leading-relaxed">
                   {booking.travelers
-                    .map((t) => `${t.name} (${t.type === 'passport' ? 'Passport' : 'ID'}: ${t.idNumber})`)
+                    .map((t) => `${t.name} (ID: ${t.idNumber})`)
                     .join('  •  ')}
                 </p>
               </div>
