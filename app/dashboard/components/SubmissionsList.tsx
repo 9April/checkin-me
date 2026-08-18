@@ -12,10 +12,11 @@ import {
   Search,
   X
 } from 'lucide-react';
-import TrashAction from './TrashAction';
-import ResendEmailAction from './ResendEmailAction';
 import { formatSubmittedAt } from '@/lib/format-submitted-at';
 import { motion, AnimatePresence } from 'framer-motion';
+import { updateGuestEmail } from './actions';
+import ResendEmailAction from './ResendEmailAction';
+import TrashAction from './TrashAction';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -69,6 +70,27 @@ export default function SubmissionsList({
   // Handle local deletion so it instantly updates in the UI
   const handleDeleteSuccess = (bookingId: string) => {
     setBookings(prev => prev.filter(b => b.id !== bookingId));
+  };
+
+  const handleEditEmail = async (bookingId: string, currentEmail: string) => {
+    const newEmail = window.prompt("Enter correct email address:", currentEmail);
+    if (!newEmail || newEmail === currentEmail) return;
+    
+    // Optimistic update
+    setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, guestEmail: newEmail } : b));
+    
+    const res = await updateGuestEmail(bookingId, newEmail);
+    if (!res.success) {
+      alert("Failed to update email: " + res.error);
+      // Revert on failure
+      setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, guestEmail: currentEmail } : b));
+    }
+  };
+
+  const getWhatsAppLink = (booking: Booking) => {
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://cervice.online';
+    const message = `Hello ${booking.guestName}, here is your digital check-in agreement: ${baseUrl}/agreement/${booking.id}`;
+    return `https://wa.me/?text=${encodeURIComponent(message)}`;
   };
 
   // Filter logic
@@ -166,7 +188,16 @@ export default function SubmissionsList({
                   >
                     <div className="min-w-0">
                       <div className="font-bold text-[#111827] break-words">{booking.guestName}</div>
-                      <div className="text-xs text-[#6B7280] break-all">{booking.guestEmail}</div>
+                      <div className="text-xs text-[#6B7280] break-all flex items-center gap-2">
+                        {booking.guestEmail}
+                        <button 
+                          onClick={() => handleEditEmail(booking.id, booking.guestEmail)}
+                          className="text-blue-500 hover:text-blue-700 underline"
+                          title="Edit Email"
+                        >
+                          Edit
+                        </button>
+                      </div>
                     </div>
                     <div className="text-sm text-[#374151]">
                       {booking.checkin} → {booking.checkout}
@@ -188,6 +219,14 @@ export default function SubmissionsList({
                         View
                       </Link>
                       <ResendEmailAction bookingId={booking.id} />
+                      <a 
+                        href={getWhatsAppLink(booking)}
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-sm text-green-600 inline-flex items-center gap-1 hover:text-green-800 transition-colors font-medium"
+                      >
+                        WhatsApp
+                      </a>
                       <Link 
                         href={`/agreement/${booking.id}`} 
                         target="_blank" 
@@ -245,7 +284,16 @@ export default function SubmissionsList({
                   <tr key={booking.id} className="hover:bg-[#F9FAFB] transition-colors group">
                     <td className="px-6 py-4">
                       <div className="font-bold text-[#111827]">{booking.guestName}</div>
-                      <div className="text-xs text-[#6B7280]">{booking.guestEmail}</div>
+                      <div className="text-xs text-[#6B7280] flex items-center gap-2">
+                        {booking.guestEmail}
+                        <button 
+                          onClick={() => handleEditEmail(booking.id, booking.guestEmail)}
+                          className="text-blue-500 hover:text-blue-700 underline text-[10px]"
+                          title="Edit Email"
+                        >
+                          Edit
+                        </button>
+                      </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="text-sm font-medium text-[#374151]">
@@ -274,13 +322,21 @@ export default function SubmissionsList({
                           <ExternalLink size={18} />
                           View
                         </Link>
-                        <ResendEmailAction bookingId={booking.id} />
-                        <Link
-                          href={`/agreement/${booking.id}`}
-                          target="_blank"
-                          className="p-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors flex items-center gap-1"
-                          title='Print Agreement'
-                        >
+                          <ResendEmailAction bookingId={booking.id} />
+                          <a 
+                            href={getWhatsAppLink(booking)}
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-sm text-green-600 inline-flex items-center gap-1 hover:text-green-800 transition-colors font-medium"
+                          >
+                            WhatsApp
+                          </a>
+                          <Link 
+                            href={`/agreement/${booking.id}`} 
+                            target="_blank" 
+                            className="text-[#6B7280] hover:text-[#111827] transition-colors p-1"
+                            title="Print Agreement"
+                          >
                           <Printer size={18} />
                           Print
                         </Link>

@@ -1,0 +1,14 @@
+--- app/dashboard/components/SubmissionsList.tsx
++++ app/dashboard/components/SubmissionsList.tsx
+@@ -9,11 +9,15 @@
+   Printer,
+   ChevronLeft,
+   ChevronRight,
++  Search,
++  X
++} from 'lucide-react';
+ import { formatSubmittedAt } from '@/lib/format-submitted-at';
+ import { motion, AnimatePresence } from 'framer-motion';
+ import { updateGuestEmail } from './actions';
+ import ResendEmailAction from './ResendEmailAction';
+ import TrashAction from './TrashAction';

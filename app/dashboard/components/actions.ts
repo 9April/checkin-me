@@ -100,8 +100,40 @@ export async function resendBookingEmailsAction(bookingId: string) {
     }
 
     return { success: true };
-  } catch (error: any) {
-    console.error("Resend error:", error);
-    return { success: false, error: error.message || String(error) };
+  } catch (error) {
+    console.error("Error resending email:", error);
+    return { success: false, error: "An unexpected error occurred" };
+  }
+}
+
+export async function updateGuestEmail(bookingId: string, newEmail: string) {
+  try {
+    const hostId = await getHostUserId();
+    if (!hostId) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    if (!newEmail || !newEmail.includes('@')) {
+      return { success: false, error: "Invalid email address" };
+    }
+
+    const booking = await prisma.booking.findUnique({
+      where: { id: bookingId },
+      include: { property: true },
+    });
+
+    if (!booking || booking.property.hostId !== hostId) {
+      return { success: false, error: "Not found" };
+    }
+
+    await prisma.booking.update({
+      where: { id: bookingId },
+      data: { guestEmail: newEmail.trim() },
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating email:", error);
+    return { success: false, error: "Failed to update email" };
   }
 }
