@@ -2,48 +2,19 @@
 
 import { prisma } from "@/lib/prisma";
 import { getHostUserId } from "@/lib/session-host-id";
-import { getSupabaseAdmin } from "@/lib/supabase";
-import { revalidatePath } from "next/cache";
-import { signMediaUrl } from "@/lib/sign-media";
+import { getLocalPublicUrl, uploadLocalFile } from "@/lib/local-storage";
 import crypto from "crypto";
 
 export async function createPresignedUploadUrl(propertyId: string, fileName: string) {
-  try {
-    const hostId = await getHostUserId();
-    if (!hostId) {
-      throw new Error("Unauthorized");
-    }
-
-    // Verify ownership
-    const property = await prisma.property.findFirst({
-      where: { id: propertyId, hostId }
-    });
-
-    if (!property) {
-      throw new Error("Property not found or unauthorized");
-    }
-
-    const supabaseAdmin = getSupabaseAdmin();
-    const bucket = "checkin-me";
-    const ext = fileName.split('.').pop() || 'mp4';
-    const path = `media-studio/${propertyId}/video-${crypto.randomUUID()}.${ext}`;
-
-    const { data, error } = await supabaseAdmin.storage
-      .from(bucket)
-      .createSignedUploadUrl(path);
-
-    if (error) throw error;
-
-    return { 
-      success: true, 
-      signedUrl: data.signedUrl, 
-      token: data.token,
-      path 
-    };
-  } catch (e: any) {
-    console.error("Error creating signed upload URL:", e);
-    return { success: false, error: e.message };
-  }
+  // We no longer need presigned URLs since we handle uploads through standard Server Actions
+  // This is kept for backward compatibility if the client still calls it, but we can just
+  // return a mock success and handle the actual upload when the form is submitted.
+  return { 
+    success: true, 
+    signedUrl: 'local', 
+    token: 'local',
+    path: `media-studio/${propertyId}/` + fileName
+  };
 }
 
 function cleanSupabaseUrl(url: string | null): string | null {
@@ -76,8 +47,6 @@ export async function saveMediaStudio(formData: FormData) {
       throw new Error("Property not found or unauthorized");
     }
 
-    const supabaseAdmin = getSupabaseAdmin();
-    const bucket = "checkin-me"; 
 
     let mediaVideoUrl = null;
     
@@ -92,15 +61,11 @@ export async function saveMediaStudio(formData: FormData) {
         const ext = videoFile.name.split('.').pop() || 'mp4';
         const path = `media-studio/${propertyId}/video-${crypto.randomUUID()}.${ext}`;
         const buffer = Buffer.from(await videoFile.arrayBuffer());
-        const { error } = await supabaseAdmin.storage
-          .from(bucket)
-          .upload(path, buffer, {
-            contentType: videoFile.type,
-            upsert: true,
-          });
+        
+        const { error } = await uploadLocalFile(path, buffer);
         if (error) throw error;
-        const { data: { publicUrl } } = supabaseAdmin.storage.from(bucket).getPublicUrl(path);
-        mediaVideoUrl = publicUrl;
+        
+        mediaVideoUrl = getLocalPublicUrl(path);
       }
     }
 
@@ -122,15 +87,11 @@ export async function saveMediaStudio(formData: FormData) {
         const ext = file.name.split('.').pop() || 'jpg';
         const path = `media-studio/${propertyId}/img-${crypto.randomUUID()}.${ext}`;
         const buffer = Buffer.from(await file.arrayBuffer());
-        const { error } = await supabaseAdmin.storage
-          .from(bucket)
-          .upload(path, buffer, {
-            contentType: file.type,
-            upsert: true,
-          });
+        
+        const { error } = await uploadLocalFile(path, buffer);
         if (error) throw error;
-        const { data: { publicUrl } } = supabaseAdmin.storage.from(bucket).getPublicUrl(path);
-        imageUrl = publicUrl;
+        
+        imageUrl = getLocalPublicUrl(path);
       }
       
       sliderImages.push({
@@ -151,28 +112,11 @@ export async function saveMediaStudio(formData: FormData) {
       }
     });
 
-    // Revalidate paths to clear Next.js client-side caches
-    revalidatePath(`/media-preview/${propertyId}`);
-    revalidatePath("/dashboard/media-preview");
-    if (updatedProperty.slug) {
-      revalidatePath(`/check-in/${updatedProperty.slug}`);
-    }
-
-    const signedVideoUrl = await signMediaUrl(mediaVideoUrl);
-    const signedImages = await Promise.all(
-      sliderImages.map(async (img: any) => {
-        const signedUrl = await signMediaUrl(img.url);
-        return {
-          ...img,
-          url: signedUrl || img.url
-        };
-      })
-    );
-
+    // We don't need to sign local URLs
     return { 
       success: true, 
-      videoUrl: signedVideoUrl, 
-      images: signedImages 
+      videoUrl: mediaVideoUrl, 
+      images: sliderImages 
     };
   } catch (e: any) {
     console.error("Error saving media studio:", e);

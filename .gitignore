@@ -54,3 +54,4 @@ dev.db
 .env
 .env.local
 .env.production
+hostinger-deploy.zip

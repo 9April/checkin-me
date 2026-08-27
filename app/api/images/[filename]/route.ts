@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase, getSupabaseAdmin } from '@/lib/supabase';
+import { getLocalFileBuffer } from '@/lib/local-storage';
 import { auth } from '@/auth';
 
 export const dynamic = 'force-dynamic';
@@ -27,24 +27,21 @@ export async function GET(
       return new NextResponse('Invalid filename', { status: 400 });
     }
 
-    // 2. Fetch the file from Supabase Storage
-    const activeClient = isLogo ? getSupabaseAdmin() : supabase;
-    const { data, error } = await activeClient.storage
-      .from('checkin-me')
-      .download(filename);
+    // 2. Fetch the file from Local Storage
+    const { data: arrayBuffer, error } = await getLocalFileBuffer(filename);
 
-    if (error || !data) {
-      console.error('Supabase image download error:', error);
+    if (error || !arrayBuffer) {
+      console.error('Local image download error:', error);
       return new NextResponse('File not found', { status: 404 });
     }
 
-    // 3. Convert to buffer
-    const fileBuffer = Buffer.from(await data.arrayBuffer());
+    // 3. Convert to Uint8Array for Next.js response
+    const fileBuffer = new Uint8Array(arrayBuffer);
 
     const ext = filename.split('.').pop()?.toLowerCase();
     const contentType = ext === 'png' ? 'image/png' : 'image/jpeg';
 
-    return new NextResponse(new Uint8Array(fileBuffer), {
+    return new NextResponse(fileBuffer, {
       headers: {
         'Content-Type': contentType,
         'Cache-Control': 'public, max-age=3600',

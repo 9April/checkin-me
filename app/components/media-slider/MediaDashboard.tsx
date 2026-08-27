@@ -3,8 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { UploadCloud, Trash2, Image as ImageIcon, Video, X } from "lucide-react";
 import { SliderImage } from "./StackedCardSlider";
-import { saveMediaStudio, createPresignedUploadUrl } from "@/app/media-actions";
-import { supabase } from "@/lib/supabase";
+import { saveMediaStudio } from "@/app/media-actions";
 
 interface MediaDashboardProps {
   propertyId: string;
@@ -145,7 +144,6 @@ export default function MediaDashboard({
       if (file.size > 50 * 1024 * 1024) {
         alert(
           `Video size is too large (${mbSize.toFixed(1)} MB).\n\n` +
-          `Since your storage is hosted on the Supabase Free Plan, files are capped at a maximum of 50 MB.\n\n` +
           `Please compress the video (under 50 MB) using a tool like Handbrake, CapCut, or Adobe Express before uploading, or host your video externally (e.g., Vimeo, YouTube Direct, or a CDN) and provide the direct public URL.`
         );
         if (videoInputRef.current) videoInputRef.current.value = "";
@@ -248,29 +246,12 @@ export default function MediaDashboard({
     try {
       let finalVideoUrl = videoUrl;
 
-      // If a new video file was selected, upload it directly from client using a signed URL
-      if (videoFile) {
-        const resUrl = await createPresignedUploadUrl(propertyId, videoFile.name);
-        if (!resUrl.success || !resUrl.signedUrl || !resUrl.token || !resUrl.path) {
-          throw new Error(resUrl.error || "Failed to create video upload link.");
-        }
-
-        // Upload the file via standard Supabase SDK helper
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from("checkin-me")
-          .uploadToSignedUrl(resUrl.path, resUrl.token, videoFile);
-
-        if (uploadError) {
-          throw new Error(`Failed to upload video to cloud storage: ${uploadError.message}`);
-        }
-
-        // Construct public URL using env or fallback
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://wblnwbdcfdiiitvrznmt.supabase.co";
-        finalVideoUrl = `${supabaseUrl}/storage/v1/object/public/checkin-me/${resUrl.path}`;
-      }
-
       const formData = new FormData();
       formData.append("propertyId", propertyId);
+      
+      if (videoFile) {
+        formData.append("videoFile", videoFile);
+      }
       
       formData.append("videoUrl", finalVideoUrl || "");
       

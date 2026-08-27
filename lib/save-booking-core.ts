@@ -5,7 +5,7 @@ import type { Lang } from '@/lib/lang';
 import { normalizeLang } from '@/lib/lang';
 import { prisma } from '@/lib/prisma';
 import { sendEmail } from '@/lib/mail';
-import { supabaseAdmin } from '@/lib/supabase';
+import { uploadLocalFile, getLocalFileBuffer } from '@/lib/local-storage';
 import { validateImageFile } from '@/lib/file-validation';
 
 type PdfAttachment = {
@@ -43,17 +43,15 @@ async function downloadStorageObjectAsAttachment(opts: {
 > {
   const maxBytes = opts.maxBytes ?? 8 * 1024 * 1024; // 8MB per attachment safety
   try {
-    const { data, error } = await supabaseAdmin.storage
-      .from(opts.bucket)
-      .download(opts.objectName);
-    if (error || !data) {
+    const { data: buf, error } = await getLocalFileBuffer(opts.objectName);
+    if (error || !buf) {
       return { ok: false, reason: error?.message || 'download failed' };
     }
-    const buf = Buffer.from(await data.arrayBuffer());
-    if (buf.length > maxBytes) {
+    const nodeBuf = Buffer.from(buf);
+    if (nodeBuf.length > maxBytes) {
       return {
         ok: false,
-        reason: `attachment too large (${buf.length} bytes)`,
+        reason: `attachment too large (${nodeBuf.length} bytes)`,
       };
     }
     const filename = opts.filename || opts.objectName.split('/').pop() || opts.objectName;
@@ -61,7 +59,7 @@ async function downloadStorageObjectAsAttachment(opts: {
       ok: true,
       attachment: {
         filename,
-        content: buf,
+        content: nodeBuf,
         contentType: guessContentTypeFromFilename(filename),
       },
     };
@@ -358,33 +356,6 @@ export async function executeSaveBooking(
 
     /* ---------- 2. handle files (parallel uploads) ---------- */
     const timestamp = Date.now();
-    const saveToCloud = async (f: File, name: string) => {
-      console.log('--- Uploading PLAIN image:', name, 'Size:', f.size);
-      // Validate the file server-side to prevent malicious uploads (executables, HTML, etc)
-      const isValid = await validateImageFile(f);
-      if (!isValid) {
-        throw new Error(`Invalid file type or size exceeded for ${name}. Only JPEG, PNG, and WEBP images under 5MB are allowed.`);
-      }
-
-      const bytes = await f.arrayBuffer();
-
-      // Check if service key is missing — this is a common cause of failure
-      if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-        throw new Error('SUPABASE_SERVICE_ROLE_KEY is missing in environment variables. File upload cannot proceed.');
-      }
-
-      const { error } = await supabaseAdmin.storage
-        .from('checkin-me')
-        .upload(name, Buffer.from(bytes), {
-          contentType: f.type || 'image/jpeg',
-          upsert: true,
-        });
-      if (error) {
-        console.error(`Supabase Upload Error for ${name}:`, error);
-        throw new Error(`Supabase Upload Error: ${error.message}${error.message.includes('bucket not found') ? ' (Bucket "checkin-me" might satisfy the error)' : ''}`);
-      }
-      return name;
-    };
 
     const uploadTasks: Promise<{ key: string; name: string; buffer: Buffer }>[] = [];
     const imageBuffers: Record<string, Buffer> = {};
@@ -400,22 +371,12 @@ export async function executeSaveBooking(
 
         const bytes = await file.arrayBuffer();
         const buffer = Buffer.from(bytes);
-        
-        // Check if service key is missing
-        if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-          throw new Error('SUPABASE_SERVICE_ROLE_KEY is missing');
-        }
 
-        const { error } = await supabaseAdmin.storage
-          .from('checkin-me')
-          .upload(fileName, buffer, {
-            contentType: file.type || 'image/jpeg',
-            upsert: true,
-          });
+        const { error } = await uploadLocalFile(fileName, buffer);
         
         if (error) {
-          console.error(`Supabase Upload Error for ${fileName}:`, error);
-          throw new Error(`Upload failed for ${prefix}: ${error.message}`);
+          console.error(`Local Upload Error for ${fileName}:`, error);
+          throw new Error(`Upload failed for ${prefix}: ${error.message || String(error)}`);
         }
 
         imageBuffers[fileName] = buffer;
@@ -485,14 +446,9 @@ export async function executeSaveBooking(
         const sigBuffer = Buffer.from(signatureData.split(',')[1], 'base64');
         const sigFileName = `${timestamp}_signature.png`;
         const task = (async () => {
-          const { error } = await supabaseAdmin.storage
-            .from('checkin-me')
-            .upload(sigFileName, sigBuffer, {
-              contentType: 'image/png',
-              upsert: true,
-            });
+          const { error } = await uploadLocalFile(sigFileName, sigBuffer);
           if (error)
-            throw new Error(`Signature Upload Error: ${error.message}`);
+            throw new Error(`Signature Upload Error: ${error.message || String(error)}`);
           imageBuffers[sigFileName] = sigBuffer;
           console.log(`--- Signature Uploaded Successfully: ${sigFileName} ---`);
           return { key: 'signature', name: sigFileName, buffer: sigBuffer };

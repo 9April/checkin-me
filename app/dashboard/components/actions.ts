@@ -21,8 +21,7 @@ export async function resendBookingEmailsAction(bookingId: string) {
       return { success: false, error: "Not found" };
     }
 
-  const { getSupabaseAdmin } = await import('@/lib/supabase');
-  const supabaseAdmin = getSupabaseAdmin();
+  const { getLocalFileBuffer } = await import('@/lib/local-storage');
 
   // Get Admin Attachments (Passport/ID photos, Selfies)
   const adminAttachmentNames: string[] = [];
@@ -47,16 +46,16 @@ export async function resendBookingEmailsAction(bookingId: string) {
   const downloadedAttachments = await Promise.all(
     adminAttachmentNames.map(async (fileName) => {
       try {
-        const { data, error } = await supabaseAdmin.storage.from('checkin-me').download(fileName);
+        const { data, error } = await getLocalFileBuffer(fileName);
         if (error || !data) {
           console.warn(`Failed to securely download ${fileName}:`, error);
           return null;
         }
-        const arrayBuffer = await data.arrayBuffer();
+        const arrayBuffer = data;
         return {
           filename: fileName,
           content: Buffer.from(arrayBuffer),
-          contentType: data.type || 'application/octet-stream'
+          contentType: 'application/octet-stream'
         };
       } catch (e) {
         console.error("Failed to download attachment for email:", fileName);

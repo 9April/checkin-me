@@ -111,19 +111,18 @@ export async function permanentlyDeleteBooking(bookingId: string) {
     }
   }
 
-  // 2. Wipe from Supabase
+  // 2. Wipe from Local Storage
   if (filesToDelete.length > 0) {
     try {
-      const { getSupabaseAdmin } = await import("@/lib/supabase");
-      const supabaseAdmin = getSupabaseAdmin();
-      const { error } = await supabaseAdmin.storage.from('checkin-me').remove(filesToDelete);
+      const { deleteLocalFiles } = await import("@/lib/local-storage");
+      const { error } = await deleteLocalFiles(filesToDelete);
       if (error) {
-        console.warn("Non-fatal: Failed to delete some files from Supabase", error);
+        console.warn("Non-fatal: Failed to delete some files from local storage", error);
       } else {
         console.log(`Successfully wiped ${filesToDelete.length} files from storage for booking ${bookingId}`);
       }
     } catch (e) {
-      console.warn("Non-fatal: Error wiping files from Supabase", e);
+      console.warn("Non-fatal: Error wiping files from local storage", e);
     }
   }
 

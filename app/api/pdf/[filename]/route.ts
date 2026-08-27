@@ -1,4 +1,4 @@
-import { getSupabaseAdmin } from '@/lib/supabase';
+import { getLocalFileBuffer } from '@/lib/local-storage';
 import { prisma } from '@/lib/prisma';
 import { getHostUserId } from '@/lib/session-host-id';
 import { NextRequest, NextResponse } from 'next/server';
@@ -58,18 +58,15 @@ export async function GET(
       }
     }
 
-    const supabase = getSupabaseAdmin();
-    const { data, error } = await supabase.storage
-      .from('checkin-me')
-      .download(filename);
+    const { data: arrayBuffer, error } = await getLocalFileBuffer(filename);
 
-    if (error || !data) {
+    if (error || !arrayBuffer) {
       const msg = error?.message || 'unknown error';
-      console.error('Supabase download error:', msg, error);
+      console.error('Local download error:', msg, error);
       return new NextResponse('File not found in storage', { status: 404 });
     }
 
-    const blob = await data.arrayBuffer();
+    const blob = arrayBuffer;
 
     const wantsDownload =
       request.nextUrl.searchParams.get('download') === '1' ||
