@@ -6,16 +6,17 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ filename: string }> }
+  { params }: { params: Promise<{ filename: string[] }> }
 ) {
   try {
     const { filename } = await params;
+    const filePath = Array.isArray(filename) ? filename.join('/') : filename;
     
     // 1. Check authentication
-    // NOTE: We allow public access specifically for property logos
-    const isLogo = filename.startsWith('logo_');
+    // NOTE: We allow public access specifically for property logos and media-studio
+    const isPublic = filePath.startsWith('logo_') || filePath.startsWith('media-studio/');
 
-    if (!isLogo) {
+    if (!isPublic) {
       const session = await auth();
       if (!session) {
         return new NextResponse('Unauthorized', { status: 401 });
@@ -23,12 +24,12 @@ export async function GET(
     }
 
     // Security check: prevent directory traversal
-    if (filename.includes('..') || filename.includes('/')) {
+    if (filePath.includes('..')) {
       return new NextResponse('Invalid filename', { status: 400 });
     }
 
     // 2. Fetch the file from Local Storage
-    const { data: arrayBuffer, error } = await getLocalFileBuffer(filename);
+    const { data: arrayBuffer, error } = await getLocalFileBuffer(filePath);
 
     if (error || !arrayBuffer) {
       console.error('Local image download error:', error);
@@ -38,7 +39,7 @@ export async function GET(
     // 3. Convert to Uint8Array for Next.js response
     const fileBuffer = new Uint8Array(arrayBuffer);
 
-    const ext = filename.split('.').pop()?.toLowerCase();
+    const ext = filePath.split('.').pop()?.toLowerCase();
     const contentType = ext === 'png' ? 'image/png' : 'image/jpeg';
 
     return new NextResponse(fileBuffer, {
