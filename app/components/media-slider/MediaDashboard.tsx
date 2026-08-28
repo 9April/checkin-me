@@ -303,14 +303,31 @@ export default function MediaDashboard({
           </h2>
           
           {!videoUrl ? (
-            <div 
-              onClick={() => videoInputRef.current?.click()}
-              className="border-2 border-dashed border-gray-200 rounded-2xl h-64 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors"
-            >
-              <UploadCloud className="text-gray-400 mb-3" size={32} />
-              <p className="text-sm font-medium">Click to upload video</p>
-              <p className="text-xs text-gray-400 mt-1">MP4, WebM, MOV (9:16)</p>
-              <input type="file" accept="video/mp4,video/webm,video/quicktime" className="hidden" ref={videoInputRef} onChange={handleVideoUpload} />
+            <div className="flex flex-col gap-2">
+              <div 
+                onClick={() => videoInputRef.current?.click()}
+                className="border-2 border-dashed border-gray-200 rounded-2xl h-64 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors"
+              >
+                <UploadCloud className="text-gray-400 mb-3" size={32} />
+                <p className="text-sm font-medium">Click to upload video</p>
+                <p className="text-xs text-gray-400 mt-1">MP4, WebM, MOV (9:16)</p>
+                <input type="file" accept="video/mp4,video/webm,video/quicktime" className="hidden" ref={videoInputRef} onChange={handleVideoUpload} />
+              </div>
+              
+              <div className="flex items-center gap-2 mt-2">
+                <span className="text-xs text-gray-400 font-medium whitespace-nowrap">OR PASTE URL:</span>
+                <input 
+                  type="url" 
+                  placeholder="https://..." 
+                  className="w-full text-sm px-3 py-2 border border-gray-200 rounded-lg outline-none focus:border-black transition-colors"
+                  onChange={(e) => {
+                    if (e.target.value) {
+                      setVideoUrl(e.target.value);
+                      setVideoFile(null);
+                    }
+                  }}
+                />
+              </div>
             </div>
           ) : (
             <div className="flex flex-col gap-3">
