@@ -59,14 +59,14 @@ model Property {
   name            String
   hostId          String
   logoUrl         String?
-  houseRules      String?
+  houseRules      String?   @db.Text
   checkinTime     String    @default("15:00")
   checkoutTime    String    @default("11:00")
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   adminEmail      String?
   ccEmail         String?
-  privacyPolicy   String?
+  privacyPolicy   String?   @db.Text
   formTitle       String?
   formSubtitle    String?
   primaryColor    String?   @default("#FF385C")
@@ -74,15 +74,15 @@ model Property {
   whatsappNumber  String?
   requireSelfie   Boolean   @default(true)
   requireIdPhotos Boolean   @default(true)
-  pdfTemplate     String?
-  pdfFooter       String?
-  ruleLogistics   String?
-  ruleOccupants   String?
-  ruleResponsibility String?
-  ruleSecurity    String?
-  mediaVideoUrl   String?
-  mediaSliderImages String?
-  locationEmbedUrl  String?
+  pdfTemplate     String?   @db.Text
+  pdfFooter       String?   @db.Text
+  ruleLogistics   String?   @db.Text
+  ruleOccupants   String?   @db.Text
+  ruleResponsibility String?  @db.Text
+  ruleSecurity    String?   @db.Text
+  mediaVideoUrl   String?   @db.Text
+  mediaSliderImages String?   @db.Text
+  locationEmbedUrl  String?   @db.Text
   companyName       String?
   slug              String?   @unique
   isActive        Boolean   @default(true)
@@ -117,6 +117,6 @@ model Traveler {
   country   String
   idNumber  String?
   type      String
-  idImages  String?
+  idImages  String?   @db.Text
   booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 }
