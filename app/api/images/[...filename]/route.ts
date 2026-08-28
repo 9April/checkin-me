@@ -40,7 +40,16 @@ export async function GET(
     const fileBuffer = new Uint8Array(arrayBuffer);
 
     const ext = filePath.split('.').pop()?.toLowerCase();
-    const contentType = ext === 'png' ? 'image/png' : 'image/jpeg';
+    let contentType = 'image/jpeg';
+    if (ext === 'png') {
+      contentType = 'image/png';
+    } else if (ext === 'mp4') {
+      contentType = 'video/mp4';
+    } else if (ext === 'webm') {
+      contentType = 'video/webm';
+    } else if (ext === 'mov' || ext === 'quicktime') {
+      contentType = 'video/quicktime';
+    }
 
     return new NextResponse(fileBuffer, {
       headers: {
