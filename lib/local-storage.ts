@@ -1,7 +1,9 @@
 import fs from 'fs/promises';
 import path from 'path';
 
-const UPLOAD_DIR = path.join(process.cwd(), '.data', 'uploads');
+import os from 'os';
+
+const UPLOAD_DIR = path.join(os.homedir(), '.checkin-me-uploads');
 
 export async function ensureDir(dirPath: string) {
   try {

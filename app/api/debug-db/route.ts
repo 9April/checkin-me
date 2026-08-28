@@ -16,7 +16,7 @@ export async function GET() {
       }
     });
 
-    const uploadDir = path.join(process.cwd(), ".data", "uploads", "media-studio", "test-property-1");
+    const uploadDir = path.join(require('os').homedir(), ".checkin-me-uploads", "media-studio", "test-property-1");
     let files: string[] = [];
     try {
       files = await fs.readdir(uploadDir);
