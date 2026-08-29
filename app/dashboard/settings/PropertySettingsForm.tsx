@@ -41,6 +41,7 @@ export default function PropertySettingsForm({ property, initialRules }: Propert
   const [occupants, setOccupants] = useState(property.ruleOccupants || "Le logement est strictement réservé aux personnes mentionnées. Toute personne supplémentaire doit être déclarée à l'hôte.");
   const [responsibility, setResponsibility] = useState(property.ruleResponsibility || "Prendre soin du logement et le restituer en bon état. Tout dommage causé devra être signalé immédiatement.");
   const [security, setSecurity] = useState(property.ruleSecurity || "Les clés sont confiées aux voyageurs ; leur perte entraîne des frais. Toute activité illégale entraînera l'annulation du séjour.");
+  const [privacyPolicy, setPrivacyPolicy] = useState(property.privacyPolicy || "");
 
   async function handleSubmit(formData: FormData) {
     const name = formData.get('name') as string;
@@ -361,6 +362,27 @@ export default function PropertySettingsForm({ property, initialRules }: Propert
             </div>
           </div>
           <p className="text-xs text-[#6B7280]">These four categories populate the "House Etiquette" grid in your luxury stay agreement. Respect the design by keeping descriptions concise.</p>
+        </div>
+      </section>
+
+      {/* Privacy Policy Section */}
+      <section className="bg-white rounded-3xl border border-[#E5E7EB] shadow-sm overflow-hidden text-black">
+        <div className="p-6 border-b border-[#E5E7EB] flex items-center gap-3">
+          <div className="w-10 h-10 bg-blue-50 text-blue-500 rounded-xl flex items-center justify-center">
+            <ShieldCheck size={20} />
+          </div>
+          <h2 className="text-lg font-bold">Privacy Policy</h2>
+        </div>
+        <div className="p-8 space-y-4">
+          <textarea 
+            name="privacyPolicy"
+            value={privacyPolicy}
+            onChange={(e) => setPrivacyPolicy(e.target.value)}
+            rows={8}
+            className="w-full px-5 py-4 bg-[#F9FAFB] border border-[#E5E7EB] rounded-2xl focus:ring-2 focus:ring-[#EF4444] outline-none transition-all text-sm leading-relaxed"
+            placeholder="Enter your property privacy policy details here..."
+          />
+          <p className="text-xs text-[#6B7280]">Provide the terms and conditions or privacy policy text for guests to accept during check-in.</p>
         </div>
       </section>
 

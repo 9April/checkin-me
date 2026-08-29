@@ -25,7 +25,7 @@ export default async function DashboardPrivacyPage() {
       <div className="flex flex-col gap-2">
         <h1 className="text-4xl font-bold text-[#1A1A1A] tracking-tighter font-serif italic text-[#C5A059]">El Khouzama Privacy Policy</h1>
         <p className="text-[#6B635C] font-medium opacity-60 max-w-2xl text-sm">
-          Use this HTML editor to customize your guest privacy policy. This content will be displayed on the public check-in page and throughout the guest experience.
+          Use this editor to customize your guest privacy policy. You can enter simple plain-text paragraphs (new lines will automatically format into paragraphs).
         </p>
       </div>
 

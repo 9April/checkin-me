@@ -82,15 +82,15 @@ export default function PrivacyEditor({ propertyId, initialContent }: PrivacyEdi
         {!showPreview ? (
           <div className="bg-white rounded-[2.5rem] border border-[#E5E7EB] shadow-sm overflow-hidden flex flex-col">
             <div className="p-4 border-b border-gray-100 bg-[#F9FAFB] flex items-center justify-between">
-              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">HTML / Document Content</span>
-              <span className="text-[10px] font-mono text-[#C5A059]">{content.length.toLocaleString()} characters</span>
+              <span className="text-[10px] font-bold text-[#6B635C] uppercase tracking-[0.2em]">Privacy Policy Text</span>
+              <span className="text-[10px] font-sans text-gray-400">{content.length.toLocaleString()} characters</span>
             </div>
             <textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              className="flex-1 w-full p-8 font-mono text-sm leading-relaxed outline-none focus:ring-0 resize-none bg-white text-[#1A1A1A]"
-              placeholder="Paste your HTML privacy policy here..."
-              spellCheck={false}
+              className="flex-1 w-full p-8 font-sans text-sm leading-relaxed outline-none focus:ring-0 resize-none bg-[#FDFCF9] text-[#1A1A1A]"
+              placeholder="Enter your property privacy policy details here..."
+              spellCheck={true}
             />
           </div>
         ) : (

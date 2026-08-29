@@ -44,6 +44,14 @@ export function getPrivacyPolicyHtml(
       } catch {
         raw = trimmed;
       }
+    } else if (!trimmed.includes('<')) {
+      // Auto-format plain text newlines into HTML paragraphs
+      raw = trimmed
+        .split('\n')
+        .map(line => line.trim())
+        .filter(Boolean)
+        .map(line => `<p>${line}</p>`)
+        .join('');
     } else {
       raw = trimmed;
     }
