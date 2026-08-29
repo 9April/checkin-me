@@ -23,7 +23,16 @@ export async function updateProperty(formData: FormData) {
   const formSubtitle = formData.get('formSubtitle') as string;
   const primaryColor = formData.get('primaryColor') as string;
   const companyName = formData.get('companyName') as string;
-  const locationEmbedUrl = formData.get('locationEmbedUrl') as string;
+  let locationEmbedUrl = formData.get('locationEmbedUrl') as string;
+  
+  // Extract only the URL if the user accidentally pasted the entire <iframe> tag
+  if (locationEmbedUrl && locationEmbedUrl.includes('<iframe')) {
+    const match = locationEmbedUrl.match(/src="([^"]+)"/);
+    if (match && match[1]) {
+      locationEmbedUrl = match[1];
+    }
+  }
+
   const whatsappNumber = formData.get('whatsappNumber') as string;
   const showWhatsApp = formData.get('showWhatsApp') === 'true';
   const requireSelfie = formData.get('requireSelfie') === 'true';
