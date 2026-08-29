@@ -40,6 +40,7 @@ interface Booking {
   checkin: string;
   checkout: string;
   createdAt: Date | string;
+  whatsapp?: string | null;
   travelers: Array<{
     id: string;
     name: string;
@@ -218,7 +219,14 @@ export default function SubmissionsList({
                       >
                         View
                       </Link>
-                      <ResendEmailAction bookingId={booking.id} />
+                      <ResendEmailAction 
+                        bookingId={booking.id} 
+                        initialGuestName={booking.guestName}
+                        initialGuestEmail={booking.guestEmail}
+                        initialCheckin={booking.checkin}
+                        initialCheckout={booking.checkout}
+                        initialWhatsapp={booking.whatsapp}
+                      />
                       <a 
                         href={getWhatsAppLink(booking)}
                         target="_blank" 
@@ -322,7 +330,14 @@ export default function SubmissionsList({
                           <ExternalLink size={18} />
                           View
                         </Link>
-                          <ResendEmailAction bookingId={booking.id} />
+                          <ResendEmailAction 
+                            bookingId={booking.id} 
+                            initialGuestName={booking.guestName}
+                            initialGuestEmail={booking.guestEmail}
+                            initialCheckin={booking.checkin}
+                            initialCheckout={booking.checkout}
+                            initialWhatsapp={booking.whatsapp}
+                          />
                           <a 
                             href={getWhatsAppLink(booking)}
                             target="_blank" 

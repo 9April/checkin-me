@@ -4,10 +4,26 @@ import { prisma } from '@/lib/prisma';
 import { sendCheckInEmails } from '@/lib/save-booking-core';
 import { getHostUserId } from '@/lib/session-host-id';
 
-export async function resendBookingEmailsAction(bookingId: string) {
+export async function resendBookingEmailsAction(
+  bookingId: string,
+  updateData?: {
+    guestName?: string;
+    guestEmail?: string;
+    checkin?: string;
+    checkout?: string;
+    whatsapp?: string | null;
+  }
+) {
   try {
     const hostId = await getHostUserId();
     if (!hostId) return { success: false, error: "Unauthorized" };
+
+    if (updateData) {
+      await prisma.booking.update({
+        where: { id: bookingId },
+        data: updateData
+      });
+    }
 
     const booking = await prisma.booking.findUnique({
     where: { id: bookingId },
