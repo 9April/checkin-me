@@ -19,6 +19,9 @@ const playfair = Playfair_Display({
 export const metadata: Metadata = {
   title: "Check-in Me",
   description: "Guest pre-check-in simplified",
+  icons: {
+    icon: "/api/images/media-studio/test-property-1/icon.png",
+  }
 };
 
 export const viewport: Viewport = {
