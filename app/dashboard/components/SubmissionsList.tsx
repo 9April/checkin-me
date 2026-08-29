@@ -238,16 +238,18 @@ export default function SubmissionsList({
                       <Link 
                         href={`/agreement/${booking.id}`} 
                         target="_blank" 
-                        className="text-sm text-gray-600 inline-flex items-center gap-1 hover:text-gray-950 transition-colors"
+                        className="p-1 text-gray-500 hover:text-gray-800 transition-colors"
+                        title="Print Agreement"
                       >
-                        <Printer size={16} /> Print
+                        <Printer size={16} />
                       </Link>
                       <Link
                         href={`/agreement/${booking.id}?download=1`}
                         target="_blank"
-                        className="text-sm text-gray-500 font-medium hover:text-gray-800 transition-colors"
+                        className="p-1 text-gray-500 hover:text-gray-800 transition-colors"
+                        title="Download Agreement"
                       >
-                        Download
+                        <Download size={16} />
                       </Link>
                       <div className="ml-auto">
                         <TrashAction 
@@ -349,21 +351,19 @@ export default function SubmissionsList({
                           <Link 
                             href={`/agreement/${booking.id}`} 
                             target="_blank" 
-                            className="text-[#6B7280] hover:text-[#111827] transition-colors p-1"
+                            className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors"
                             title="Print Agreement"
                           >
-                          <Printer size={18} />
-                          Print
-                        </Link>
-                        <Link
-                          href={`/agreement/${booking.id}?download=1`}
-                          target="_blank"
-                          className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-1"
-                          title='Download Agreement'
-                        >
-                          <Download size={18} />
-                          Download
-                        </Link>
+                            <Printer size={18} />
+                          </Link>
+                          <Link
+                            href={`/agreement/${booking.id}?download=1`}
+                            target="_blank"
+                            className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors"
+                            title="Download Agreement"
+                          >
+                            <Download size={18} />
+                          </Link>
                         <TrashAction 
                           bookingId={booking.id} 
                           mode="soft" 
