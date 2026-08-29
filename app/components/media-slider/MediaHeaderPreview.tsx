@@ -65,11 +65,11 @@ export default function MediaHeaderPreview({ videoUrl, images }: MediaHeaderPrev
         >
           {videoUrl ? (
             <>
-              {/* Premium Shimmer Loading Skeleton (only if we don't have a poster image to cover it) */}
-              {isVideoLoading && (!images || images.length === 0) && (
-                <div className="absolute inset-0 bg-neutral-950 flex flex-col items-center justify-center z-20 animate-pulse">
-                  <div className="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin mb-3" />
-                  <p className="font-sans text-[10px] tracking-[0.2em] uppercase text-white/50">Loading Experience</p>
+              {/* Premium Loading Spinner Overlay */}
+              {isVideoLoading && (
+                <div className="absolute inset-0 bg-black/45 flex flex-col items-center justify-center z-20 backdrop-blur-[2px] transition-opacity duration-300">
+                  <div className="w-8 h-8 border-2 border-white/25 border-t-white rounded-full animate-spin mb-3" />
+                  <p className="font-sans text-[10px] tracking-[0.25em] uppercase text-white/90 font-bold drop-shadow-md">Loading Video...</p>
                 </div>
               )}
 
