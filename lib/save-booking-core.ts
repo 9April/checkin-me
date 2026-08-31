@@ -68,6 +68,27 @@ async function downloadStorageObjectAsAttachment(opts: {
   }
 }
 
+async function getBaseUrl(): Promise<string> {
+  try {
+    const { headers } = require('next/headers');
+    const h = await headers();
+    const host = h.get('host');
+    const proto = h.get('x-forwarded-proto') || 'https';
+    if (host) {
+      const resolvedProto = host.includes('localhost') ? 'http' : proto;
+      return `${resolvedProto}://${host}`.replace(/\/$/, '');
+    }
+  } catch (e) {
+    // Non-fatal fallback for builds or non-request contexts
+  }
+
+  let baseUrl = process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL;
+  if (!baseUrl || (process.env.NODE_ENV === 'production' && baseUrl.includes('localhost'))) {
+    baseUrl = 'https://www.cervice.online';
+  }
+  return baseUrl.replace(/\/$/, '');
+}
+
 /** Sends check-in PDF (or text-only if PDF missing) to guest and property admin. */
 export async function sendCheckInEmails(opts: {
   guestEmail: string;
@@ -102,6 +123,7 @@ export async function sendCheckInEmails(opts: {
   lang: Lang;
   bookingId: string;
 }): Promise<{ mailError: string }> {
+  const baseUrl = await getBaseUrl();
   const tm = getCheckinEmailTemplates(opts.lang);
   const guest = opts.guestEmail.trim();
   const admin =
@@ -141,7 +163,7 @@ export async function sendCheckInEmails(opts: {
 
     <div style="margin-bottom:48px">
       <p style="font-size:14px;color:#717171;margin-bottom:20px">Your digital signed agreement is now available for your records.</p>
-      <a href="${process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://checkin-me.com'}/agreement/${opts.bookingId}" style="display:inline-block;background-color:#1A1A1A;color:#FCFBF9;padding:18px 36px;text-decoration:none;font-size:11px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;border-radius:2px">View Digital Agreement</a>
+      <a href="${baseUrl}/agreement/${opts.bookingId}" style="display:inline-block;background-color:#1A1A1A;color:#FCFBF9;padding:18px 36px;text-decoration:none;font-size:11px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;border-radius:2px">View Digital Agreement</a>
     </div>
 
     <div style="height:1px;background-color:rgba(168,152,126,0.1);margin-bottom:40px"></div>
@@ -162,7 +184,7 @@ export async function sendCheckInEmails(opts: {
     opts.adminAttachments && opts.adminAttachments.length > 0
       ? '\n\n' + tm.adminExtraDocumentsAttached
       : '';
-  const adminBody = `${tm.adminBodyIntro}${adminAttachmentLine}${adminDocsLine}${pdfNote}\n\nView Agreement: ${process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://checkin-me.com'}/agreement/${opts.bookingId}\n\n${tm.adminProperty} ${opts.propertyName}\n${tm.adminGuest} ${opts.guestName}\n${tm.adminEmailLabel} ${guest || tm.adminNotProvided}\n${tm.adminDates} ${opts.checkin} — ${opts.checkout}\n${
+  const adminBody = `${tm.adminBodyIntro}${adminAttachmentLine}${adminDocsLine}${pdfNote}\n\nView Agreement: ${baseUrl}/agreement/${opts.bookingId}\n\n${tm.adminProperty} ${opts.propertyName}\n${tm.adminGuest} ${opts.guestName}\n${tm.adminEmailLabel} ${guest || tm.adminNotProvided}\n${tm.adminDates} ${opts.checkin} — ${opts.checkout}\n${
     opts.checkinHour ? `Check-in time: ${opts.checkinHour}\n` : ''
   }${opts.whatsapp ? `WhatsApp: ${opts.whatsapp}\n` : ''}${
     typeof opts.totalTravelers === 'number'
@@ -207,7 +229,7 @@ export async function sendCheckInEmails(opts: {
             ${typeof opts.totalTravelers === 'number' ? `<div><strong>Travelers:</strong> ${opts.totalTravelers}</div>` : ''}
           </div>
           <div style="margin-top:16px;text-align:left">
-            <a href="${process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://checkin-me.com'}/agreement/${opts.bookingId}" style="display:inline-block;background:linear-gradient(135deg,#0f172a,#1e293b);color:#ffffff;padding:12px 20px;text-decoration:none;font-size:12px;font-weight:700;letter-spacing:0.05em;border-radius:8px;box-shadow:0 4px 6px rgba(15,23,42,0.1)">
+            <a href="${baseUrl}/agreement/${opts.bookingId}" style="display:inline-block;background:linear-gradient(135deg,#0f172a,#1e293b);color:#ffffff;padding:12px 20px;text-decoration:none;font-size:12px;font-weight:700;letter-spacing:0.05em;border-radius:8px;box-shadow:0 4px 6px rgba(15,23,42,0.1)">
               📄 View & Download Signed Agreement
             </a>
           </div>
